@@ -1,0 +1,28 @@
+# Derleme ve düzenleyici dosyaları
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+
+# Gerçek kullanıcı verileri ve çıktılar depoya alınmaz
+Data/
+Veriler/
+Backups/
+Yedekler/
+Exports/
+Ciktilar/
+inceleme/
+*.xlsx
+*.xls
+*.xlsm
+*.rar
+*.zip
+*.pdf
+*.hakedis
+*.bak
+*.tmp
+*.lock
+.env
+.env.*
