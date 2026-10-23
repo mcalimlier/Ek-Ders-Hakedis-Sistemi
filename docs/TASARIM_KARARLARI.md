@@ -8,7 +8,11 @@ Yeni ve bağımsız proje; Windows üzerinde kurulum ve Excel gerektirmeyen çal
 
 ## Önerilen uygulama ve dağıtım
 
-C# / WPF uygunluğunu korur. Uygulama, .NET çalışma zamanı dahil self-contained taşınabilir klasör olarak yayımlanır. ZIP açılır ve EXE çalıştırılır. Yönetici yetkisi ve ayrı .NET/Office kurulumu hedeflenmez. Tek EXE seçeneği ayrıca denenebilir; ilk hedef eksiksiz taşınabilir klasördür. x64 ve gerekiyorsa ARM64 için ayrı paketler üretilir. Kaynak koddan derleme araçları son kullanıcıya gerekmez.
+C# / WPF uygunluğunu korur. Kullanıcının mevcut projeyle aynı dağıtım isteği doğrultusunda OEHS yöntemi esas alınır: Windows x64, .NET çalışma zamanı dahil self-contained, PublishSingleFile=true ile uygulama EXE'si; gereken ek dosyalar ve kullanım notuyla ZIP paketi. Alıcı ZIP'i bir klasöre çıkarıp EXE'yi çalıştırır. Bu akış bir Setup.exe kurulum sihirbazı değildir. Yönetici yetkisi ve ayrı .NET/Office kurulumu hedeflenmez. Gerekiyorsa ARM64 için ayrı paket değerlendirilir. Kaynak koddan derleme araçları son kullanıcıya gerekmez.
+
+### Mevcut projeden doğrulama
+
+23 Ekim 2026 tarihinde incelenen OEHS dalında `OEHS_TEST_PAKETI_OLUSTUR_GUNCEL.bat`, önce testleri çalıştırıyor; ardından `dotnet publish --runtime win-x64 --self-contained true /p:PublishSingleFile=true` ile OEHS.exe üretiyor ve yayın klasörünü ZIP'e alıyor. `.github/workflows/oehs-windows-build.yml` de aynı EXE yayın yaklaşımını kullanıyor. `OEHS_DENEME_KULLANIM.txt` alıcıya ZIP'i tamamen çıkarmasını ve OEHS.exe'yi çalıştırmasını söylüyor. İncelenen dağıtım akışında kurulum sihirbazı bulunmadı. Yeni projede aynı paketleme yaklaşımı, yeni program adı ve kendi veri klasörüyle kullanılacak; deneme verisi işareti üretim paketine doğrudan taşınmayacak.
 
 ## SQL içermeyen saklama seçenekleri
 
