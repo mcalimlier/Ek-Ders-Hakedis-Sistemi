@@ -23,7 +23,10 @@ internal static class Program
         model.Registration.Editor.OccupationCode="2341.04";model.SaveNewTeacher();
         model.Monthly.DayHours = "117";
         var window = new MainWindow(model) { ShowActivated = false, ShowInTaskbar = false };
+        if(window.Width!=1366 || window.Height!=768)throw new InvalidOperationException("Varsayılan laptop boyutu 1366×768 değil.");
         window.Show();
+        if(window.ActualWidth>SystemParameters.WorkArea.Width+1 || window.ActualHeight>SystemParameters.WorkArea.Height+1)
+            throw new InvalidOperationException("Açılış penceresi görev çubuğu dışındaki çalışma alanına sığmadı.");
         model.RegistrationModule = model.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.Ortaogretim);
         window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
         if(model.Monthly.Teachers.Count!=1 || model.Monthly.DayHours!="117")
@@ -33,9 +36,9 @@ internal static class Program
         window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
         if(model.Calculation.Rows.Single().Result?.Gross!=25806.89m)throw new InvalidOperationException("Canlı tablo güncellenmedi.");
         if(model.Calculation.Rows.Single().MissingDays!="14")throw new InvalidOperationException("Eylül ayı SGK yan bilgisi yanlış.");
-        foreach (var width in new[] { 1440, 1040 })
+        foreach (var width in new[] { 1366, 1040 })
         {
-            window.Width = width; window.Height = width == 1440 ? 920 : 760;
+            window.Width = width; window.Height = width == 1366 ? 768 : 728;
             foreach (var panel in new[] { "Entry", "Calculation", "Teachers", "Constants" })
             {
                 model.Navigate(panel);

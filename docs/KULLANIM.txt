@@ -2,6 +2,8 @@
 
 ZIP dosyasını tamamen bir klasöre çıkarın ve Hakedis.App.exe dosyasını açın.
 Windows x64 paketi ayrıca Excel veya .NET kurulumu gerektirmez.
+Pencere 1366×768 laptop ekranını hedefler; açılışta görev çubuğu ve
+Windows ekran ölçeğine göre kullanılabilir alana sığdırılır.
 Güncelleme sırasında mevcut Veriler klasörünüzü koruyun.
 
 VERİ GİRİŞİ

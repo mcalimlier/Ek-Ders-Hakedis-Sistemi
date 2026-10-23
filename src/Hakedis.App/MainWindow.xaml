@@ -1,5 +1,5 @@
 <Window x:Class="Hakedis.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Hakedis.App" xmlns:c="clr-namespace:Hakedis.Contracts;assembly=Hakedis.Contracts"
- Title="Ücretli Ek Ders Hakediş Sistemi" xml:lang="tr-TR" Width="1440" Height="920" MinWidth="1040" MinHeight="680" WindowStartupLocation="CenterScreen"
+ Title="Ücretli Ek Ders Hakediş Sistemi" xml:lang="tr-TR" Width="1366" Height="768" MinWidth="1040" MinHeight="680" WindowStartupLocation="CenterScreen"
  WindowStyle="None" ResizeMode="CanResizeWithGrip" Background="{StaticResource Navy900Brush}" UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display">
  <WindowChrome.WindowChrome><WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0"/></WindowChrome.WindowChrome>
  <Border Margin="6" CornerRadius="15" BorderBrush="#35546F" BorderThickness="1" Background="{StaticResource Navy900Brush}">

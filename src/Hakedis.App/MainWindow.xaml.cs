@@ -9,6 +9,15 @@ public partial class MainWindow : Window
     private WorkspaceViewModel model => shell.Workspace;
     public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
     public MainWindow(ShellViewModel viewModel) {shell=viewModel;InitializeComponent();DataContext=shell;}
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        // WPF ölçüleri DPI ölçeğine bağlıdır; görev çubuğu için ayrılan alanı da koru.
+        var workArea=SystemParameters.WorkArea;
+        MinWidth=Math.Min(MinWidth,workArea.Width);MinHeight=Math.Min(MinHeight,workArea.Height);
+        Width=Math.Min(1366,workArea.Width);Height=Math.Min(768,workArea.Height);
+        Left=workArea.Left+(workArea.Width-Width)/2;Top=workArea.Top+(workArea.Height-Height)/2;
+    }
     private void Navigate_Click(object sender, RoutedEventArgs e)
         => shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);

@@ -33,7 +33,7 @@ Hakediş oluştur boş IBAN veya geçersiz girdiyle çalışmaz; henüz girilmem
 ## Doğrulama / paket
 
 81 birim testi geçti; Excel'in 50 senaryo/14 alan doğrulaması dahil. WPF gerçek ekranında dört panel normal/dar boyutta render edildi; meslek popup'ı, canlı hücre hesabı ve ay/yıl ComboBox üzerinden Kasım-2027 seçimi, Hakediş oluştur düğmesinin kalıcı JSON yazması kontrol edildi. Binding hatası yok. Görseller artifacts/ui-review-hybrid-verified içinde sentetik personel kullanır.
-Windows x64 paket: dist/Hakedis-win-x64-20261024-003745.zip. ZIP yalnız Hakedis.App.exe ve KULLANIM.txt içeriyor; gerçek kullanıcı verisi yok. Yayımlanan bağımsız EXE açıldı ve mesaj döngüsünün hazır olduğu doğrulandı; ardından kapatıldı.
+Windows x64 paket: dist/Hakedis-win-x64-20261024-004600.zip. ZIP yalnız Hakedis.App.exe ve KULLANIM.txt içeriyor; gerçek kullanıcı verisi yok. Yayımlanan bağımsız EXE açıldı ve mesaj döngüsünün hazır olduğu doğrulandı; ardından kapatıldı.
 
 ## Sonraki ürün işleri
 
@@ -41,4 +41,11 @@ Windows x64 paket: dist/Hakedis-win-x64-20261024-003745.zip. ZIP yalnız Hakedis
 
 ## Bu eklemenin doğrulaması
 
-Yeni SGK kuralı için önce eski uygulamada başarısız olan 9 uçtan uca test yazıldı; kural uygulandıktan sonra takvim sınırları da eklendi. Son tam koşuda 81 test geçti; eski 68 teste 13 SGK senaryosu eklendi. WPF ekranında Eksik Gün Sayısı 117 saat/Eylül için 14, hücre 108 saate değişince 15 olarak doğrulandı; binding hatası yok. Görseller artifacts/ui-review-sgk içinde. Yeni paket: dist/Hakedis-win-x64-20261024-003745.zip. ZIP içeriği yalnız EXE ve kullanım notu; bağımsız EXE açılışı doğrulandı.
+Yeni SGK kuralı için önce eski uygulamada başarısız olan 9 uçtan uca test yazıldı; kural uygulandıktan sonra takvim sınırları da eklendi. Son tam koşuda 81 test geçti; eski 68 teste 13 SGK senaryosu eklendi. WPF ekranında Eksik Gün Sayısı 117 saat/Eylül için 14, hücre 108 saate değişince 15 olarak doğrulandı; binding hatası yok. Görseller artifacts/ui-review-sgk içinde. Yeni paket: dist/Hakedis-win-x64-20261024-004600.zip. ZIP içeriği yalnız EXE ve kullanım notu; bağımsız EXE açılışı doğrulandı.
+
+## Laptop ve aylık süreklilik sorusu — 24 Ekim
+
+Kullanıcı laptop için 1366×768 istedi. Varsayılan pencere bu boyuta alındı. OnSourceInitialized açılış ölçülerini Windows çalışma alanına (DPI ve görev çubuğu alanı) sığdırıyor; alt sınırlar da ekranı aşmıyor. Dört panel 1366×768 ve 1040×728 boyutlarında gerçek WPF render/binding denetiminden geçti; görüntüler artifacts/ui-review-laptop içinde.
+
+Kullanıcı ayrıca her ay değişen öğretmen kadrosunu ve saatlerini güvenli nasıl yöneteceğini sordu. Bu kısmın kapsamı yol gösterme; dönem kilidi/atama geçmişi henüz kodlanmadı. Somut tasarım önerisi docs/AYLIK_CALISMA_AKISI_ONERISI.md içinde. Mevcut açığı gizleme: aylık saatler ve oluşturulan hakediş görüntüleri ayrı olsa da eski çalışma tablosu güncel öğretmen kataloğuyla birleşiyor; silinen kişi orada görünmez, değişen kart bilgisi eski ayın yeniden hesabına yansır. Öneri: görevlendirme geçmişi, dönem kadrosu, boş saatlerle yeni ay hazırlama, kesinleştirme/arşivden okuma, sürümlü düzeltme, eksik ay takibi ve düzenli yedek.
+Laptop paketi: dist/Hakedis-win-x64-20261024-004600.zip. 81 test ve WPF kontrolleri geçti; paket yalnız EXE/kullanım notu içeriyor, bağımsız EXE açılışı doğrulandı.
