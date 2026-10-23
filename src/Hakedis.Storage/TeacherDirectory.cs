@@ -1,0 +1,82 @@
+using Hakedis.Contracts;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+
+namespace Hakedis.Storage;
+
+public sealed class TeacherDirectory
+{
+    private readonly string path;
+    private sealed record Catalog(int SchemaVersion, TeacherRecord[] Teachers);
+    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true,
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+    public TeacherDirectory(string path) { this.path = Path.GetFullPath(path); }
+    public IReadOnlyList<TeacherRecord> Read()
+    {
+        if (!File.Exists(path)) return [];
+        try
+        {
+            using var stream = File.OpenRead(path); var catalog = JsonSerializer.Deserialize<Catalog>(stream, Options);
+            if (catalog is null || catalog.SchemaVersion != 1 || catalog.Teachers is null)
+                throw new InvalidDataException("Öğretmen dosyasının sürümü veya içeriği geçersiz.");
+            var records = catalog.Teachers.Select(Normalize).ToArray();
+            if (records.Select(t => t.Id).Distinct().Count() != records.Length ||
+                records.Where(t => t.IdentityNumber != "").GroupBy(t => t.IdentityNumber).Any(g => g.Count() > 1))
+                throw new InvalidDataException("Öğretmen dosyasında yinelenen kimlik bilgisi var.");
+            return records;
+        }
+        catch (Exception ex) when (ex is JsonException or ArgumentException)
+        { throw new InvalidDataException("Öğretmen dosyası bozuk veya kayıt bilgileri geçersiz; dosya değiştirilmedi.", ex); }
+    }
+    public IReadOnlyList<TeacherRecord> Save(TeacherRecord teacher)
+    {
+        teacher = Normalize(teacher);
+        return Mutate(rows =>
+        {
+            if (teacher.IdentityNumber != "" && rows.Any(t => t.Id != teacher.Id && t.IdentityNumber == teacher.IdentityNumber))
+                throw new ArgumentException("Bu T.C. kimlik numarası başka bir öğretmende kayıtlı.");
+            var index = rows.FindIndex(t => t.Id == teacher.Id);
+            if (index < 0) rows.Add(teacher); else rows[index] = teacher;
+        });
+    }
+    public IReadOnlyList<TeacherRecord> Delete(Guid id) => Mutate(rows =>
+    {
+        if (rows.RemoveAll(t => t.Id == id) == 0) throw new InvalidOperationException("Öğretmen kaydı bulunamadı.");
+    });
+    private IReadOnlyList<TeacherRecord> Mutate(Action<List<TeacherRecord>> action)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        using var held = new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var rows = Read().ToList(); action(rows);
+        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            { JsonSerializer.Serialize(stream, new Catalog(1, rows.ToArray()), Options); stream.Flush(true); }
+            _ = new TeacherDirectory(temporary).Read();
+            if (File.Exists(path)) File.Replace(temporary, path, path + ".bak"); else File.Move(temporary, path);
+            return rows;
+        }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+    }
+    private static TeacherRecord Normalize(TeacherRecord teacher)
+    {
+        ArgumentNullException.ThrowIfNull(teacher);
+        if (teacher.Id == Guid.Empty || string.IsNullOrWhiteSpace(teacher.FullName))
+            throw new ArgumentException("Öğretmenin adını ve soyadını girin.");
+        if (teacher.IdentityNumber is null || teacher.Iban is null || teacher.InsuranceNumber is null ||
+            teacher.School is null || teacher.Branch is null || teacher.OccupationCode is null)
+            throw new ArgumentException("Öğretmen alanları eksik.");
+        var normalized = teacher with { FullName = teacher.FullName.Trim(), IdentityNumber = teacher.IdentityNumber.Trim(),
+            Iban = teacher.Iban.Replace(" ", "").ToUpperInvariant(), InsuranceNumber = teacher.InsuranceNumber.Trim(),
+            School = teacher.School.Trim(), Branch = teacher.Branch.Trim(), OccupationCode = teacher.OccupationCode.Trim(),
+            StartDate = teacher.StartDate?.Date, EndDate = teacher.EndDate?.Date };
+        if (normalized.IdentityNumber != "" && !Regex.IsMatch(normalized.IdentityNumber, "^[0-9]{11}$"))
+            throw new ArgumentException("T.C. kimlik numarası 11 rakam olmalıdır veya boş bırakılmalıdır.");
+        if (normalized.Iban != "" && !Regex.IsMatch(normalized.Iban, "^TR[0-9]{24}$"))
+            throw new ArgumentException("IBAN, TR ile başlayan 26 karakter olmalıdır veya boş bırakılmalıdır.");
+        if (normalized.EndDate < normalized.StartDate) throw new ArgumentException("Ayrılış tarihi başlangıç tarihinden önce olamaz.");
+        return normalized;
+    }
+}

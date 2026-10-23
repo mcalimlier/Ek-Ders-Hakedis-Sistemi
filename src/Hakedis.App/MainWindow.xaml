@@ -1,44 +1,97 @@
 <Window x:Class="Hakedis.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="Ücretli Ek Ders Hakediş Sistemi" Width="1180" Height="800" MinWidth="980" MinHeight="650" Background="#F7F9FC" FontFamily="Segoe UI" FontSize="14">
+ Title="Ücretli Ek Ders Hakediş Sistemi" Width="1220" Height="820" MinWidth="980" MinHeight="650" Background="#F7F9FC" FontFamily="Segoe UI" FontSize="14">
  <Window.Resources>
-  <Style TargetType="Button"><Setter Property="Padding" Value="16,9"/><Setter Property="Margin" Value="0,0,10,0"/><Setter Property="Background" Value="#2468D8"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderThickness" Value="0"/></Style>
-  <Style TargetType="TextBox"><Setter Property="Padding" Value="7"/><Setter Property="Margin" Value="0,5,12,10"/></Style>
+  <BooleanToVisibilityConverter x:Key="Visible"/>
+  <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+  <Style TargetType="Button"><Setter Property="Padding" Value="16,10"/><Setter Property="Margin" Value="0,0,10,8"/><Setter Property="Background" Value="#2468D8"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/></Style>
+  <Style TargetType="TextBox"><Setter Property="Padding" Value="8"/><Setter Property="Margin" Value="0,5,12,12"/></Style>
+  <Style TargetType="ComboBox"><Setter Property="Padding" Value="8"/><Setter Property="Margin" Value="0,5,12,12"/><Setter Property="MinHeight" Value="36"/></Style>
+  <Style x:Key="Nav" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="HorizontalContentAlignment" Value="Left"/><Setter Property="Background" Value="#082744"/><Setter Property="MinHeight" Value="48"/><Setter Property="Margin" Value="0,0,0,10"/></Style>
   <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="#082744"/><Setter Property="CornerRadius" Value="12"/><Setter Property="Padding" Value="18"/><Setter Property="Margin" Value="0,0,12,0"/></Style>
+  <Style x:Key="Heading" TargetType="TextBlock"><Setter Property="FontSize" Value="18"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="Margin" Value="0,10,0,12"/></Style>
  </Window.Resources>
  <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="255"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
   <Border Background="#031C38" Padding="20"><StackPanel>
    <TextBlock Text="ÜCRETLİ EK DERS" Foreground="#FFB41F" FontSize="20" FontWeight="Bold"/>
    <TextBlock Text="Hakediş Sistemi" Foreground="White" FontSize="17" Margin="0,5,0,35"/>
-   <TextBlock Text="HESAPLAMA MODÜLÜ" Foreground="#B9CBDA" Margin="0,0,0,10"/>
-   <ListBox ItemsSource="{Binding Modules}" SelectedItem="{Binding SelectedModule}" DisplayMemberPath="DisplayName" Background="#082744" Foreground="White" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-    <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="Padding" Value="7,14"/></Style></ListBox.ItemContainerStyle>
-    <ListBox.Resources><Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style></ListBox.Resources>
-   </ListBox>
-   <TextBlock Text="Her modül kendi hesaplama çekirdeğini kullanır." Foreground="#B9CBDA" TextWrapping="Wrap" Margin="0,25,0,0"/>
+   <Button Content="Veri Girişi" Tag="Entry" Click="Navigate_Click"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource Nav}"><Style.Triggers><DataTrigger Binding="{Binding EntryVisible}" Value="True"><Setter Property="Background" Value="#2468D8"/></DataTrigger></Style.Triggers></Style></Button.Style></Button>
+   <Button Content="Hakediş Hesapla" Tag="Calculation" Click="Navigate_Click"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource Nav}"><Style.Triggers><DataTrigger Binding="{Binding CalculationVisible}" Value="True"><Setter Property="Background" Value="#2468D8"/></DataTrigger></Style.Triggers></Style></Button.Style></Button>
+   <Button Tag="Teachers" Click="Navigate_Click"><Button.Content><TextBlock Text="Ücretli Öğretmen Listesi"/></Button.Content><Button.Style><Style TargetType="Button" BasedOn="{StaticResource Nav}"><Style.Triggers><DataTrigger Binding="{Binding TeachersVisible}" Value="True"><Setter Property="Background" Value="#2468D8"/></DataTrigger></Style.Triggers></Style></Button.Style></Button>
+   <TextBlock Text="Öğretmen kayıtlarınızı yönetin, dönem verilerini girin ve hakedişi hesaplayın." Foreground="#B9CBDA" Margin="0,25,0,0"/>
   </StackPanel></Border>
-  <Grid Grid.Column="1" Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-   <StackPanel><TextBlock Text="Aylık hesaplama çalışma alanı" FontSize="25" FontWeight="Bold" Foreground="#0B1830"/><TextBlock Text="İlk geliştirme sürümü · Kesinleşmiş ödeme belgesi değildir" Foreground="#526277" Margin="0,6,0,16"/></StackPanel>
-   <Border Grid.Row="1" Background="#FFF3D6" CornerRadius="8" Padding="12" Margin="0,0,0,16"><TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="#644500"/></Border>
-   <Grid Grid.Row="2" Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-    <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="BRÜT ÜCRET" Foreground="#B9CBDA"/><TextBlock Text="{Binding GrossText}" Foreground="White" FontSize="24" Margin="0,8,0,0"/></StackPanel></Border>
-    <Border Grid.Column="1" Style="{StaticResource Card}"><StackPanel><TextBlock Text="İŞVEREN MALİYETİ" Foreground="#B9CBDA"/><TextBlock Text="{Binding AccrualText}" Foreground="White" FontSize="24" Margin="0,8,0,0"/></StackPanel></Border>
-    <Border Grid.Column="2" Style="{StaticResource Card}" Margin="0"><StackPanel><TextBlock Text="NET ÖDEME" Foreground="#FFB41F"/><TextBlock Text="{Binding NetText}" Foreground="White" FontSize="24" Margin="0,8,0,0"/></StackPanel></Border>
+  <Grid Grid.Column="1" Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+   <StackPanel Margin="0,0,0,14"><TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" Foreground="#0B1830"/><TextBlock Text="Temel Eğitim · İlk geliştirme sürümü" Foreground="#526277" Margin="0,6,0,0"/></StackPanel>
+
+   <Grid Grid.Row="1" Visibility="{Binding EntryVisible, Converter={StaticResource Visible}}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel DataContext="{Binding Workspace}">
+     <Border Background="White" CornerRadius="12" Padding="18" Margin="0,0,0,16"><StackPanel>
+      <TextBlock Text="Hesaplama modülü" Style="{StaticResource Heading}"/>
+      <ComboBox ItemsSource="{Binding Modules}" SelectedItem="{Binding SelectedModule}" DisplayMemberPath="DisplayName" MaxWidth="520" HorizontalAlignment="Left" MinWidth="380"/>
+      <TextBlock Text="{Binding Status}" Foreground="#644500" Margin="0,5,0,10"/>
+     </StackPanel></Border>
+     <StackPanel IsEnabled="{Binding IsAvailable}">
+      <TextBlock Text="Dönem ve öğretmen" Style="{StaticResource Heading}"/>
+      <WrapPanel><StackPanel Width="120"><TextBlock Text="Yıl"/><TextBox Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="100"><TextBlock Text="Ay (1–12)"/><TextBox Text="{Binding Month, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
+      <TextBlock Text="Kayıtlı öğretmen seç (isteğe bağlı)"/>
+      <ComboBox ItemsSource="{Binding DataContext.Teachers.Records, RelativeSource={RelativeSource AncestorType=Window}}" SelectedItem="{Binding DataContext.CalculationTeacher, RelativeSource={RelativeSource AncestorType=Window}}" MaxWidth="520" HorizontalAlignment="Left" MinWidth="380">
+       <ComboBox.ItemTemplate><DataTemplate><TextBlock><Run Text="{Binding FullName}"/><Run Text=" · "/><Run Text="{Binding School}"/></TextBlock></DataTemplate></ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBlock Text="Hesaplanacak öğretmen adı / kayıt etiketi"/>
+      <TextBox Text="{Binding Person, UpdateSourceTrigger=PropertyChanged}" MaxWidth="520" HorizontalAlignment="Left" MinWidth="380"/>
+      <WrapPanel><StackPanel Width="180"><TextBlock Text="Gündüz saati"/><TextBox Text="{Binding DayHours, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="180"><TextBlock Text="DYK saati"/><TextBox Text="{Binding DykHours, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="180"><TextBlock Text="İcra kesintisi (TL)"/><TextBox Text="{Binding Garnishment, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
+      <TextBlock Text="Dönem parametreleri" Style="{StaticResource Heading}"/>
+      <TextBlock Text="Başlangıç değerleri kaynak Excel'in Eylül 2026 değerleridir; ödeme öncesi doğrulanmalıdır." Foreground="#526277" Margin="0,0,0,10"/>
+      <WrapPanel><StackPanel Width="180"><TextBlock Text="Aylık katsayı"/><TextBox Text="{Binding Coefficient, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="180"><TextBlock Text="Gösterge"/><TextBox Text="{Binding Indicator, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="180"><TextBlock Text="GV istisna matrahı"/><TextBox Text="{Binding IncomeExemption, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="180"><TextBlock Text="DV istisna tabanı"/><TextBox Text="{Binding StampExemption, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
+     </StackPanel>
+     <WrapPanel Margin="0,16,0,0"><Button Content="Taslak aç" Click="Open_Click"/><Button Content="Taslağı kaydet" Click="Save_Click" IsEnabled="{Binding IsAvailable}"/><Button Content="Hakediş ekranına geç" Tag="Calculation" Click="Navigate_Click"/></WrapPanel>
+    </StackPanel></ScrollViewer>
    </Grid>
-   <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"><StackPanel>
-    <WrapPanel Margin="0,0,0,14"><Button Content="Taslak aç" Click="Open_Click"/><Button Content="Taslağı kaydet" Click="Save_Click" IsEnabled="{Binding IsAvailable}"/></WrapPanel>
-    <StackPanel IsEnabled="{Binding IsAvailable}">
-     <TextBlock Text="Dönem ve personel" FontWeight="Bold" FontSize="18"/>
-     <WrapPanel><StackPanel Width="120"><TextBlock Text="Yıl"/><TextBox Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="100"><TextBlock Text="Ay (1–12)"/><TextBox Text="{Binding Month, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="300"><TextBlock Text="Personel adı / kayıt etiketi"/><TextBox Text="{Binding Person, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
-     <WrapPanel><StackPanel Width="170"><TextBlock Text="Gündüz saati"/><TextBox Text="{Binding DayHours, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="170"><TextBlock Text="DYK saati"/><TextBox Text="{Binding DykHours, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="170"><TextBlock Text="İcra kesintisi (TL)"/><TextBox Text="{Binding Garnishment, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
-     <TextBlock Text="Dönem parametreleri" FontWeight="Bold" FontSize="18" Margin="0,8,0,8"/>
-     <TextBlock Text="Başlangıç değerleri Eylül 2026 kaynak Excel'indendir; ödeme öncesi doğrulanmalıdır." TextWrapping="Wrap" Foreground="#526277"/>
-     <WrapPanel><StackPanel Width="170"><TextBlock Text="Aylık katsayı"/><TextBox Text="{Binding Coefficient, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="170"><TextBlock Text="Gösterge"/><TextBox Text="{Binding Indicator, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="170"><TextBlock Text="GV istisna matrahı"/><TextBox Text="{Binding IncomeExemption, UpdateSourceTrigger=PropertyChanged}"/></StackPanel><StackPanel Width="170"><TextBlock Text="DV istisna tabanı"/><TextBox Text="{Binding StampExemption, UpdateSourceTrigger=PropertyChanged}"/></StackPanel></WrapPanel>
-     <TextBlock Text="Kaynak kural: çalışan SGK %14 · işveren %21,75 · GV %15 · DV binde 7,59 · DYK ×2" TextWrapping="Wrap" Foreground="#526277" Margin="0,0,0,12"/>
-     <Button Content="Seçili modülle hesapla" Click="Calculate_Click" HorizontalAlignment="Left"/>
-    </StackPanel>
-    <TextBlock Text="Hesap ayrıntıları" FontSize="18" FontWeight="Bold" Margin="0,18,0,10"/>
-    <ItemsControl ItemsSource="{Binding Details}"><ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#DCE3EC" BorderThickness="0,0,0,1" Padding="5,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Value}" HorizontalAlignment="Right"/></Grid></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-   </StackPanel></ScrollViewer>
+
+   <Grid Grid.Row="1" Visibility="{Binding CalculationVisible, Converter={StaticResource Visible}}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel DataContext="{Binding Workspace}">
+     <Border Background="#FFF3D6" CornerRadius="8" Padding="14" Margin="0,0,0,18"><TextBlock Text="{Binding Status}" Foreground="#644500"/></Border>
+     <WrapPanel Margin="0,0,0,16"><Button Content="Hakedişi Hesapla" Click="Calculate_Click" IsEnabled="{Binding IsAvailable}"/><Button Content="Veri Girişine Dön" Tag="Entry" Click="Navigate_Click"/></WrapPanel>
+     <TextBlock Text="{Binding Person}" Style="{StaticResource Heading}"/>
+     <Grid Margin="0,0,0,18"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="BRÜT ÜCRET" Foreground="#B9CBDA"/><TextBlock Text="{Binding GrossText}" Foreground="White" FontSize="23" Margin="0,8,0,0"/></StackPanel></Border>
+      <Border Grid.Column="1" Style="{StaticResource Card}"><StackPanel><TextBlock Text="İŞVEREN MALİYETİ" Foreground="#B9CBDA"/><TextBlock Text="{Binding AccrualText}" Foreground="White" FontSize="23" Margin="0,8,0,0"/></StackPanel></Border>
+      <Border Grid.Column="2" Style="{StaticResource Card}" Margin="0"><StackPanel><TextBlock Text="NET ÖDEME" Foreground="#FFB41F"/><TextBlock Text="{Binding NetText}" Foreground="White" FontSize="23" Margin="0,8,0,0"/></StackPanel></Border>
+     </Grid>
+     <TextBlock Text="Hesap ayrıntıları" Style="{StaticResource Heading}"/>
+     <ItemsControl ItemsSource="{Binding Details}"><ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#DCE3EC" BorderThickness="0,0,0,1" Padding="6,10"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Value}" HorizontalAlignment="Right"/></Grid></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    </StackPanel></ScrollViewer>
+   </Grid>
+
+   <Grid Grid.Row="1" Visibility="{Binding TeachersVisible, Converter={StaticResource Visible}}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel DataContext="{Binding Teachers}">
+     <TextBlock Text="{Binding CountText}" Style="{StaticResource Heading}"/>
+     <TextBlock Text="{Binding Status}" Foreground="#644500" Margin="0,0,0,12"/>
+     <DataGrid ItemsSource="{Binding Records}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow" CanUserAddRows="False" Height="240" HeadersVisibility="Column" RowHeight="32" HorizontalScrollBarVisibility="Auto">
+      <DataGrid.Columns>
+       <DataGridTextColumn Header="Adı Soyadı" Binding="{Binding FullName}" Width="190"/>
+       <DataGridTextColumn Header="T.C. Kimlik" Binding="{Binding IdentityNumber}" Width="120"/>
+       <DataGridTextColumn Header="Görev Yeri" Binding="{Binding School}" Width="200"/>
+       <DataGridTextColumn Header="Branş" Binding="{Binding Branch}" Width="130"/>
+       <DataGridTextColumn Header="IBAN" Binding="{Binding Iban}" Width="240"/>
+       <DataGridTextColumn Header="SGK Sicili" Binding="{Binding InsuranceNumber}" Width="150"/>
+      </DataGrid.Columns>
+     </DataGrid>
+     <WrapPanel Margin="0,12,0,0"><Button Content="Yeni Öğretmen" Click="NewTeacher_Click"/><Button Content="Seçili Öğretmeni Veri Girişine Al" Click="UseTeacher_Click" IsEnabled="{Binding HasSelection}"/><Button Content="Seçili Kaydı Sil" Click="DeleteTeacher_Click" IsEnabled="{Binding HasSelection}" Background="#B42318"/></WrapPanel>
+     <TextBlock Text="Öğretmen Bilgileri · Seçili kaydı burada düzenleyebilirsiniz" Style="{StaticResource Heading}"/>
+     <WrapPanel>
+      <StackPanel Width="300"><TextBlock Text="Adı Soyadı *"/><TextBox Text="{Binding Editor.FullName, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="200"><TextBlock Text="T.C. Kimlik Numarası"/><TextBox Text="{Binding Editor.IdentityNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="11"/></StackPanel>
+      <StackPanel Width="240"><TextBlock Text="SGK Sicil Numarası"/><TextBox Text="{Binding Editor.InsuranceNumber, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="340"><TextBlock Text="Banka IBAN"/><TextBox Text="{Binding Editor.Iban, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="300"><TextBlock Text="Görev Yeri / Okul"/><TextBox Text="{Binding Editor.School, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="240"><TextBlock Text="Görevlendirildiği Branş"/><TextBox Text="{Binding Editor.Branch, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="180"><TextBlock Text="SGK Meslek Kodu"/><TextBox Text="{Binding Editor.OccupationCode, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+      <StackPanel Width="220"><TextBlock Text="İşe Başlama Tarihi"/><DatePicker SelectedDate="{Binding Editor.StartDate}" Margin="0,5,12,12"/></StackPanel>
+      <StackPanel Width="220"><TextBlock Text="İşten Ayrılma Tarihi"/><DatePicker SelectedDate="{Binding Editor.EndDate}" Margin="0,5,12,12"/></StackPanel>
+     </WrapPanel>
+     <Button Content="Öğretmen Bilgilerini Kaydet" Click="SaveTeacher_Click" HorizontalAlignment="Left" Margin="0,14,0,8"/>
+    </StackPanel></ScrollViewer>
+   </Grid>
   </Grid>
  </Grid>
 </Window>

@@ -3,17 +3,28 @@
 ZIP dosyasını tamamen bir klasöre çıkarın ve Hakedis.App.exe'yi çalıştırın.
 Windows x64 paketi ayrı Excel veya .NET kurulumu gerektirmez.
 
-Sol menüden Temel Eğitim seçin. Yıl/ay, personel etiketi ve saatleri girin.
+Sol menüde Veri Girişi, Hakediş Hesapla ve Ücretli Öğretmen Listesi vardır.
+Veri Girişi panelindeki açılır listeden Temel Eğitim modülünü seçin.
+Yıl/ay, kayıtlı öğretmen veya personel etiketi ve saatleri girin.
 Ondalık ayırıcı virgüldür; binlik ayırıcı girmeyin.
 Başlangıç parametreleri kaynak Excel'in Eylül 2026 değerleridir.
-Seçili modülle hesapla düğmesi kişi bazında ara hesapları gösterir.
+Hakediş Hesapla paneline geçip Hakedişi Hesapla düğmesini kullanın.
 Taslağı kaydet ile JSON dosyasını kendi seçtiğiniz konuma kaydedebilirsiniz.
 Taslak aç aynı modül/kural sürümündeki girdileri açıp yeniden hesaplar.
 Kayıt değiştirildiğinde önceki sağlam kopya .bak dosyasında tutulur.
 Bozuk mevcut dosyanın üstüne yazılmaz; önce yedeği başka ada kopyalayarak açın.
 JSON dosyaları şifreli değildir; kişisel bilgilerinizi koruyun.
 
+Ücretli Öğretmen Listesi panelinde Yeni Öğretmen ile kayıt açabilirsiniz.
+Listeden bir satır seçerek bilgileri düzenleyin ve Öğretmen Bilgilerini
+Kaydet düğmesine basın. Kaydetmeden yapılan değişiklik listeyi etkilemez.
+Seçili Kaydı Sil düğmesi onay sonrasında yalnızca seçili kişiyi siler.
+Geçmiş hesap taslakları silinmez. Öğretmen kayıtları EXE yanındaki
+Veriler/ogretmenler.json dosyasında tutulur; önceki liste .bak kopyasıdır.
+Güncelleme veya başka bilgisayara taşıma sırasında Veriler klasörünü koruyun.
+Seçili Öğretmeni Veri Girişine Al ile kişinin adını hesap alanına taşıyın.
+
 Diğer modüllerin çekirdekleri henüz eklenmemiştir; bu modüller hesap yapmaz.
-Bu ilk sürümde toplu personel listesi, kesinleştirme, resmî çıktı ve banka
+Bu sürümde toplu bordro hesabı, kesinleştirme, resmî çıktı ve banka
 dosyası üretimi yoktur. Hesap kuralları mevzuat onayı almış değildir.
 Gerçek ödeme işlemi için kullanmayın; önce örnek kayıtlarla değerlendirin.

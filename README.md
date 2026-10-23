@@ -1,6 +1,6 @@
 # Temel Eğitim Ücretli Öğretmen Hakediş Sistemi
 
-Yeni ve bağımsız Windows masaüstü projesi. İlk çalışan geliştirme sürümü: modül seçimi, Temel Eğitim kişi bazında hesaplama, ara hesap dökümü ve JSON taslak kaydetme/açma. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
+Yeni ve bağımsız Windows masaüstü projesi. Veri Girişi panelinde açılır modül seçimi; ayrı Hakediş Hesapla panelinde Temel Eğitim kişi bazında hesaplama ve ara hesap dökümü; Ücretli Öğretmen Listesi panelinde kalıcı kayıt ekleme, düzenleme ve onaylı silme. Öğretmen listesi ve hesap taslakları SQL olmadan JSON'da saklanır. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
 
 ## Kullanıcının belirlediği kapsam
 
