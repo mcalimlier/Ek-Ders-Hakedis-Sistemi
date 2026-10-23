@@ -21,7 +21,7 @@
     <Border Height="1" Background="#35546F" Margin="18,22"/>
     <TextBlock Text="Öğretmen kaydını oluşturun, dönem bilgilerini girin ve hakedişi hesaplayın." TextWrapping="Wrap" Foreground="#B9CBDA" Margin="20,0,20,0" FontSize="11.5"/>
    </StackPanel>
-   <Border Grid.Row="1" Background="#082744" CornerRadius="10" BorderBrush="#73581E" BorderThickness="1" Margin="12" Padding="12"><StackPanel><TextBlock Text="TEMEL EĞİTİM" Foreground="{StaticResource Gold500Brush}"/><TextBlock Text="Ücretli Öğretmen Ek Ders Ödemeleri" Foreground="#B9CBDA" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel></Border>
+   <Border Grid.Row="1" Background="#082744" CornerRadius="10" BorderBrush="#73581E" BorderThickness="1" Margin="12" Padding="12"><StackPanel><TextBlock Text="{Binding Workspace.SelectedModule.Name}" Foreground="{StaticResource Gold500Brush}"/><TextBlock Text="Ücretli Öğretmen Ek Ders Ödemeleri" Foreground="#B9CBDA" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel></Border>
   </Grid>
   <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SurfaceBrush}" CornerRadius="14,0,14,0" Padding="22,18">
    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>

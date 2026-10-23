@@ -12,6 +12,8 @@ Kullanıcının 23 Ekim 2026 talebi uygulanmıştır: her eğitim türü kendi a
 
 Contracts modül kimliği ve kayıt/çözümleme sözleşmesini barındırır. Öğretmene özgü girdiler, oranlar, yuvarlama ve sonuçlar TemelEgitim.Core içindedir; Contracts'a veya diğer çekirdeklere taşınmaz. Çekirdekler birbirine referans vermeyecektir. Benzer formüller olması aynı kuralları kullanmaları anlamına gelmez.
 
+Öğretmenler modüller arasında paylaşılmaz. Ortak TeacherRecord tipi ModuleId ile tek modüle aittir; liste, düzenleme, silme ve hesap seçimi bu sahipliği denetler. Aynı ID/TCKN başka modüle tekrar kaydedilemez. Kalıcı dosya ve eski kayıt geçişi ayrıntıları: MODUL_OGRETMEN_KAYITLARI.md.
+
 Arayüzün oluşturma noktasında uygulanan modüller ModuleRegistry'ye kaydedilir. Katalog seçilen modülün kayıtlı olup olmadığını gösterir. Resolve bilinmeyen/eklenmemiş modülde hata verir; Temel Eğitim'e geri dönüş yoktur. Yeni modül geldiğinde kendi girdi/parametre/sonuç tipleri, çekirdeği, görünüm modeli ve testleri eklenir. Kaydı yapılınca arayüzde etkinleştirilir.
 
 İlk sürüm kullanıcı tarafından seçilen tek kişinin hesap çalışma alanıdır; tam toplu bordro ürünü değildir. JSON taslağı şema, modül kimliği, kural sürümü, dönem, etiket, girdiler ve parametreleri içerir. Sonuçlar dosyadan alınmaz, çekirdekte yeniden hesaplanır. Kesinleşmiş çok dosyalı dönem arşivi ve paket yedekleme sonraki adımdır; mevcut Storage yalnızca atomik taslak dosyası + sağlam önceki kopya sağlar.

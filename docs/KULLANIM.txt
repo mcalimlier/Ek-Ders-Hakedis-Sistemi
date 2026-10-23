@@ -25,6 +25,11 @@ Geçmiş hesap taslakları silinmez. Öğretmen kayıtları EXE yanındaki
 Veriler/ogretmenler.json dosyasında tutulur; önceki liste .bak kopyasıdır.
 Güncelleme veya başka bilgisayara taşıma sırasında Veriler klasörünü koruyun.
 Seçili Öğretmeni Veri Girişine Al ile kişinin adını hesap alanına taşıyın.
+Her öğretmen yalnızca kayıtlı olduğu modülde görünür. Aynı kayıt veya T.C.
+kimlik numarası başka modüle tekrar kaydedilemez. Modül değiştirince kişi
+seçimi ve ders saatleri temizlenir; yeni modülün öğretmenini seçin.
+Eski modülsüz dosyalar Temel Eğitim kabul edilir; ilk kayıtta yeni biçime
+geçilir ve orijinal liste .bak kopyasında korunur.
 
 Diğer modüllerin çekirdekleri henüz eklenmemiştir; bu modüller hesap yapmaz.
 Bu sürümde toplu bordro hesabı, kesinleştirme, resmî çıktı ve banka

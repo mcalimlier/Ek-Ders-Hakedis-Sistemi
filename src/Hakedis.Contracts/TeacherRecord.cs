@@ -1,5 +1,6 @@
 namespace Hakedis.Contracts;
 
-// Ortak kişi kaydı hesaplama çekirdeğinden bağımsızdır.
+// Ortak veri tipi; her öğretmen yalnızca kendi modülüne aittir.
 public sealed record TeacherRecord(Guid Id, string FullName, string IdentityNumber, string InsuranceNumber,
-    string Iban, string School, string Branch, string OccupationCode, DateTime? StartDate, DateTime? EndDate);
+    string Iban, string School, string Branch, string OccupationCode, DateTime? StartDate, DateTime? EndDate,
+    ModuleId ModuleId = ModuleId.TemelEgitim);

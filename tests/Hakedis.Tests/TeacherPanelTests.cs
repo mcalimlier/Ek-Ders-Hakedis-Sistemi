@@ -7,6 +7,38 @@ public sealed class TeacherPanelTests : IDisposable
     private readonly string folder = Path.Combine(Path.GetTempPath(), "HakedisTests", Guid.NewGuid().ToString("N"));
     private string PathName => Path.Combine(folder, "ogretmenler.json");
     [Fact]
+    public void Switching_module_hides_other_teachers_and_clears_person_and_hours()
+    {
+        var shell = new ShellViewModel(PathName); shell.Registration.Editor.FullName = "Temel Öğretmeni";
+        shell.SaveNewTeacher(); shell.Workspace.DayHours = "117"; shell.Workspace.Calculate();
+        shell.Workspace.SelectedModule = shell.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.Ortaogretim);
+        Assert.Empty(shell.Teachers.Records); Assert.Null(shell.CalculationTeacher);
+        Assert.Equal("", shell.Workspace.Person); Assert.Equal("0", shell.Workspace.DayHours); Assert.Equal("—", shell.Workspace.NetText);
+    }
+    [Fact]
+    public void New_registration_follows_active_module_and_returning_shows_only_basic_teachers()
+    {
+        var shell = new ShellViewModel(PathName); shell.Registration.Editor.FullName = "Temel Öğretmeni";
+        shell.SaveNewTeacher(); var basic = shell.CalculationTeacher!;
+        shell.Registration.Editor.FullName = "Kaydedilmemiş Temel";
+        shell.Workspace.SelectedModule = shell.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.Ortaogretim);
+        Assert.Equal("", shell.Registration.Editor.FullName);
+        shell.Registration.Editor.FullName = "Orta Öğretmeni"; shell.SaveNewTeacher(); var secondary = shell.CalculationTeacher!;
+        Assert.Equal(Hakedis.Contracts.ModuleId.Ortaogretim, secondary.ModuleId);
+        Assert.Equal(secondary, Assert.Single(shell.Teachers.Records));
+        shell.Workspace.SelectedModule = shell.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.TemelEgitim);
+        Assert.Equal(basic, Assert.Single(shell.Teachers.Records));
+        Assert.Throws<InvalidOperationException>(() => shell.CalculationTeacher = secondary);
+        Assert.Throws<InvalidOperationException>(() => shell.Teachers.Selected = secondary);
+    }
+    [Fact]
+    public void Switching_to_same_module_does_not_discard_entered_hours()
+    {
+        var shell = new ShellViewModel(PathName); shell.Workspace.DayHours = "45";
+        shell.Workspace.SelectedModule = shell.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.TemelEgitim);
+        Assert.Equal("45", shell.Workspace.DayHours);
+    }
+    [Fact]
     public void Teacher_list_cannot_create_a_new_record_without_existing_selection()
     {
         var vm = new TeacherListViewModel(PathName); vm.Editor.FullName = "Listeden eklenemez";

@@ -61,6 +61,12 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         Notify(nameof(GrossText)); Notify(nameof(AccrualText)); Notify(nameof(NetText));
     }
     public void ShowError(string message) { Clear(); Status = message; Notify(nameof(Status)); }
+    public void ResetTeacherInputsForModule()
+    {
+        Person = ""; DayHours = "0"; DykHours = "0"; Garnishment = "0"; Clear();
+        Status = IsAvailable ? "Seçili modülün öğretmenini ve ders bilgilerini seçin." : "Bu modül henüz kullanıma açılmadı. Hesaplama yapılamaz.";
+        Notify(nameof(Status));
+    }
     private TeacherPayrollModule CurrentModule()
         => registry.Resolve<TeacherPayrollModule>(selected?.Id ?? throw new InvalidOperationException("Modül seçin."));
     private static decimal Number(string text, string label)

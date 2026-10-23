@@ -20,6 +20,15 @@ internal static class Program
         model.Workspace.DayHours = "117";
         var window = new MainWindow { DataContext = model, ShowActivated = false, ShowInTaskbar = false };
         window.Show();
+        model.Workspace.SelectedModule = model.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.Ortaogretim);
+        window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+        if (model.Teachers.Records.Count != 0 || model.CalculationTeacher is not null || model.Workspace.Person != "")
+            throw new InvalidOperationException("Modül değişiminde önceki öğretmen bilgileri temizlenmedi.");
+        model.Registration.Editor.FullName = "Başka Modül Öğretmeni"; model.SaveNewTeacher();
+        model.Workspace.SelectedModule = model.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.TemelEgitim);
+        window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+        model.CalculationTeacher = model.Teachers.Records.Single(); model.Workspace.DayHours = "117";
+        if (model.CalculationTeacher.FullName != "Deneme Öğretmeni") throw new InvalidOperationException("Modül listeleri karıştı.");
         foreach (var width in new[] { 1440, 1040 })
         {
             window.Width = width; window.Height = width == 1440 ? 920 : 760;

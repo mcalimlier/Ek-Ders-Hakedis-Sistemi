@@ -2,6 +2,8 @@
 
 Yeni ve bağımsız C# / WPF Windows masaüstü projesi. OEHS'nin kaynak düğme, kart ve panel şablonları kullanılır. Yeni öğretmen kaydı yalnızca Veri Girişi panelinden yapılır; burada açılır modül seçimi ve aylık ders bilgileri de bulunur. Hakediş Hesapla paneli Temel Eğitim hesabını ve dökümünü gösterir. Ücretli Öğretmen Listesi yalnızca mevcut kayıtları düzenleme ve onaylı silme içindir. Kayıtlar SQL olmadan JSON'da saklanır. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
 
+Her öğretmen yalnızca kendi modülüne aittir. Listeler ve değişiklik işlemleri modüle göre ayrılır; aynı kayıt ID'si veya TCKN başka modüle tekrar kaydedilemez. Eski modülsüz veriler ilk sürümün Temel Eğitim kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
+
 ## Kullanıcının belirlediği kapsam
 
 - Windows'ta kurulum, Excel ve ayrıca .NET kurulumu gerektirmeyen taşınabilir dağıtım hedefi.
@@ -19,5 +21,6 @@ Yeni ve bağımsız C# / WPF Windows masaüstü projesi. OEHS'nin kaynak düğme
 - [Ayrı hesaplama çekirdekleri ve geliştirme komutları](docs/MODUL_MIMARISI.md)
 - [İlk sürüm kullanım notu](docs/KULLANIM.txt)
 - [Arayüz referansı ve yeni kayıt akışı](docs/ARAYUZ_REFERANSI.md)
+- [Modüle ait öğretmen kayıtları ve veri geçişi](docs/MODUL_OGRETMEN_KAYITLARI.md)
 
 Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları bu depoya dahil edilmez.

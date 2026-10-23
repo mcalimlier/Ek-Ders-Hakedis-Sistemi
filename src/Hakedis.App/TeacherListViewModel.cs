@@ -17,7 +17,7 @@ public sealed class TeacherEditor
     public string OccupationCode { get; set; } = "";
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public TeacherRecord ToRecord() => new(Id, FullName, IdentityNumber, InsuranceNumber, Iban, School, Branch, OccupationCode, StartDate, EndDate);
+    public TeacherRecord ToRecord(ModuleId module = ModuleId.TemelEgitim) => new(Id, FullName, IdentityNumber, InsuranceNumber, Iban, School, Branch, OccupationCode, StartDate, EndDate, module);
     public static TeacherEditor From(TeacherRecord r) => new() { Id = r.Id, FullName = r.FullName,
         IdentityNumber = r.IdentityNumber, InsuranceNumber = r.InsuranceNumber, Iban = r.Iban,
         School = r.School, Branch = r.Branch, OccupationCode = r.OccupationCode, StartDate = r.StartDate, EndDate = r.EndDate };
@@ -25,7 +25,9 @@ public sealed class TeacherEditor
 
 public sealed class TeacherListViewModel : INotifyPropertyChanged
 {
-    private readonly TeacherDirectory directory;
+    private TeacherDirectory directory;
+    private readonly string path;
+    public ModuleId Module { get; private set; }
     private TeacherRecord? selected;
     public ObservableCollection<TeacherRecord> Records { get; } = [];
     public TeacherEditor Editor { get; private set; } = new();
@@ -35,14 +37,26 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
     public TeacherRecord? Selected
     {
         get => selected;
-        set { selected = value; Editor = value is null ? new() : TeacherEditor.From(value); Notify(); }
+        set
+        {
+            if (value is not null && value.ModuleId != Module) throw new InvalidOperationException("Bu öğretmen seçili modüle ait değil.");
+            selected = value; Editor = value is null ? new() : TeacherEditor.From(value); Notify();
+        }
     }
     public event PropertyChangedEventHandler? PropertyChanged;
-    public TeacherListViewModel(string path)
+    public TeacherListViewModel(string path, ModuleId module = ModuleId.TemelEgitim)
     {
-        directory = new(path);
+        this.path = path; Module = module; directory = new(path, module);
         try { Replace(directory.Read()); }
         catch (Exception ex) when (ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException) { ShowError(ex.Message); }
+    }
+    public void SwitchModule(ModuleId module)
+    {
+        directory = new(path, module); Module = module; Records.Clear(); Selected = null;
+        Status = "Seçili modülün öğretmenleri gösteriliyor. Yeni kayıt için Veri Girişi ekranını kullanın.";
+        try { Reload(); }
+        catch (Exception ex) when (ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException) { ShowError(ex.Message); }
+        Notify();
     }
     // Bir seçili kayıt immutable kopyadan düzenlenir; kaydetmeden liste değişmez.
     public void Reload() { Replace(directory.Read()); Selected = null; }
@@ -50,7 +64,7 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
     {
         var id = Selected?.Id ?? throw new InvalidOperationException("Düzenlemek için kayıtlı bir öğretmen seçin. Yeni kayıt için Veri Girişi ekranını kullanın.");
         if (Editor.Id != id) throw new InvalidOperationException("Seçili öğretmen ile düzenlenen kayıt uyuşmuyor.");
-        Replace(directory.Update(Editor.ToRecord())); Selected = Records.Single(r => r.Id == id);
+        Replace(directory.Update(Editor.ToRecord(Module))); Selected = Records.Single(r => r.Id == id);
         Status = "Öğretmen bilgileri güncellendi."; Notify();
     }
     public void DeleteSelected()
