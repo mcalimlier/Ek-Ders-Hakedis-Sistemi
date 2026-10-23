@@ -88,11 +88,11 @@ public sealed class TeacherDirectory
         if (teacher.Id == Guid.Empty || string.IsNullOrWhiteSpace(teacher.FullName))
             throw new ArgumentException("Öğretmenin adını ve soyadını girin.");
         if (teacher.IdentityNumber is null || teacher.Iban is null || teacher.InsuranceNumber is null ||
-            teacher.School is null || teacher.Branch is null || teacher.OccupationCode is null)
+            teacher.School is null || teacher.Branch is null || teacher.OccupationCode is null || teacher.School2 is null || teacher.Branch2 is null)
             throw new ArgumentException("Öğretmen alanları eksik.");
         var normalized = teacher with { FullName = teacher.FullName.Trim(), IdentityNumber = teacher.IdentityNumber.Trim(),
             Iban = teacher.Iban.Replace(" ", "").ToUpperInvariant(), InsuranceNumber = teacher.InsuranceNumber.Trim(),
-            School = teacher.School.Trim(), Branch = teacher.Branch.Trim(), OccupationCode = teacher.OccupationCode.Trim(),
+            School = teacher.School.Trim(), Branch = teacher.Branch.Trim(), School2=teacher.School2.Trim(),Branch2=teacher.Branch2.Trim(),OccupationCode = teacher.OccupationCode.Trim(),
             StartDate = teacher.StartDate?.Date, EndDate = teacher.EndDate?.Date };
         if (normalized.IdentityNumber != "" && !Regex.IsMatch(normalized.IdentityNumber, "^[0-9]{11}$"))
             throw new ArgumentException("T.C. kimlik numarası 11 rakam olmalıdır veya boş bırakılmalıdır.");

@@ -1,37 +1,59 @@
-ÜCRETLİ EK DERS HAKEDİŞ SİSTEMİ — İLK GELİŞTİRME SÜRÜMÜ
+ÜCRETLİ EK DERS HAKEDİŞ SİSTEMİ — GELİŞTİRME SÜRÜMÜ
 
-ZIP dosyasını tamamen bir klasöre çıkarın ve Hakedis.App.exe'yi çalıştırın.
-Windows x64 paketi ayrı Excel veya .NET kurulumu gerektirmez.
+ZIP dosyasını tamamen bir klasöre çıkarın ve Hakedis.App.exe dosyasını açın.
+Windows x64 paketi ayrıca Excel veya .NET kurulumu gerektirmez.
+Güncelleme sırasında mevcut Veriler klasörünüzü koruyun.
 
-Sol menüde Veri Girişi, Hakediş Hesapla ve Ücretli Öğretmen Listesi vardır.
-Veri Girişi panelindeki açılır listeden Temel Eğitim modülünü seçin.
-Yıl/ay, kayıtlı öğretmen veya personel etiketi ve saatleri girin.
-Ondalık ayırıcı virgüldür; binlik ayırıcı girmeyin.
-Başlangıç parametreleri kaynak Excel'in Eylül 2026 değerleridir.
-Hakediş Hesapla paneline geçip Hakedişi Hesapla düğmesini kullanın.
-Taslağı kaydet ile JSON dosyasını kendi seçtiğiniz konuma kaydedebilirsiniz.
-Taslak aç aynı modül/kural sürümündeki girdileri açıp yeniden hesaplar.
-Kayıt değiştirildiğinde önceki sağlam kopya .bak dosyasında tutulur.
-Bozuk mevcut dosyanın üstüne yazılmaz; önce yedeği başka ada kopyalayarak açın.
-JSON dosyaları şifreli değildir; kişisel bilgilerinizi koruyun.
+VERİ GİRİŞİ
+Öğretmen Bilgileri kartından modülü seçin, bilgileri doldurun.
+SGK MESLEK KODU kutusunu açın; üstteki aramaya kod veya sözcükleri yazın.
+Listeden kod ve meslek adını seçin. PDF'deki 7.190 kayıt dahildir.
+Öğretmeni Kaydet ile yeni kayıt oluşur; liste ekranında yeni kayıt açılamaz.
+Her öğretmen tek modüle aittir; aynı TCKN başka modüle kaydedilemez.
 
-Yeni öğretmen kaydı yalnızca Veri Girişi panelindeki Öğretmen Bilgileri
-kartından yapılır. Öğretmeni Kaydet düğmesi kayıt sonrasında formu temizler.
-Ücretli Öğretmen Listesi panelinde yalnızca mevcut kayıtlar düzenlenir.
-Listeden bir satır seçerek bilgileri düzenleyin ve Değişiklikleri Kaydet
-düğmesine basın. Kaydetmeden yapılan değişiklik listeyi etkilemez.
-Kaydı Sil düğmesi onay sonrasında yalnızca seçili kişiyi siler.
-Geçmiş hesap taslakları silinmez. Öğretmen kayıtları EXE yanındaki
-Veriler/ogretmenler.json dosyasında tutulur; önceki liste .bak kopyasıdır.
-Güncelleme veya başka bilgisayara taşıma sırasında Veriler klasörünü koruyun.
-Seçili Öğretmeni Veri Girişine Al ile kişinin adını hesap alanına taşıyın.
-Her öğretmen yalnızca kayıtlı olduğu modülde görünür. Aynı kayıt veya T.C.
-kimlik numarası başka modüle tekrar kaydedilemez. Modül değiştirince kişi
-seçimi ve ders saatleri temizlenir; yeni modülün öğretmenini seçin.
-Eski modülsüz dosyalar Temel Eğitim kabul edilir; ilk kayıtta yeni biçime
-geçilir ve orijinal liste .bak kopyasında korunur.
+Aylık Ders Bilgileri kartının en üstünden modül, DÖNEM (ay adı) ve YIL seçin.
+Listeden o modülün öğretmenini çağırın; saatleri, kesintiyi ve varsa ay içi
+başlama/ayrılış tarihlerini girin. Kaydet kalıcı kayıt yapar. Mevcut aylık
+kayıt seçildiğinde Düzenle ile alanları açın, sonra Kaydet'e basın.
+Öğretmen kayıt modülü ile aylık ders modülü bağımsız seçimlerdir.
+Ondalık ayırıcı virgül; binlik ayırıcı kullanmayın.
 
-Diğer modüllerin çekirdekleri henüz eklenmemiştir; bu modüller hesap yapmaz.
-Bu sürümde toplu bordro hesabı, kesinleştirme, resmî çıktı ve banka
-dosyası üretimi yoktur. Hesap kuralları mevzuat onayı almış değildir.
-Gerçek ödeme işlemi için kullanmayın; önce örnek kayıtlarla değerlendirin.
+DÖNEM SABİTLERİ
+Modül, ay ve yılı seçip katsayı, gösterge, vergi/SGK değerlerini düzenleyin.
+Dönem sabitlerini kaydet düğmesi o dönemin değerlerini saklar.
+Başlangıç değerleri Eylül-2026 kaynak Excel'indendir; başka aylara ait
+katsayı ve istisna değerlerini ilgili dönem için ayrıca girin.
+Hakediş ekranı ile Dönem sabitleri paneli aynı modül ve dönemi kullanır.
+
+HAKEDİŞ HESAPLA
+Modül, DÖNEM ve YIL seçin; birleşik dönem Eylül-2026 gibi gösterilir.
+Yalnız o modülün öğretmenleri ve seçili dönemin aylık kayıtları listelenir.
+Hibrit tabloda saat, kesinti ve ay içi tarih hücrelerini düzenleyebilirsiniz.
+Hesaplanan sütunlar ve tablonun altındaki altı kart canlı yenilenir.
+Aynı modül/dönemdeki aylık giriş paneli de bu önizlemeye bağlıdır.
+Hatalı girdiler toplamı geçersiz yapar; eski sonuç gösterilmez.
+Hakediş oluştur, girdileri ve hesap sonuçlarını JSON hakediş kaydına alır.
+Aylık bilgisi girilmemiş öğretmenler bu kayda dahil edilmez; IBAN zorunludur.
+Kayıtları yenile son kayıtları yükler; kaydedilmemiş önizlemeyi bırakır.
+
+ÜCRETLİ ÖĞRETMEN LİSTESİ
+Modül seçip mevcut öğretmeni düzenleyebilir veya onayla silebilirsiniz.
+Yeni kayıt yalnızca Veri Girişi'ndeki Öğretmen Bilgileri kartından yapılır.
+Öğretmen silinince geçmiş hakediş görüntüleri silinmez.
+
+SAKLAMA
+SQL kullanılmaz. EXE yanındaki Veriler/ogretmenler.json öğretmen kataloğudur.
+Veriler/AylikKayitlar/Modül/YYYY-MM.json aylık girdileri ve sabitleri tutar.
+Aynı klasördeki hakediş-...json oluşturulan hesap görüntüleridir.
+Yazmalar atomiktir; önceki sağlam kayıt .bak dosyasında kalır.
+Bozuk mevcut dosyanın üzerine yazılmaz. Veriler klasörünü yedekleyin ve
+başka bilgisayara taşırken uygulamayla birlikte götürün.
+Kaydetmeden veya Hakediş oluştur demeden yapılan değişiklik önizlemedir.
+
+TAMAMLANMAYAN ALAN
+Eksik Gün Sayısı: kaynak Excel'deki 17/20 gün sabitleri tutarsızdır.
+Kullanıcının ayrıca vereceği hesap açıklaması bekleniyor; bu alan henüz
+hesaplanmaz ve hakediş kaydında da bu durum açıkça belirtilir.
+Basılı üç resmî belge, isteğe bağlı Excel/PDF çıktıları ve banka aktarımı
+bu sürümde henüz yoktur. Diğer modüllerin hesaplama çekirdekleri de
+kendi Excel kaynakları geldiğinde eklenecektir.

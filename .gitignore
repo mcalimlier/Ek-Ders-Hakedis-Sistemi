@@ -8,6 +8,8 @@ obj/
 
 # Gerçek kullanıcı verileri ve çıktılar depoya alınmaz
 Data/
+!src/Hakedis.Contracts/Data/
+!src/Hakedis.Contracts/Data/occupations.json
 Veriler/
 Backups/
 Yedekler/

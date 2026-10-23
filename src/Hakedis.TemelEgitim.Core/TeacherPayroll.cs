@@ -42,7 +42,8 @@ public sealed class TeacherPayrollModule : ICalculationModule
         var incomeBase = Round(accrual - employer - employee);
         var incomeTax = Round(Math.Max(0, incomeBase - p.IncomeExemptBase) * p.IncomeRate);
         var stampTax = Round(Math.Max(0, gross - p.StampExemptBase) * p.StampRate);
-        var garnishment = Round(input.Garnishment);
+        // Excel Y sütunu manuel tutarı aynen taşır; yalnız Z toplamı yuvarlanır.
+        var garnishment = input.Garnishment;
         var deductions = Round(incomeTax + stampTax + employee + employer + garnishment);
         return new(dayRate, dykRate, dayGross, dykGross, gross,
             checked((int)decimal.Ceiling((input.DayHours + input.DykHours) / 7.5m)),

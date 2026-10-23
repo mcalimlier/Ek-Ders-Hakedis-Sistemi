@@ -1,0 +1,209 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Globalization;
+using Hakedis.Contracts;
+using Hakedis.Storage;
+using Hakedis.TemelEgitim.Core;
+
+namespace Hakedis.App;
+
+public sealed record MonthOption(int Number,string Name);
+public sealed record PaymentRow(TeacherRecord Teacher,MonthlyInput Input,TeacherResult Result);
+public sealed record PaymentSnapshot(int Year,int Month,PeriodValues Constants,PaymentRow[] Rows,string MissingDaysStatus);
+
+public sealed class PeriodWorkspace : INotifyPropertyChanged
+{
+    private readonly string teacherPath;
+    private readonly MonthlyPayrollStore store;
+    private ModuleDescriptor selectedModule;
+    private int year=2026, month=9;
+    private TeacherRecord? teacher;
+    private PayrollRow? selectedRow;
+    private bool loading,editing=true;
+    private Action? constantsHandler;
+    public IReadOnlyList<ModuleDescriptor> Modules { get; } = new ModuleRegistry([new TeacherPayrollModule()]).Catalog;
+    public IReadOnlyList<MonthOption> Months { get; } = Enumerable.Range(1,12).Select(i=>new MonthOption(i,CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetMonthName(i))).ToArray();
+    public IReadOnlyList<int> Years { get; } = Enumerable.Range(1900,201).ToArray();
+    public ObservableCollection<TeacherRecord> Teachers { get; }=[];
+    public ObservableCollection<PayrollRow> Rows { get; }=[];
+    public PeriodConstantsEditor Constants { get; private set; } = new(PeriodValues.Source);
+    public string Status { get; private set; }="";
+    public string PeriodText => $"{Months[month-1].Name}-{year}";
+    public bool IsAvailable => SelectedModule.IsAvailable;
+    public bool IsEditing => editing;
+    public bool HasTeacher => selectedRow is not null;
+    public ModuleDescriptor SelectedModule { get=>selectedModule; set { if(value is null || value.Id==selectedModule.Id)return; selectedModule=value;Reload(); } }
+    public int Year { get=>year; set { if(value is <1900 or >2100 || value==year)return;year=value;Reload(); } }
+    public int Month { get=>month;set { if(value is <1 or >12 || value==month)return;month=value;Reload(); } }
+    public TeacherRecord? SelectedTeacher
+    {
+        get=>teacher;
+        set
+        {
+            if(value is not null && value.ModuleId != SelectedModule.Id)throw new InvalidOperationException("Başka modülün öğretmeni seçilemez.");
+            teacher=value;selectedRow=Rows.SingleOrDefault(r=>r.Teacher.Id==value?.Id);editing=selectedRow?.HasInput!=true;
+            Notify();
+        }
+    }
+    public string DayHours { get=>selectedRow?.DayHours??"0";set { if(selectedRow is not null)selectedRow.DayHours=value; } }
+    public string DykHours { get=>selectedRow?.DykHours??"0";set { if(selectedRow is not null)selectedRow.DykHours=value; } }
+    public string Garnishment { get=>selectedRow?.Garnishment??"0";set { if(selectedRow is not null)selectedRow.Garnishment=value; } }
+    public DateTime? MonthStart { get=>selectedRow?.MonthStart;set { if(selectedRow is not null)selectedRow.MonthStart=value; } }
+    public DateTime? MonthEnd { get=>selectedRow?.MonthEnd;set { if(selectedRow is not null)selectedRow.MonthEnd=value; } }
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public event Action<PeriodWorkspace,PayrollRow>? RowChanged;
+    public event Action<PeriodWorkspace>? Saved;
+    public event Action<PeriodWorkspace>? ConstantsChanged;
+    public PeriodWorkspace(string teacherPath)
+    {
+        this.teacherPath=teacherPath;store=new(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(teacherPath))!);
+        selectedModule=Modules.Single(m=>m.Id==ModuleId.TemelEgitim);Reload();
+    }
+    public void Reload()
+    {
+        loading=true;teacher=null;selectedRow=null;Teachers.Clear();Rows.Clear();
+        try
+        {
+            var document=store.Read(SelectedModule.Id,year,month);
+            SetConstants(document.Constants);
+            foreach(var record in new TeacherDirectory(teacherPath,SelectedModule.Id).Read())
+            {
+                Teachers.Add(record);var row=new PayrollRow(record,document.Entries.SingleOrDefault(e=>e.TeacherId==record.Id),()=>Constants.Parameters(),ValidateDates);
+                row.Sequence=Rows.Count+1;row.Changed+=RowEdited;Rows.Add(row);
+            }
+            Status=$"{PeriodText} · {SelectedModule.Name}. Kayıtlı aylık ders bilgileri yüklendi.";
+        }
+        catch(Exception ex) when(ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or ArgumentException)
+        { Status=ex.Message; }
+        finally { loading=false;editing=true;Notify(); }
+    }
+    public void RefreshTeachers()
+    {
+        var id=teacher?.Id;
+        var records=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        var old=Rows.ToDictionary(r=>r.Teacher.Id);Teachers.Clear();Rows.Clear();
+        foreach(var t in records)
+        {
+            Teachers.Add(t);
+            // Preserve even incomplete text while teacher catalog refreshes.
+            PayrollRow r;
+            if(old.TryGetValue(t.Id,out var existing) && existing.Teacher==t) r=existing;
+            else { r=new(t,null,()=>Constants.Parameters(),ValidateDates);if(existing is not null)r.CopyPreview(existing);r.Changed+=RowEdited; }
+            r.Sequence=Rows.Count+1;Rows.Add(r);
+        }
+        teacher=Teachers.SingleOrDefault(t=>t.Id==id);selectedRow=Rows.SingleOrDefault(r=>r.Teacher.Id==id);Notify();
+    }
+    private void RowEdited(PayrollRow row)
+    {
+        Status=row.Result is null && row.HasInput?row.Teacher.FullName+": "+row.Error:
+            "Değişiklikler önizlemeye yansıdı. Kalıcı kayıt için Kaydet veya Hakediş oluştur düğmesini kullanın.";
+        Notify();if(!loading)RowChanged?.Invoke(this,row);
+    }
+    public void ApplyPreview(PayrollRow source)
+    {
+        var target=Rows.SingleOrDefault(r=>r.Teacher.Id==source.Teacher.Id);if(target is null)return;
+        // Text is deliberately transferred without parsing: invalid edits invalidate both previews.
+        target.CopyPreview(source);
+        Status=target.Result is null && target.HasInput?target.Teacher.FullName+": "+target.Error:"Değişiklikler canlı önizlemeye yansıdı; henüz kaydedilmedi.";
+        Notify();
+    }
+    public void SetConstants(PeriodValues values)
+    {
+        InstallConstants(new(values));
+    }
+    private void InstallConstants(PeriodConstantsEditor editor)
+    {
+        if(constantsHandler is not null)Constants.Changed-=constantsHandler;
+        Constants=editor;
+        constantsHandler=()=>
+        {
+            foreach(var row in Rows)row.Recalculate();
+            var error=Rows.FirstOrDefault(r=>r.HasInput && r.Result is null);
+            Status=error is null?"Dönem sabitleri değişti. Kalıcı kayıt için dönem sabitlerini kaydedin.":error.Error;
+            Notify();if(!loading)ConstantsChanged?.Invoke(this);
+        };
+        Constants.Changed+=constantsHandler;
+    }
+    public void AcceptConstants(PeriodValues values)
+    {SetConstants(values);foreach(var row in Rows)row.Recalculate();Notify();}
+    public void AdoptConstants(PeriodConstantsEditor editor)
+    {
+        if(ReferenceEquals(Constants,editor))return;
+        InstallConstants(editor);
+        foreach(var row in Rows)row.Recalculate();Notify();
+    }
+    public void AcceptSavedSelection()
+    {if(selectedRow is not null) {editing=false;Notify();}}
+    public void BeginEdit() {if(selectedRow is null)throw new InvalidOperationException("Önce kayıtlı öğretmen seçin.");editing=true;Notify();}
+    public void Save(bool update)
+    {
+        var row=selectedRow??throw new InvalidOperationException("Önce kayıtlı öğretmen seçin.");
+        var input=row.Read();ValidateDates(input);
+        var teachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        if(!teachers.Any(t=>t.Id==input.TeacherId))throw new InvalidOperationException("Öğretmen kaydı artık bulunmuyor.");
+        var constants=ValidatedConstants();
+        if(IsAvailable)_=new TeacherPayrollModule().Calculate(new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());
+        store.Update(SelectedModule.Id,year,month,existing=>
+        {
+            if(!update && existing.Entries.Any(e=>e.TeacherId==input.TeacherId))throw new InvalidOperationException("Bu dönemde kayıt var. Düzenle düğmesini kullanın.");
+            return new(year,month,constants,existing.Entries.Where(e=>e.TeacherId!=input.TeacherId).Append(input).ToArray());
+        });
+        row.Apply(input);RowChanged?.Invoke(this,row);editing=false;Status=$"{row.Teacher.FullName} · {PeriodText} kaydedildi.";Notify();Saved?.Invoke(this);
+    }
+    private PeriodValues ValidatedConstants()
+    {
+        var values=Constants.Read();
+        // Only the matching core validates its parameters; never run another module through Temel Eğitim.
+        if(SelectedModule.Id==ModuleId.TemelEgitim) _=new TeacherPayrollModule().Calculate(new(0,0,0),Constants.Parameters());
+        return values;
+    }
+    public void SaveConstants()
+    {
+        var constants=ValidatedConstants();
+        store.Update(SelectedModule.Id,year,month,current=>current with {Constants=constants});Status=$"{PeriodText} dönem sabitleri kaydedildi.";Notify();Saved?.Invoke(this);
+    }
+    private void ValidateDates(MonthlyInput input)
+    {
+        foreach(var date in new[]{input.MonthStart,input.MonthEnd})
+            if(date.HasValue && (date.Value.Year!=year || date.Value.Month!=month))throw new ArgumentException("AY İÇİNDE tarihleri seçili DÖNEM ve YIL içinde olmalıdır.");
+    }
+    public void CreatePayment()
+    {
+        if(!IsAvailable)throw new NotSupportedException("Seçilen modülün hesaplama çekirdeği henüz eklenmedi.");
+        var rows=Rows.Where(r=>r.HasInput).ToArray();
+        if(rows.Length==0)throw new ArgumentException("Önce aylık ders bilgilerini girin.");
+        var validTeachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        foreach(var row in rows)
+        {
+            row.Recalculate();if(row.Result is null)throw new ArgumentException(row.Teacher.FullName+": "+row.Error);
+            if(!validTeachers.Contains(row.Teacher))throw new InvalidOperationException("Öğretmen bilgileri değişmiş. Listeyi yenileyin.");
+            ValidateDates(row.Read());
+            if(string.IsNullOrWhiteSpace(row.Teacher.Iban))throw new ArgumentException(row.Teacher.FullName+": "+ExcelHeadings.Iban);
+        }
+        var values=ValidatedConstants();var inputs=rows.Select(r=>r.Read()).ToArray();
+        // Read first so a corrupted monthly file cannot be replaced by a new calculation.
+        store.Update(SelectedModule.Id,year,month,current=>new(year,month,values,current.Entries.Where(e=>inputs.All(i=>i.TeacherId!=e.TeacherId)).Concat(inputs).ToArray()));
+        var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!)).ToArray(),"Eksik Gün Sayısı: kullanıcı açıklaması bekleniyor; hesaplanmadı.");
+        var path=System.IO.Path.Combine(store.Folder(SelectedModule.Id),$"hakediş-{year:D4}-{month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
+        new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,new TeacherPayrollModule().RuleVersion,DateTimeOffset.UtcNow,snapshot));
+        Status=$"{PeriodText} · {rows.Length} öğretmen için hakediş kaydı oluşturuldu. Eksik Gün Sayısı henüz hesaplanmadı.";
+        Notify();Saved?.Invoke(this);
+    }
+    private bool Invalid=>!IsAvailable || Rows.Any(r=>r.HasInput && r.Result is null);
+    private IEnumerable<TeacherResult> Results=>Rows.Where(r=>r.HasInput && r.Result is not null).Select(r=>r.Result!);
+    public decimal NetTotal=>Results.Sum(r=>r.Net);
+    private string Total(Func<TeacherResult,decimal> selector)=>Invalid?"—":Results.Sum(selector).ToString("N2",CultureInfo.GetCultureInfo("tr-TR"))+" TL";
+    public string GrossText=>Total(r=>r.Gross);
+    public string AccrualText=>Total(r=>r.Accrual);
+    public string NetText=>Total(r=>r.Net);
+    public string EmployeeText=>Total(r=>r.EmployeePremium);
+    public string EmployerText=>Total(r=>r.EmployerPremium);
+    public string DeductionsText=>Total(r=>r.Deductions);
+    public string CountText=>$"{Rows.Count} öğretmen · {Rows.Count(r=>r.HasInput)} aylık giriş";
+    public void ShowError(string text){Status=text;Notify();}
+    private void Notify()
+    {
+        foreach(var name in new[]{nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(MonthStart),nameof(MonthEnd),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal)})
+            PropertyChanged?.Invoke(this,new(name));
+    }
+}

@@ -11,3 +11,8 @@ Eski şema 1 dosyası modül bilgisi taşımıyordu; ilk sürümün Temel Eğiti
 Modül seçimi değiştiğinde öğretmen listesi yenilenir; seçili öğretmen, kişi adı, gündüz/DYK saatleri, icra, yeni kayıt formu ve hesap sonucu temizlenir. Aynı modülü yeniden seçmek girdileri silmez. Yeni kayıt sadece Veri Girişi'nden seçili modüle yapılır. Liste ekranı mevcut kayıt düzenleme/silme içindir. Henüz eklenmemiş çekirdekler hesap yapmaz; öğretmen verilerinin sahipliği şimdiden bu modüllere göre tutulabilir.
 
 Otomatik testler modül filtrelemesi, yabancı kayıtla işlem engelleri, TCKN/ID tekrar engeli, eski dosya geçişi/yedeği ve modül değişimindeki temizliği doğrular. WPF kontrol aracı, açık ekran üzerinde modül değiştirerek başka modülün kişisinin görünmediğini ve veri bağlarının hatasız kaldığını kontrol eder.
+
+
+## 24 Ekim güncellemesi
+
+Yeni ekranlarda öğretmen kaydı, aylık giriş, öğretmen listesi ve hakediş modül seçimleri bağımsızdır. Aylık kayıtlar ayrıca modül/yıl/ay kapsamında ayrılır. Eski tek modül seçiminin bütün ekranları değiştirdiği akış yerine bu seçimler kullanılır. Ayrıntılar EXCEL_DENETIMI.md içindedir.
