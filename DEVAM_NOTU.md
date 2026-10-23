@@ -49,3 +49,13 @@ Kullanıcı laptop için 1366×768 istedi. Varsayılan pencere bu boyuta alınd�
 
 Kullanıcı ayrıca her ay değişen öğretmen kadrosunu ve saatlerini güvenli nasıl yöneteceğini sordu. Bu kısmın kapsamı yol gösterme; dönem kilidi/atama geçmişi henüz kodlanmadı. Somut tasarım önerisi docs/AYLIK_CALISMA_AKISI_ONERISI.md içinde. Mevcut açığı gizleme: aylık saatler ve oluşturulan hakediş görüntüleri ayrı olsa da eski çalışma tablosu güncel öğretmen kataloğuyla birleşiyor; silinen kişi orada görünmez, değişen kart bilgisi eski ayın yeniden hesabına yansır. Öneri: görevlendirme geçmişi, dönem kadrosu, boş saatlerle yeni ay hazırlama, kesinleştirme/arşivden okuma, sürümlü düzeltme, eksik ay takibi ve düzenli yedek.
 Laptop paketi: dist/Hakedis-win-x64-20261024-004600.zip. 81 test ve WPF kontrolleri geçti; paket yalnız EXE/kullanım notu içeriyor, bağımsız EXE açılışı doğrulandı.
+
+## Gerçek Excel verileriyle yerel deneme — kullanıcı isteğiyle
+
+Kullanıcı dağıtım öncesi temizlemek üzere gerçek Excel değerlerinin eklenmesini ve programın açılmasını istedi. Kaynak Excel değiştirilmeden 10 öğretmenin kimlik/iletişim/SGK/görev/tarih alanları, 972 ders saati ve Eylül-2026 sabitleri aktarıldı. Dönem, bordronun kullandığı E37/F37 hücrelerinden alındı; kullanılmayan U4/V4 içindeki eski Ocak-2023 değerleri alınmadı.
+
+Gerçek veriler yalnız dist/Hakedis-win-x64-20261024-004600/Veriler altında yereldir. Kaynak koda veya mevcut dağıtım ZIP'ine gömülmedi. ZIP hâlâ yalnız EXE ve KULLANIM.txt içeriyor. artifacts/real-data-import içinde özel aktarım girdisi, geçici doğrulama verileri ve yardımcı program var; hepsi Git tarafından yok sayılıyor. Bu klasörlerdeki içerikleri yayınlamayın.
+
+Aktarım önce geçici alanda uygulamanın TeacherDirectory ve MonthlyPayrollStore sınıflarıyla doğrulandı. Ardından hedefte mevcut Veriler bulunmadığı kontrol edilip doğrulanmış dosyalar tek dizin yeniden adlandırmasıyla yerleştirildi. Hedefte önceden kayıt bulunsaydı üzerine yazılmayacaktı. Kaynakla her öğretmenin brüt/net sonucu ve toplamlar karşılaştırıldı: brüt 214.395,70 TL, net 184.380,34 TL. Meslek kodlarının 10'u da gömülü PDF kataloğunda doğrulandı.
+
+Gerçek verileri okuyan Hakedis.App.exe görünür olarak açıldı; Ücretli Ek Ders Hakediş Sistemi başlıklı pencere ve çalışan süreç doğrulandı. Program bilerek açık bırakıldı. Kullanıcı Hakediş Hesapla / Temel Eğitim / Eylül-2026 üzerinden deneyebilir. Gelecek yayına gerçek Veriler veya artifacts içeriklerini dahil etmeyin; kullanıcı denemesi devam ederken bu verileri silmeyin.
