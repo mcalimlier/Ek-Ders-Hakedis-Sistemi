@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hakedis.Contracts\Hakedis.Contracts.csproj" />
+    <ProjectReference Include="..\Hakedis.TemelEgitim.Core\Hakedis.TemelEgitim.Core.csproj" />
+    <ProjectReference Include="..\Hakedis.Storage\Hakedis.Storage.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

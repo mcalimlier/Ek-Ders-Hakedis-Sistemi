@@ -26,3 +26,6 @@ inceleme/
 *.lock
 .env
 .env.*
+dist/
+artifacts/
+TestResults/

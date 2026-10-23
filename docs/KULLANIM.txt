@@ -1,0 +1,19 @@
+ÜCRETLİ EK DERS HAKEDİŞ SİSTEMİ — İLK GELİŞTİRME SÜRÜMÜ
+
+ZIP dosyasını tamamen bir klasöre çıkarın ve Hakedis.App.exe'yi çalıştırın.
+Windows x64 paketi ayrı Excel veya .NET kurulumu gerektirmez.
+
+Sol menüden Temel Eğitim seçin. Yıl/ay, personel etiketi ve saatleri girin.
+Ondalık ayırıcı virgüldür; binlik ayırıcı girmeyin.
+Başlangıç parametreleri kaynak Excel'in Eylül 2026 değerleridir.
+Seçili modülle hesapla düğmesi kişi bazında ara hesapları gösterir.
+Taslağı kaydet ile JSON dosyasını kendi seçtiğiniz konuma kaydedebilirsiniz.
+Taslak aç aynı modül/kural sürümündeki girdileri açıp yeniden hesaplar.
+Kayıt değiştirildiğinde önceki sağlam kopya .bak dosyasında tutulur.
+Bozuk mevcut dosyanın üstüne yazılmaz; önce yedeği başka ada kopyalayarak açın.
+JSON dosyaları şifreli değildir; kişisel bilgilerinizi koruyun.
+
+Diğer modüllerin çekirdekleri henüz eklenmemiştir; bu modüller hesap yapmaz.
+Bu ilk sürümde toplu personel listesi, kesinleştirme, resmî çıktı ve banka
+dosyası üretimi yoktur. Hesap kuralları mevzuat onayı almış değildir.
+Gerçek ödeme işlemi için kullanmayın; önce örnek kayıtlarla değerlendirin.

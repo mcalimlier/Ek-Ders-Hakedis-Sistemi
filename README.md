@@ -1,6 +1,6 @@
 # Temel Eğitim Ücretli Öğretmen Hakediş Sistemi
 
-Yeni ve bağımsız Windows masaüstü projesi. Henüz uygulama kodu yoktur; kaynak Excel incelemesi ve tasarım aşamasındadır.
+Yeni ve bağımsız Windows masaüstü projesi. İlk çalışan geliştirme sürümü: modül seçimi, Temel Eğitim kişi bazında hesaplama, ara hesap dökümü ve JSON taslak kaydetme/açma. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
 
 ## Kullanıcının belirlediği kapsam
 
@@ -16,5 +16,7 @@ Yeni ve bağımsız Windows masaüstü projesi. Henüz uygulama kodu yoktur; kay
 
 - [Güncel saklama, taşınabilirlik ve çıktı tasarımı](docs/TASARIM_KARARLARI.md)
 - [Excel incelemesi ve güncellenmiş yol haritası](docs/INCELEME_VE_YOL_HARITASI.md)
+- [Ayrı hesaplama çekirdekleri ve geliştirme komutları](docs/MODUL_MIMARISI.md)
+- [İlk sürüm kullanım notu](docs/KULLANIM.txt)
 
 Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları bu depoya dahil edilmez.
