@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <BooleanToVisibilityConverter x:Key="Visible"/>
+ <Style x:Key="FormField" TargetType="StackPanel"><Setter Property="Width" Value="235"/><Setter Property="Margin" Value="0,0,14,12"/></Style>
+ <Style x:Key="FormText" TargetType="TextBox" BasedOn="{StaticResource FieldTextBox}"><Setter Property="Margin" Value="0,5,0,0"/><Setter Property="Height" Value="35"/></Style>
+ <Style x:Key="FormCombo" TargetType="ComboBox" BasedOn="{StaticResource FieldComboBox}"><Setter Property="Margin" Value="0,5,0,0"/><Setter Property="Height" Value="35"/></Style>
+ <Style x:Key="FormDate" TargetType="DatePicker" BasedOn="{StaticResource FieldDatePicker}"><Setter Property="Margin" Value="0,5,0,0"/><Setter Property="Height" Value="35"/></Style>
+ <Style x:Key="Action" TargetType="Button" BasedOn="{StaticResource ModernButton}"><Setter Property="Height" Value="36"/><Setter Property="Margin" Value="0,0,8,6"/></Style>
+ <Style x:Key="SecondaryAction" TargetType="Button" BasedOn="{StaticResource SecondaryButton}"><Setter Property="Height" Value="36"/><Setter Property="Padding" Value="14,0"/><Setter Property="Margin" Value="0,0,8,6"/></Style>
+ <Style x:Key="DeleteAction" TargetType="Button" BasedOn="{StaticResource DangerButton}"><Setter Property="Height" Value="36"/><Setter Property="Margin" Value="0,0,8,6"/></Style>
+ <Style x:Key="GoldAction" TargetType="Button" BasedOn="{StaticResource Action}"><Setter Property="Background" Value="{StaticResource Gold500Brush}"/><Setter Property="Foreground" Value="{StaticResource Navy900Brush}"/></Style>
+ <Style x:Key="WorkspaceCard" TargetType="Border" BasedOn="{StaticResource Card}"><Setter Property="Padding" Value="18"/><Setter Property="Margin" Value="0,0,0,16"/></Style>
+ <Style x:Key="SectionNumber" TargetType="Border"><Setter Property="Background" Value="#173F67"/><Setter Property="BorderBrush" Value="#C88B09"/><Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="8"/><Setter Property="Width" Value="34"/><Setter Property="Height" Value="34"/><Setter Property="Margin" Value="0,0,10,0"/></Style>
+ <Style x:Key="MetricValue" TargetType="TextBlock"><Setter Property="Foreground" Value="White"/><Setter Property="FontSize" Value="27"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="0,10,0,0"/></Style>
+ <Style x:Key="WindowButton" TargetType="Button" BasedOn="{StaticResource ModernButton}"><Setter Property="Width" Value="42"/><Setter Property="Height" Value="34"/><Setter Property="Background" Value="Transparent"/><Setter Property="Padding" Value="0"/></Style>
+</ResourceDictionary>

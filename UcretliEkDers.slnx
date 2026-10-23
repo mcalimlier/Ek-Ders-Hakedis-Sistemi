@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hakedis.Tests/Hakedis.Tests.csproj" />
+    <Project Path="tests/Hakedis.UiSmoke/Hakedis.UiSmoke.csproj" />
   </Folder>
 </Solution>

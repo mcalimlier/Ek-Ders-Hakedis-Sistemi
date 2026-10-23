@@ -15,10 +15,12 @@ Kayıt değiştirildiğinde önceki sağlam kopya .bak dosyasında tutulur.
 Bozuk mevcut dosyanın üstüne yazılmaz; önce yedeği başka ada kopyalayarak açın.
 JSON dosyaları şifreli değildir; kişisel bilgilerinizi koruyun.
 
-Ücretli Öğretmen Listesi panelinde Yeni Öğretmen ile kayıt açabilirsiniz.
-Listeden bir satır seçerek bilgileri düzenleyin ve Öğretmen Bilgilerini
-Kaydet düğmesine basın. Kaydetmeden yapılan değişiklik listeyi etkilemez.
-Seçili Kaydı Sil düğmesi onay sonrasında yalnızca seçili kişiyi siler.
+Yeni öğretmen kaydı yalnızca Veri Girişi panelindeki Öğretmen Bilgileri
+kartından yapılır. Öğretmeni Kaydet düğmesi kayıt sonrasında formu temizler.
+Ücretli Öğretmen Listesi panelinde yalnızca mevcut kayıtlar düzenlenir.
+Listeden bir satır seçerek bilgileri düzenleyin ve Değişiklikleri Kaydet
+düğmesine basın. Kaydetmeden yapılan değişiklik listeyi etkilemez.
+Kaydı Sil düğmesi onay sonrasında yalnızca seçili kişiyi siler.
 Geçmiş hesap taslakları silinmez. Öğretmen kayıtları EXE yanındaki
 Veriler/ogretmenler.json dosyasında tutulur; önceki liste .bak kopyasıdır.
 Güncelleme veya başka bilgisayara taşıma sırasında Veriler klasörünü koruyun.

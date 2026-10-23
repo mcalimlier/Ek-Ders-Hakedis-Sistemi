@@ -11,7 +11,22 @@ public partial class MainWindow : Window
     private void Navigate_Click(object sender, RoutedEventArgs e)
         => shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);
-    private void NewTeacher_Click(object sender, RoutedEventArgs e) => shell.Teachers.New();
+    private void NewTeacher_Click(object sender, RoutedEventArgs e) => shell.Registration.Reset();
+    private void RegisterTeacher_Click(object sender, RoutedEventArgs e)
+    {
+        try { shell.SaveNewTeacher(); }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException)
+        { shell.Registration.ShowStatus(ex.Message); }
+    }
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != System.Windows.Input.MouseButton.Left) return;
+        if (e.ClickCount == 2) WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        else DragMove();
+    }
+    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
     private void SaveTeacher_Click(object sender, RoutedEventArgs e) => RunTeacher(shell.Teachers.Save);
     private void UseTeacher_Click(object sender, RoutedEventArgs e) => RunTeacher(shell.UseSelectedTeacher);
     private void DeleteTeacher_Click(object sender, RoutedEventArgs e)

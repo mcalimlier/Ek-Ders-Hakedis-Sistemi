@@ -2,7 +2,7 @@
 
 Sol menü: Veri Girişi → Hakediş Hesapla → Ücretli Öğretmen Listesi. Modül seçimi Veri Girişi panelinde açılır listedir. Veri girişi ve hesap sonuçları panel değişiminde korunur.
 
-Öğretmen listesinde Yeni Öğretmen ile form temizlenir; bir satır seçilince düzenleme formu açılır. Kaydetmeden form değişiklikleri kayıtlı listeyi değiştirmez. Silme, kişinin adı gösterilerek onaylanır; yalnızca seçilen ID silinir. Geçmiş hesap taslakları değiştirilmez.
+Yeni öğretmen girişi yalnızca Veri Girişi panelindeki Öğretmen Bilgileri kartında yapılır. Öğretmen listesinde yeni kayıt düğmesi yoktur; bir satır seçilince mevcut kayıt düzenlenebilir. Seçim olmadan kayıt kaydedilemez. Kaydetmeden form değişiklikleri kayıtlı listeyi değiştirmez. Silme, kişinin adı gösterilerek onaylanır; yalnızca seçilen ID silinir. Geçmiş hesap taslakları değiştirilmez. Silinen ID liste düzenlemesinden yeniden oluşturulamaz.
 
 Ortak kişi verisi `Veriler/ogretmenler.json` içinde saklanır; herhangi bir hesaplama çekirdeğine bağlanmaz. Kayıt sırasında dosya kilidi alınır ve liste yeniden okunur; yeni dosya geçici ada yazılıp doğrulanır, atomik değiştirme ile eski liste `.bak` olarak korunur. SQL kullanılmaz. TCKN/SGK/IBAN metindir. Aynı isimli kişiler farklı ID'lerle tutulabilir; dolu TCKN yinelenemez. Buradaki TCKN ve IBAN kontrolleri biçim kontrolüdür, resmî kimlik veya banka doğrulaması değildir.
 

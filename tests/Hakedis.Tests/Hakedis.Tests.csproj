@@ -19,6 +19,7 @@
     <Compile Include="../../src/Hakedis.App/WorkspaceViewModel.cs" Link="WorkspaceViewModel.cs" />
     <Compile Include="../../src/Hakedis.App/TeacherListViewModel.cs" Link="TeacherListViewModel.cs" />
     <Compile Include="../../src/Hakedis.App/ShellViewModel.cs" Link="ShellViewModel.cs" />
+    <Compile Include="../../src/Hakedis.App/TeacherRegistrationViewModel.cs" Link="TeacherRegistrationViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>

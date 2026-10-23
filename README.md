@@ -1,6 +1,6 @@
 # Temel Eğitim Ücretli Öğretmen Hakediş Sistemi
 
-Yeni ve bağımsız Windows masaüstü projesi. Veri Girişi panelinde açılır modül seçimi; ayrı Hakediş Hesapla panelinde Temel Eğitim kişi bazında hesaplama ve ara hesap dökümü; Ücretli Öğretmen Listesi panelinde kalıcı kayıt ekleme, düzenleme ve onaylı silme. Öğretmen listesi ve hesap taslakları SQL olmadan JSON'da saklanır. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
+Yeni ve bağımsız C# / WPF Windows masaüstü projesi. OEHS'nin kaynak düğme, kart ve panel şablonları kullanılır. Yeni öğretmen kaydı yalnızca Veri Girişi panelinden yapılır; burada açılır modül seçimi ve aylık ders bilgileri de bulunur. Hakediş Hesapla paneli Temel Eğitim hesabını ve dökümünü gösterir. Ücretli Öğretmen Listesi yalnızca mevcut kayıtları düzenleme ve onaylı silme içindir. Kayıtlar SQL olmadan JSON'da saklanır. Toplu bordro, kesinleştirme ve resmî çıktılar henüz uygulanmadı.
 
 ## Kullanıcının belirlediği kapsam
 
@@ -18,5 +18,6 @@ Yeni ve bağımsız Windows masaüstü projesi. Veri Girişi panelinde açılır
 - [Excel incelemesi ve güncellenmiş yol haritası](docs/INCELEME_VE_YOL_HARITASI.md)
 - [Ayrı hesaplama çekirdekleri ve geliştirme komutları](docs/MODUL_MIMARISI.md)
 - [İlk sürüm kullanım notu](docs/KULLANIM.txt)
+- [Arayüz referansı ve yeni kayıt akışı](docs/ARAYUZ_REFERANSI.md)
 
 Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları bu depoya dahil edilmez.

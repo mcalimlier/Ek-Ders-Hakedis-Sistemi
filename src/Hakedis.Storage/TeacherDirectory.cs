@@ -29,7 +29,9 @@ public sealed class TeacherDirectory
         catch (Exception ex) when (ex is JsonException or ArgumentException)
         { throw new InvalidDataException("Öğretmen dosyası bozuk veya kayıt bilgileri geçersiz; dosya değiştirilmedi.", ex); }
     }
-    public IReadOnlyList<TeacherRecord> Save(TeacherRecord teacher)
+    public IReadOnlyList<TeacherRecord> Save(TeacherRecord teacher) => SaveCore(teacher, false);
+    public IReadOnlyList<TeacherRecord> Update(TeacherRecord teacher) => SaveCore(teacher, true);
+    private IReadOnlyList<TeacherRecord> SaveCore(TeacherRecord teacher, bool requireExisting)
     {
         teacher = Normalize(teacher);
         return Mutate(rows =>
@@ -37,6 +39,7 @@ public sealed class TeacherDirectory
             if (teacher.IdentityNumber != "" && rows.Any(t => t.Id != teacher.Id && t.IdentityNumber == teacher.IdentityNumber))
                 throw new ArgumentException("Bu T.C. kimlik numarası başka bir öğretmende kayıtlı.");
             var index = rows.FindIndex(t => t.Id == teacher.Id);
+            if (requireExisting && index < 0) throw new InvalidOperationException("Düzenlenecek öğretmen kaydı bulunamadı. Listeyi yenileyin.");
             if (index < 0) rows.Add(teacher); else rows[index] = teacher;
         });
     }

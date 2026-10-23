@@ -24,7 +24,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     public ModuleDescriptor? SelectedModule
     {
         get => selected;
-        set { selected = value; Clear(); Status = IsAvailable ? "Temel Eğitim çekirdeği hazır. Dönem parametrelerini doğrulayarak hesaplayın." : "Bu modülün ayrı hesaplama çekirdeği henüz eklenmedi. Hesaplama kapalıdır."; Notify(); Notify(nameof(IsAvailable)); Notify(nameof(Status)); }
+        set { selected = value; Clear(); Status = IsAvailable ? "Temel Eğitim seçili. Ödeme dönemini ve ders bilgilerini girin." : "Bu modül henüz kullanıma açılmadı. Hesaplama yapılamaz."; Notify(); Notify(nameof(IsAvailable)); Notify(nameof(Status)); }
     }
     public bool IsAvailable => selected?.IsAvailable == true;
     public string Status { get; private set; } = "";
@@ -92,12 +92,12 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         Details.Add(new("Gündüz saat ücreti", result.DayRate.ToString("N5", Tr)));
         Details.Add(new("DYK saat ücreti", result.DykRate.ToString("N5", Tr)));
         Details.Add(new("Gündüz brüt", Money(result.DayGross))); Details.Add(new("DYK brüt", Money(result.DykGross)));
-        Details.Add(new("Kaynak formüle göre prim günü", result.PremiumDays.ToString(Tr)));
+        Details.Add(new("Prim gün sayısı", result.PremiumDays.ToString(Tr)));
         Details.Add(new("Çalışan SGK", Money(result.EmployeePremium))); Details.Add(new("İşveren SGK", Money(result.EmployerPremium)));
         Details.Add(new("GV matrahı", Money(result.IncomeBase))); Details.Add(new("Gelir vergisi", Money(result.IncomeTax)));
         Details.Add(new("Damga vergisi", Money(result.StampTax))); Details.Add(new("İcra", Money(result.Garnishment)));
         Details.Add(new("Bordro kesinti toplamı (işveren dahil)", Money(result.Deductions)));
-        Status = $"{draft.Person} · {draft.Month:D2}/{draft.Year} · {module.RuleVersion}. Kaynak Excel hesabı; dönem mevzuat kontrolü bekliyor.";
+        Status = $"{draft.Person} · {draft.Month:D2}/{draft.Year} dönemi hakedişi hesaplandı. Ödeme öncesinde dönem parametrelerini kontrol edin.";
         if (result.Net < 0) Status += " UYARI: Net tutar negatif.";
         Notify(nameof(Status));
     }

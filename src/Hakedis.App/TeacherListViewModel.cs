@@ -29,13 +29,13 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
     private TeacherRecord? selected;
     public ObservableCollection<TeacherRecord> Records { get; } = [];
     public TeacherEditor Editor { get; private set; } = new();
-    public string Status { get; private set; } = "Yeni öğretmen ekleyebilir veya listeden bir kayıt seçerek düzenleyebilirsiniz.";
+    public string Status { get; private set; } = "Düzenlemek için listeden öğretmen seçin. Yeni kayıtlar Veri Girişi ekranından yapılır.";
     public string CountText => $"{Records.Count} kayıtlı öğretmen";
     public bool HasSelection => Selected is not null;
     public TeacherRecord? Selected
     {
         get => selected;
-        set { selected = value; if (value is not null) Editor = TeacherEditor.From(value); Notify(); }
+        set { selected = value; Editor = value is null ? new() : TeacherEditor.From(value); Notify(); }
     }
     public event PropertyChangedEventHandler? PropertyChanged;
     public TeacherListViewModel(string path)
@@ -45,16 +45,18 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
         catch (Exception ex) when (ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException) { ShowError(ex.Message); }
     }
     // Bir seçili kayıt immutable kopyadan düzenlenir; kaydetmeden liste değişmez.
-    public void New() { selected = null; Editor = new(); Status = "Yeni öğretmen: ad soyad zorunludur; diğer bilgiler daha sonra tamamlanabilir."; Notify(); }
+    public void Reload() { Replace(directory.Read()); Selected = null; }
     public void Save()
     {
-        var id = Editor.Id; Replace(directory.Save(Editor.ToRecord())); Selected = Records.Single(r => r.Id == id);
-        Status = "Öğretmen kaydedildi. Önceki liste yedekte korundu."; Notify();
+        var id = Selected?.Id ?? throw new InvalidOperationException("Düzenlemek için kayıtlı bir öğretmen seçin. Yeni kayıt için Veri Girişi ekranını kullanın.");
+        if (Editor.Id != id) throw new InvalidOperationException("Seçili öğretmen ile düzenlenen kayıt uyuşmuyor.");
+        Replace(directory.Update(Editor.ToRecord())); Selected = Records.Single(r => r.Id == id);
+        Status = "Öğretmen bilgileri güncellendi."; Notify();
     }
     public void DeleteSelected()
     {
         var id = Selected?.Id ?? throw new InvalidOperationException("Silinecek öğretmeni seçin.");
-        Replace(directory.Delete(id)); New(); Status = "Seçili öğretmen listeden silindi. Geçmiş hesap taslakları değiştirilmedi."; Notify();
+        Replace(directory.Delete(id)); Selected = null; Status = "Seçili öğretmen listeden silindi. Geçmiş hesap taslakları değiştirilmedi."; Notify();
     }
     public void ShowError(string message) { Status = message; Notify(); }
     private void Replace(IReadOnlyList<TeacherRecord> rows)
