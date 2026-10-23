@@ -11,11 +11,16 @@ public sealed class PayrollRow : INotifyPropertyChanged
     private DateTime? monthStart, monthEnd;
     private readonly Func<TeacherParameters> parameters;
     private readonly Action<MonthlyInput>? validate;
+    private readonly Func<(int Year,int Month)>? period;
     public TeacherRecord Teacher { get; }
     public bool HasInput { get; private set; }
     public TeacherResult? Result { get; private set; }
     public string Error { get; private set; } = "";
-    public string MissingDays => "Açıklama bekleniyor";
+    public CalendarResult? SgkInformation { get; private set; }
+    public string SgkError { get; private set; } = "";
+    public string MissingDays => SgkInformation?.MissingDays.ToString(CultureInfo.GetCultureInfo("tr-TR")) ?? "—";
+    public string MaximumDaysText => SgkInformation?.CalendarDays.ToString(CultureInfo.GetCultureInfo("tr-TR")) ?? "—";
+    public string WorkingDaysText => (SgkInformation?.PremiumDays ?? Result?.PremiumDays)?.ToString(CultureInfo.GetCultureInfo("tr-TR")) ?? "—";
     public int Sequence { get; set; }
     public string IbanCheck=>string.IsNullOrEmpty(Teacher.Iban)?"-":Teacher.Iban.Length==26?"DOĞRU":"HATALI";
     public string TotalHours
@@ -29,8 +34,9 @@ public sealed class PayrollRow : INotifyPropertyChanged
     public string Garnishment { get => garnishment; set { if(garnishment == value) return; garnishment=value; Update(); } }
     public DateTime? MonthStart { get => monthStart; set { if(monthStart==value) return; monthStart=value; Update(); } }
     public DateTime? MonthEnd { get => monthEnd; set { if(monthEnd==value) return; monthEnd=value; Update(); } }
-    public PayrollRow(TeacherRecord teacher, MonthlyInput? input, Func<TeacherParameters> parameters, Action<MonthlyInput>? validate=null)
-    { Teacher=teacher; this.parameters=parameters; this.validate=validate;if(input is not null) Apply(input); else Recalculate(); }
+    public PayrollRow(TeacherRecord teacher, MonthlyInput? input, Func<TeacherParameters> parameters, Action<MonthlyInput>? validate=null,
+        Func<(int Year,int Month)>? period=null)
+    { Teacher=teacher; this.parameters=parameters; this.validate=validate;this.period=period;if(input is not null) Apply(input); else Recalculate(); }
     private void Update() { HasInput=true; Recalculate(); Changed?.Invoke(this); }
     public void Apply(MonthlyInput input)
     {
@@ -46,7 +52,6 @@ public sealed class PayrollRow : INotifyPropertyChanged
     }
     public MonthlyInput Read()
     {
-        if(monthEnd?.Date < monthStart?.Date) throw new ArgumentException("AY İÇİNDE İŞTEN AYRILIŞ TARİHİ girişten önce olamaz.");
         var input = new MonthlyInput(Teacher.Id,PeriodConstantsEditor.Number(day),PeriodConstantsEditor.Number(dyk),
             PeriodConstantsEditor.Number(garnishment),monthStart,monthEnd);
         if(input.DayHours<0 || input.DykHours<0 || input.Garnishment<0) throw new ArgumentException("Ders saati ve kesinti negatif olamaz.");
@@ -54,15 +59,27 @@ public sealed class PayrollRow : INotifyPropertyChanged
     }
     public void Recalculate()
     {
-        Result=null; Error="";
+        Result=null; Error="";SgkInformation=null;SgkError="";
         try
         {
             if(!HasInput) Error="Aylık ders bilgileri girilmedi.";
             else if(Teacher.ModuleId != ModuleId.TemelEgitim) Error="Bu modülün hesaplama çekirdeği henüz eklenmedi.";
-            else { var i=Read();validate?.Invoke(i); Result=new TeacherPayrollModule().Calculate(new(i.DayHours,i.DykHours,i.Garnishment),parameters()); }
+            else { var i=Read();Result=new TeacherPayrollModule().Calculate(new(i.DayHours,i.DykHours,i.Garnishment),parameters()); }
         }
         catch(Exception ex) when(ex is ArgumentException or OverflowException) { Error=ex.Message; }
-        foreach(var name in new[]{nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(MonthStart),nameof(MonthEnd),nameof(HasInput),nameof(Result),nameof(Error),nameof(MissingDays),nameof(TotalHours)})
+        // A calendar error must never erase a valid monetary result.
+        if(HasInput && Teacher.ModuleId==ModuleId.TemelEgitim)
+        {
+            try
+            {
+                var i=Read();validate?.Invoke(i);
+                var selected=period?.Invoke() ?? throw new ArgumentException("SGK bilgisi için dönem seçin.");
+                SgkInformation=TeacherCalendar.CalculateMonth(selected.Year,selected.Month,
+                    i.MonthStart ?? Teacher.StartDate,i.MonthEnd ?? Teacher.EndDate,i.DayHours,i.DykHours);
+            }
+            catch(Exception ex) when(ex is ArgumentException or OverflowException) { SgkError=ex.Message; }
+        }
+        foreach(var name in new[]{nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(MonthStart),nameof(MonthEnd),nameof(HasInput),nameof(Result),nameof(Error),nameof(MissingDays),nameof(TotalHours),nameof(SgkInformation),nameof(SgkError),nameof(MaximumDaysText),nameof(WorkingDaysText)})
             PropertyChanged?.Invoke(this,new(name));
     }
     private static string Text(decimal number)=>number.ToString(CultureInfo.GetCultureInfo("tr-TR"));

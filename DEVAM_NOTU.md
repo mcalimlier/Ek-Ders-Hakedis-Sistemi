@@ -18,9 +18,11 @@ Brüt/prim/tahakkuk/vergi/kesinti/net karşılaştırmaları eşleşti. On öğr
 Gösterge programda gerçek parametre; Excel'in L/M formüllerinde 140 sabit. Farklı gösterge/oranların kaynak sabit formülleriyle aynı olduğu iddia edilmiyor.
 Ayrıntı: docs/EXCEL_DENETIMI.md. Tekrar Excel doğrulama: scripts/Verify-Excel.ps1.
 
-## Önemli bekleyen — kullanıcı açıklayacak
+## SGK eksik gün açıklaması uygulandı
 
-Kullanıcı Eksik Gün Sayısı hesabını ayrıca detaylı açıklayacağını söyledi. Kaynak E-Bildirge ilk satırlarda 17, son satırlarda 20 sabiti kullanıyor; tarihleri 2025'te kalmış. Hiçbiri doğru kural sayılmadı. Ekran ve hakediş görüntüsü bu alanı Açıklama bekleniyor diye gösteriyor. TeacherCalendar yalnız testli tarih aralığı yardımcısı; üretimde SGK kuralı olarak etkin değil.
+Kullanıcının sonraki açıklaması: bu alan hakedişi etkilemez, SGK sitesi için yan bilgidir. Çalışma günü toplam saat / 7,5 yukarı tam sayıya; eksik gün ayın gerçek takvim gününden çalışma gününü çıkararak bulunur. Ay içinde giriş/çıkışta, her iki sınır dahil çalışma aralığı esas alınır. Ekim-2026 5'inde giriş: 27 azami gün; 117 saat: 16 çalışma, 11 eksik gün.
+Aylık açık tarihler öğretmen kaydındaki tarihlere göre öncelikli; boşsa kayıtlı tarihler kullanılır. Şubat ve artık yıl, son gün giriş, ilk gün çıkış, aynı ayda ikisi, sıfır saat ve DYK dahil sınırlar testli.
+SGK hata/uyarısı para sonucunu silmez. Azami günden fazla çalışma günü varsa negatif eksik gün yerine — ve ayrı uyarı üretilir. Tabloda azami gün/çalışma/eksik gün ve kontrol sütunları; aylık girişte canlı özet var. Hakediş JSON'unda CalendarResult ve kural sürümü saklanır. Eski hakediş görüntüleri değiştirilmez.
 
 ## Saklama
 
@@ -30,9 +32,13 @@ Hakediş oluştur boş IBAN veya geçersiz girdiyle çalışmaz; henüz girilmem
 
 ## Doğrulama / paket
 
-68 birim testi geçti; Excel'in 50 senaryo/14 alan doğrulaması dahil. WPF gerçek ekranında dört panel normal/dar boyutta render edildi; meslek popup'ı, canlı hücre hesabı ve ay/yıl ComboBox üzerinden Kasım-2027 seçimi, Hakediş oluştur düğmesinin kalıcı JSON yazması kontrol edildi. Binding hatası yok. Görseller artifacts/ui-review-hybrid-verified içinde sentetik personel kullanır.
-Windows x64 paket: dist/Hakedis-win-x64-20261024-002042.zip. ZIP yalnız Hakedis.App.exe ve KULLANIM.txt içeriyor; gerçek kullanıcı verisi yok. Yayımlanan bağımsız EXE açıldı ve mesaj döngüsünün hazır olduğu doğrulandı; ardından kapatıldı.
+81 birim testi geçti; Excel'in 50 senaryo/14 alan doğrulaması dahil. WPF gerçek ekranında dört panel normal/dar boyutta render edildi; meslek popup'ı, canlı hücre hesabı ve ay/yıl ComboBox üzerinden Kasım-2027 seçimi, Hakediş oluştur düğmesinin kalıcı JSON yazması kontrol edildi. Binding hatası yok. Görseller artifacts/ui-review-hybrid-verified içinde sentetik personel kullanır.
+Windows x64 paket: dist/Hakedis-win-x64-20261024-003745.zip. ZIP yalnız Hakedis.App.exe ve KULLANIM.txt içeriyor; gerçek kullanıcı verisi yok. Yayımlanan bağımsız EXE açıldı ve mesaj döngüsünün hazır olduğu doğrulandı; ardından kapatıldı.
 
 ## Sonraki ürün işleri
 
-Kullanıcının eksik gün açıklaması; üç resmî basılı belge, isteğe bağlı Excel/PDF ve banka aktarımı. Diğer eğitim türlerinin bağımsız çekirdekleri kendi kaynakları geldikten sonra eklenecek; şu anda yalnız Temel Eğitim hesap yapar. Diğer modüllere kayıt yapılabilse de Temel Eğitim formülleri uygulanmaz.
+Üç resmî basılı belge, isteğe bağlı Excel/PDF ve banka aktarımı. Diğer eğitim türlerinin bağımsız çekirdekleri kendi kaynakları geldikten sonra eklenecek; şu anda yalnız Temel Eğitim hesap yapar. Diğer modüllere kayıt yapılabilse de Temel Eğitim formülleri uygulanmaz.
+
+## Bu eklemenin doğrulaması
+
+Yeni SGK kuralı için önce eski uygulamada başarısız olan 9 uçtan uca test yazıldı; kural uygulandıktan sonra takvim sınırları da eklendi. Son tam koşuda 81 test geçti; eski 68 teste 13 SGK senaryosu eklendi. WPF ekranında Eksik Gün Sayısı 117 saat/Eylül için 14, hücre 108 saate değişince 15 olarak doğrulandı; binding hatası yok. Görseller artifacts/ui-review-sgk içinde. Yeni paket: dist/Hakedis-win-x64-20261024-003745.zip. ZIP içeriği yalnız EXE ve kullanım notu; bağımsız EXE açılışı doğrulandı.

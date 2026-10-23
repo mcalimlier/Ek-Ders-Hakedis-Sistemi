@@ -50,10 +50,20 @@ Bozuk mevcut dosyanın üzerine yazılmaz. Veriler klasörünü yedekleyin ve
 başka bilgisayara taşırken uygulamayla birlikte götürün.
 Kaydetmeden veya Hakediş oluştur demeden yapılan değişiklik önizlemedir.
 
+SGK YAN BİLGİLERİ
+Çalışma Gün Sayısı = toplam saat / 7,5; yukarı tam sayıya yuvarlanır.
+Eksik Gün Sayısı hakediş tutarını etkilemez; SGK sitesine giriş içindir.
+Ay içinde giriş/çıkış yoksa azami gün, seçili ayın gerçek takvim günüdür.
+Giriş varsa giriş günü, çıkış varsa çıkış günü dahil aralık hesaplanır.
+Aylık tarih alanları doluysa bunlar; boşsa öğretmen kaydındaki tarihler
+kullanılır. Örnek: 5 Ekim giriş => 31 - 5 + 1 = 27 azami gün.
+117 saat => 16 çalışma günü; 27 - 16 = 11 eksik gün.
+Şubat 28/29, diğer aylar gerçek 30/31 gün uzunluğuyla ele alınır.
+Hesap SGK sütunlarında ve aylık girişin altında canlı görünür ve hakediş
+JSON kaydına yan bilgi olarak alınır. Çalışma günü azami günü aşarsa
+negatif sayı yerine ayrı SGK uyarısı gösterilir; para hesabı iptal edilmez.
+
 TAMAMLANMAYAN ALAN
-Eksik Gün Sayısı: kaynak Excel'deki 17/20 gün sabitleri tutarsızdır.
-Kullanıcının ayrıca vereceği hesap açıklaması bekleniyor; bu alan henüz
-hesaplanmaz ve hakediş kaydında da bu durum açıkça belirtilir.
 Basılı üç resmî belge, isteğe bağlı Excel/PDF çıktıları ve banka aktarımı
 bu sürümde henüz yoktur. Diğer modüllerin hesaplama çekirdekleri de
 kendi Excel kaynakları geldiğinde eklenecektir.

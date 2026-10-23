@@ -2,10 +2,14 @@ namespace Hakedis.TemelEgitim.Core;
 
 public sealed record CalendarResult(int CalendarDays, int PremiumDays, int MissingDays);
 
-// Tarih aralığı için matematik yardımcısı. SGK eksik gün uygulama kuralı değildir;
-// kullanıcı açıklaması gelene kadar üretim hakedişinde eksik gün olarak kullanılmaz.
+// Kullanıcının belirlediği SGK yan bilgi kuralı; parasal hakediş hesabına girdi değildir.
 public static class TeacherCalendar
 {
+    public const string RuleVersion = "temel-egitim.sgk-yan-bilgi.v1";
+    public static CalendarResult CalculateMonth(int year,int month,DateTime? employmentStart,
+        DateTime? employmentEnd,decimal dayHours,decimal dykHours)
+        => Calculate(new DateTime(year,month,1),new DateTime(year,month,DateTime.DaysInMonth(year,month)),
+            employmentStart,employmentEnd,dayHours,dykHours);
     public static CalendarResult Calculate(DateTime start, DateTime end, DateTime? employmentStart,
         DateTime? employmentEnd, decimal dayHours, decimal dykHours)
     {

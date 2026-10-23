@@ -85,7 +85,7 @@ public sealed class HybridPayrollTests : IDisposable
         Assert.Equal("117",shell.Calculation.Rows[0].DayHours);
     }
     [Fact]
-    public void Invalid_constant_and_invalid_date_clear_live_totals_and_cannot_be_saved()
+    public void Invalid_constant_clears_money_but_invalid_date_only_invalidates_sgk_information()
     {
         var shell=new ShellViewModel(PathName);shell.Registration.Editor.FullName="Öğretmen";shell.SaveNewTeacher();
         shell.Monthly.DayHours="117";shell.Calculation.Constants.Coefficient="x";
@@ -93,7 +93,8 @@ public sealed class HybridPayrollTests : IDisposable
         Assert.Throws<ArgumentException>(shell.Monthly.SaveConstants);
         shell.Monthly.Constants.Coefficient="1,575512";
         shell.Monthly.MonthStart=new DateTime(2027,1,1);
-        Assert.Equal("—",shell.Calculation.NetText);Assert.Throws<ArgumentException>(()=>shell.Monthly.Save(false));
+        Assert.NotEqual("—",shell.Calculation.NetText);Assert.Equal("—",shell.Monthly.Rows[0].MissingDays);
+        Assert.Throws<ArgumentException>(()=>shell.Monthly.Save(false));
     }
     [Fact]
     public void Blank_zero_entry_is_saved_and_preview_syncs_and_corrupt_file_cannot_be_replaced()

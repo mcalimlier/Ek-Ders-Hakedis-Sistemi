@@ -23,13 +23,22 @@ Excel'de Bordro Y sütunu manuel icra tutarını yuvarlamadan alır; Z sütunund
 
 Bilinçli parametre farkı: Kaynak L/M saat ücreti formüllerinde gösterge `140` olarak sabittir; D44 değiştirilse bile sadece başlık değişir. Uygulamada ÜCRETLİ ÖĞRETMEN GÖSTERGE alanı hesabı gerçekten değiştirir. Kaynak `140` değeriyle sonuçlar eşleşir; farklı gösterge veya değiştirilmiş SGK/vergi oranlarının aynı kaynak Excel'in sabit formülleriyle eşleştiği iddia edilmez.
 
-## Eksik Gün Sayısı — henüz kesinleştirilmedi
+## SGK yan bilgisi — 24 Ekim kullanıcı açıklamasıyla uygulanan kural
 
-`Çalışma Gün Sayısı` / Bordro `Gün Sayısı`: toplam saat / 7,5 yukarı yuvarlanır. Bu sonuç Excel ile eşleşiyor.
+Eksik gün sayısı yalnız SGK sitesine girişte kullanılacak yan bilgidir; hakedişin brüt, kesinti ve net hesaplarına girdi değildir.
 
-Kaynak E-Bildirge H3:H16 hücrelerinde `17 − çalışma günü`, H17:H22'de `20 − çalışma günü` kullanılıyor. M2/M3 tarihleri ise 2025-09-14 / 2025-09-30; çalışma dosyasının yılı 2026. Bu yüzden satır numarasına bağlı 17/20 sabitleri uygulamaya aktarılmadı. Kullanıcı bu hesabı ayrıca açıklayacağını belirtti.
+- Çalışma Gün Sayısı = yukarı tam sayıya yuvarla((GÜNDÜZ DERS SAATİ + DESTEKLEME VE YETİŞTİRME KURSU) / 7,5).
+- Ay içinde giriş/çıkış yoksa azami gün, seçili ayın gerçek takvim uzunluğudur: 28, 29, 30 veya 31.
+- Ay içi giriş varsa ilk gün giriş günüdür. Ay içi çıkış varsa son gün çıkış günüdür. Her iki sınır dahildir.
+- Azami gün = ayla çakışan çalışma aralığının bitişi − başlangıcı + 1.
+- Eksik Gün Sayısı = azami gün − Çalışma Gün Sayısı.
+- Aylık giriş/çıkış alanları doluysa o dönemin açık bilgisi olarak kullanılır; boşsa kayıtlı öğretmenin başlangıç/ayrılış tarihine başvurulur. Önceki yıldaki işe giriş tam ayın gün sayısını azaltmaz.
 
-Uygulama `Eksik Gün Sayısı` alanını **Açıklama bekleniyor** olarak gösterir. Oluşturulan hakediş görüntüsünde de bu eksiklik metinle kayıtlıdır; sıfır veya hesaplanmış sayı gibi gösterilmez. `TeacherCalendar` yalnız tarih aralığı matematiğinin testli yardımcısıdır; SGK kuralı olarak etkin değildir. Resmî E-Bildirge/ödeme belgeleri bu alan kesinleşmeden tamamlanmış sayılmaz.
+Örnek: Ekim-2026, 05.10.2026 giriş, çıkış yok, 117 saat: azami gün `31 − 5 + 1 = 27`; çalışma günü `yukarı(117 / 7,5) = 16`; eksik gün `27 − 16 = 11`.
+
+Çalışma günü azami günü aşarsa negatif eksik gün gösterilmez: SGK sütunu `—` olur ve ayrı SGK bilgi kontrolünde neden belirtilir. Bu yan bilgi sorunu geçerli parasal hakedişi iptal etmez; oluşturulan görüntüde uyarı saklanır. Geçersiz tarih girişleri ise kaydetmeden önce düzeltilmelidir.
+
+Kaynak E-Bildirge'deki 17/20 sabitleri ve 2025'te kalmış tarihler kullanılmıyor. `TeacherCalendar.CalculateMonth` seçili yıl/aydan hesabı üretir; `TeacherPayroll` para hesabından bağımsızdır. Hakediş görüntüsünde her kişi için CalendarDays, PremiumDays, MissingDays ve varsa SgkError saklanır; yan bilgi kural sürümü `temel-egitim.sgk-yan-bilgi.v1` olarak işaretlenir. Eski hakediş görüntüleri geriye dönük değiştirilmez.
 
 Kaynak dosyada ayrıca `E-Bildirge!J27/J28`, `Personel Bildirimi!F7` kırık referansları ve kişisel bordroda ana bordrodan farklı vergi formülleri var. Bunlar doğru kural diye taşınmadı. Eski bağımsız banka XLS dosyasının toplamının bordroyla farklı olması da bu hesap doğrulamasını değiştirmez; bu banka dosyasının dönem/veri eşleştirmesi ayrı konudur.
 
@@ -53,3 +62,5 @@ PDF: `-MeslekAdıveKodralri.pdf`, 113 sayfa, **7.190 benzersiz kod**, 18 satır 
 ## Ekran doğrulaması
 
 `tests/Hakedis.UiSmoke` gerçek WPF penceresini normal ve dar boyutta açar. Dört paneli, 3×2 kartları, meslek popup'ını render eder; arama/seçim geri bağlamasını, düzenlenen hücrede canlı hesaplamayı, ay/yıl ComboBox üzerinden Kasım-2027 seçimini ve bağlama hatalarını kontrol eder. Görseller `artifacts/ui-review-hybrid-verified` içindedir; yalnız sentetik personel içerir.
+
+SGK eklemesi sonrası tam test koşusu: **81 başarılı, 0 başarısız**. Ek 13 senaryo; 28/29/30/31 gün, 5 Ekim giriş, çıkış ve birlikte giriş/çıkış, eski işe giriş, son gün giriş, ilk gün çıkış, sıfır saat, küsurat/DYK, yeniden açma, JSON yan bilgi alanları ve parasal sonuçların değişmemesini kapsar. WPF canlı SGK sütunu kontrolü artifacts/ui-review-sgk içinde doğrulandı.

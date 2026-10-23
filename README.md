@@ -1,6 +1,6 @@
 # Temel Eğitim Ücretli Öğretmen Hakediş Sistemi
 
-C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde, düzenleme/silme öğretmen listesindedir. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu modül/yıl/ay kapsamında JSON'a kaydedilir. SQL, son kullanıcıda Excel veya .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Hakediş kaydı henüz resmî basılı belge üretimi anlamına gelmez; Eksik Gün Sayısı kuralı kullanıcı açıklamasını bekliyor.
+C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde, düzenleme/silme öğretmen listesindedir. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu modül/yıl/ay kapsamında JSON'a kaydedilir. SQL, son kullanıcıda Excel veya .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Eksik Gün Sayısı, ayın takvim günleri ve giriş/çıkış tarihleri üzerinden SGK yan bilgisi olarak hesaplanır; hakediş tutarını etkilemez. Hakediş kaydı henüz resmî basılı belge üretimi anlamına gelmez.
 
 Her öğretmen yalnızca kendi modülüne aittir. Listeler ve değişiklik işlemleri modüle göre ayrılır; aynı kayıt ID'si veya TCKN başka modüle tekrar kaydedilemez. Eski modülsüz veriler ilk sürümün Temel Eğitim kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
 

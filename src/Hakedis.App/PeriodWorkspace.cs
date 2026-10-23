@@ -8,8 +8,8 @@ using Hakedis.TemelEgitim.Core;
 namespace Hakedis.App;
 
 public sealed record MonthOption(int Number,string Name);
-public sealed record PaymentRow(TeacherRecord Teacher,MonthlyInput Input,TeacherResult Result);
-public sealed record PaymentSnapshot(int Year,int Month,PeriodValues Constants,PaymentRow[] Rows,string MissingDaysStatus);
+public sealed record PaymentRow(TeacherRecord Teacher,MonthlyInput Input,TeacherResult Result,CalendarResult? SgkInformation=null,string SgkError="");
+public sealed record PaymentSnapshot(int Year,int Month,PeriodValues Constants,PaymentRow[] Rows,string MissingDaysStatus,string SgkRuleVersion="");
 
 public sealed class PeriodWorkspace : INotifyPropertyChanged
 {
@@ -32,6 +32,9 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public bool IsAvailable => SelectedModule.IsAvailable;
     public bool IsEditing => editing;
     public bool HasTeacher => selectedRow is not null;
+    public string SgkSummary => selectedRow is null ? "SGK yan bilgisi için öğretmen seçin." :
+        selectedRow.SgkError!="" ? "SGK yan bilgisi: "+selectedRow.SgkError :
+        $"SGK yan bilgisi · En fazla gün: {selectedRow.MaximumDaysText} · Çalışma Gün Sayısı: {selectedRow.WorkingDaysText} · Eksik Gün Sayısı: {selectedRow.MissingDays}";
     public ModuleDescriptor SelectedModule { get=>selectedModule; set { if(value is null || value.Id==selectedModule.Id)return; selectedModule=value;Reload(); } }
     public int Year { get=>year; set { if(value is <1900 or >2100 || value==year)return;year=value;Reload(); } }
     public int Month { get=>month;set { if(value is <1 or >12 || value==month)return;month=value;Reload(); } }
@@ -68,7 +71,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             SetConstants(document.Constants);
             foreach(var record in new TeacherDirectory(teacherPath,SelectedModule.Id).Read())
             {
-                Teachers.Add(record);var row=new PayrollRow(record,document.Entries.SingleOrDefault(e=>e.TeacherId==record.Id),()=>Constants.Parameters(),ValidateDates);
+                Teachers.Add(record);var row=new PayrollRow(record,document.Entries.SingleOrDefault(e=>e.TeacherId==record.Id),()=>Constants.Parameters(),ValidateDates,()=> (year,month));
                 row.Sequence=Rows.Count+1;row.Changed+=RowEdited;Rows.Add(row);
             }
             Status=$"{PeriodText} · {SelectedModule.Name}. Kayıtlı aylık ders bilgileri yüklendi.";
@@ -88,7 +91,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             // Preserve even incomplete text while teacher catalog refreshes.
             PayrollRow r;
             if(old.TryGetValue(t.Id,out var existing) && existing.Teacher==t) r=existing;
-            else { r=new(t,null,()=>Constants.Parameters(),ValidateDates);if(existing is not null)r.CopyPreview(existing);r.Changed+=RowEdited; }
+            else { r=new(t,null,()=>Constants.Parameters(),ValidateDates,()=> (year,month));if(existing is not null)r.CopyPreview(existing);r.Changed+=RowEdited; }
             r.Sequence=Rows.Count+1;Rows.Add(r);
         }
         teacher=Teachers.SingleOrDefault(t=>t.Id==id);selectedRow=Rows.SingleOrDefault(r=>r.Teacher.Id==id);Notify();
@@ -164,6 +167,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     private void ValidateDates(MonthlyInput input)
     {
+        if(input.MonthEnd?.Date<input.MonthStart?.Date)throw new ArgumentException("AY İÇİNDE İŞTEN AYRILIŞ TARİHİ girişten önce olamaz.");
         foreach(var date in new[]{input.MonthStart,input.MonthEnd})
             if(date.HasValue && (date.Value.Year!=year || date.Value.Month!=month))throw new ArgumentException("AY İÇİNDE tarihleri seçili DÖNEM ve YIL içinde olmalıdır.");
     }
@@ -183,10 +187,13 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         var values=ValidatedConstants();var inputs=rows.Select(r=>r.Read()).ToArray();
         // Read first so a corrupted monthly file cannot be replaced by a new calculation.
         store.Update(SelectedModule.Id,year,month,current=>new(year,month,values,current.Entries.Where(e=>inputs.All(i=>i.TeacherId!=e.TeacherId)).Concat(inputs).ToArray()));
-        var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!)).ToArray(),"Eksik Gün Sayısı: kullanıcı açıklaması bekleniyor; hesaplanmadı.");
+        var warningCount=rows.Count(r=>r.SgkError!="");
+        var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!,r.SgkInformation,r.SgkError)).ToArray(),
+            "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),TeacherCalendar.RuleVersion);
         var path=System.IO.Path.Combine(store.Folder(SelectedModule.Id),$"hakediş-{year:D4}-{month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
         new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,new TeacherPayrollModule().RuleVersion,DateTimeOffset.UtcNow,snapshot));
-        Status=$"{PeriodText} · {rows.Length} öğretmen için hakediş kaydı oluşturuldu. Eksik Gün Sayısı henüz hesaplanmadı.";
+        Status=$"{PeriodText} · {rows.Length} öğretmen için hakediş kaydı oluşturuldu."+
+            (warningCount>0?$" {warningCount} kayıtta SGK yan bilgisi kontrol edilmelidir; hakediş tutarı bu bilgiden etkilenmez.":" SGK yan bilgileri de kaydedildi.");
         Notify();Saved?.Invoke(this);
     }
     private bool Invalid=>!IsAvailable || Rows.Any(r=>r.HasInput && r.Result is null);
@@ -203,7 +210,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public void ShowError(string text){Status=text;Notify();}
     private void Notify()
     {
-        foreach(var name in new[]{nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(MonthStart),nameof(MonthEnd),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal)})
+        foreach(var name in new[]{nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(MonthStart),nameof(MonthEnd),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }
 }

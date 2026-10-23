@@ -32,6 +32,7 @@ internal static class Program
         model.RegistrationModule = model.Workspace.Modules.Single(m => m.Id == Hakedis.Contracts.ModuleId.TemelEgitim);
         window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
         if(model.Calculation.Rows.Single().Result?.Gross!=25806.89m)throw new InvalidOperationException("Canlı tablo güncellenmedi.");
+        if(model.Calculation.Rows.Single().MissingDays!="14")throw new InvalidOperationException("Eylül ayı SGK yan bilgisi yanlış.");
         foreach (var width in new[] { 1440, 1040 })
         {
             window.Width = width; window.Height = width == 1440 ? 920 : 760;
@@ -75,9 +76,13 @@ internal static class Program
         if(editor is null)throw new InvalidOperationException("Hibrit hücre düzenleme açılamadı.");
         editor.Text="108";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(row.Result?.Gross!=23821.74m || model.Monthly.DayHours!="108")throw new InvalidOperationException("Hücre yazılırken hesap ve aylık panel güncellenmedi.");
+        if(row.MissingDays!="15")throw new InvalidOperationException("Hücre yazılırken SGK bilgisi güncellenmedi.");
         grid.CommitEdit(DataGridEditingUnit.Cell,true);grid.CommitEdit(DataGridEditingUnit.Row,true);
         Descendants<Button>(window).Single(b=>b.IsVisible && b.Content as string=="Hakediş oluştur").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         if(!model.Calculation.Status.Contains("oluşturuldu"))throw new InvalidOperationException("Hakediş oluştur düğmesi kalıcı kayıt yapmadı: "+model.Calculation.Status);
+        var missingColumn=grid.Columns.OfType<DataGridTextColumn>().Single(c=>(c.Binding as System.Windows.Data.Binding)?.Path.Path=="MissingDays");
+        grid.ScrollIntoView(row,missingColumn);window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        Capture(window,Path.Combine(output,"Calculation-SGK.png"));
         var selectors=Descendants<ComboBox>(window).Where(c=>c.IsVisible).ToArray();
         selectors.Single(c=>c.Items.Count==201).SelectedItem=2027;
         selectors.Single(c=>c.Items.Count==12).SelectedValue=11;
