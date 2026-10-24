@@ -10,19 +10,15 @@ public sealed class TeacherEditor
     public Guid Id { get; set; } = Guid.NewGuid();
     public string FullName { get; set; } = "";
     public string IdentityNumber { get; set; } = "";
-    public string InsuranceNumber { get; set; } = "";
     public string Iban { get; set; } = "";
     public string School { get; set; } = "";
-    public string Branch { get; set; } = "";
-    public string School2 { get; set; } = "";
-    public string Branch2 { get; set; } = "";
     public string OccupationCode { get; set; } = "";
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public TeacherRecord ToRecord(ModuleId module = ModuleId.TemelEgitim) => new(Id, FullName, IdentityNumber, InsuranceNumber, Iban, School, Branch, OccupationCode, StartDate, EndDate, module,School2,Branch2);
+    public TeacherRecord ToRecord(ModuleId module = ModuleId.TemelEgitim) => new(Id, FullName, IdentityNumber, Iban, School, OccupationCode, StartDate, EndDate, module);
     public static TeacherEditor From(TeacherRecord r) => new() { Id = r.Id, FullName = r.FullName,
-        IdentityNumber = r.IdentityNumber, InsuranceNumber = r.InsuranceNumber, Iban = r.Iban,
-        School = r.School, Branch = r.Branch, School2=r.School2,Branch2=r.Branch2,OccupationCode = r.OccupationCode, StartDate = r.StartDate, EndDate = r.EndDate };
+        IdentityNumber = r.IdentityNumber, Iban = r.Iban,
+        School = r.School, OccupationCode = r.OccupationCode, StartDate = r.StartDate, EndDate = r.EndDate };
 }
 
 public sealed class TeacherListViewModel : INotifyPropertyChanged

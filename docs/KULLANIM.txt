@@ -30,10 +30,23 @@ Hakediş ekranı ile Dönem sabitleri paneli aynı modül ve dönemi kullanır.
 HAKEDİŞ HESAPLA
 Modül, DÖNEM ve YIL seçin; birleşik dönem Eylül-2026 gibi gösterilir.
 Yalnız o modülün öğretmenleri ve seçili dönemin aylık kayıtları listelenir.
-Hibrit tabloda saat, kesinti ve ay içi tarih hücrelerini düzenleyebilirsiniz.
-Hesaplanan sütunlar ve tablonun altındaki altı kart canlı yenilenir.
+Tabloda yalnız Excel VERİ GİRİŞİ sayfasının öğretmen ve aylık giriş
+alanları gösterilir. Sıra, İBAN KONTROL ve SAAT TOPLAMI otomatik hesaplanır.
+Diğer hücreleri çift tıklayarak düzenleyebilirsiniz; SGK MESLEK KODU
+hücresinde aramalı listeden seçim yapılır. Altı toplam kartı canlı yenilenir.
+Değişiklikleri kaydet yalnız değişiklik varken etkinleşir. Tüm değişen
+satırlar doğrulandıktan sonra öğretmen ve aylık girdiler birlikte saklanır.
+Hatalı satır varsa hiçbir değişiklik kaydedilmez.
+Satır seçince başlığın yanındaki Sil ve Düzenle düğmeleri etkinleşir.
+Düzenle öğretmen formunu açar: Öğretmen Değişiklik kaydet / Vazgeç.
+Kaydet tüm ekranları günceller, Hakediş Hesapla'ya döner ve Tamam ile
+kapatılan bilgi penceresi açar. Vazgeç kayıtları değiştirmeden geri döner.
+Öğretmen formunu düzenlerken aylık kart ve kayıt modülü kilitlidir.
+Döngü bitince öğretmen düğmeleri yeni kayıt düzenine döner.
+SİGORTA NO, görevlendirildiği branş ve ikinci görev yeri/branşı kaldırıldı.
 Aynı modül/dönemdeki aylık giriş paneli de bu önizlemeye bağlıdır.
 Hatalı girdiler toplamı geçersiz yapar; eski sonuç gösterilmez.
+Öğretmen hücreleri değiştiyse önce Değişiklikleri kaydet kullanılmalıdır.
 Hakediş oluştur, girdileri ve hesap sonuçlarını JSON hakediş kaydına alır.
 Aylık bilgisi girilmemiş öğretmenler bu kayda dahil edilmez; IBAN zorunludur.
 Kayıtları yenile son kayıtları yükler; kaydedilmemiş önizlemeyi bırakır.
@@ -48,6 +61,10 @@ SQL kullanılmaz. EXE yanındaki Veriler/ogretmenler.json öğretmen kataloğudu
 Veriler/AylikKayitlar/Modül/YYYY-MM.json aylık girdileri ve sabitleri tutar.
 Aynı klasördeki hakediş-...json oluşturulan hesap görüntüleridir.
 Yazmalar atomiktir; önceki sağlam kayıt .bak dosyasında kalır.
+Hibrit kayıt sırasında kesinti olursa hibrit-islem.json kurtarma günlüğü
+sonraki açılışta işlemi tamamlar veya geri alır; bu dosyayı elle silmeyin.
+Eski öğretmen katalogları okunur; sonraki kayıtta şema 3'e dönüştürülür.
+Kaldırılmış alanlar yeni dosyaya yazılmaz; eski yedekler korunur.
 Bozuk mevcut dosyanın üzerine yazılmaz. Veriler klasörünü yedekleyin ve
 başka bilgisayara taşırken uygulamayla birlikte götürün.
 Kaydetmeden veya Hakediş oluştur demeden yapılan değişiklik önizlemedir.
@@ -61,7 +78,7 @@ Aylık tarih alanları doluysa bunlar; boşsa öğretmen kaydındaki tarihler
 kullanılır. Örnek: 5 Ekim giriş => 31 - 5 + 1 = 27 azami gün.
 117 saat => 16 çalışma günü; 27 - 16 = 11 eksik gün.
 Şubat 28/29, diğer aylar gerçek 30/31 gün uzunluğuyla ele alınır.
-Hesap SGK sütunlarında ve aylık girişin altında canlı görünür ve hakediş
+Hesap aylık girişin altında canlı görünür ve hakediş
 JSON kaydına yan bilgi olarak alınır. Çalışma günü azami günü aşarsa
 negatif sayı yerine ayrı SGK uyarısı gösterilir; para hesabı iptal edilmez.
 

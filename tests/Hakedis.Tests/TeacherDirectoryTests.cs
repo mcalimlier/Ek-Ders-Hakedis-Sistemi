@@ -9,7 +9,7 @@ public sealed class TeacherDirectoryTests : IDisposable
     private string FilePath => Path.Combine(folder, "ogretmenler.json");
     private TeacherDirectory Store => new(FilePath);
     private static TeacherRecord Teacher(string name = "Örnek Öğretmen", string identity = "")
-        => new(Guid.NewGuid(), name, identity, "", "", "Örnek Okul", "Sınıf", "2341.04", null, null);
+        => new(Guid.NewGuid(), name, identity, "", "Örnek Okul", "2341.04", null, null);
     [Fact]
     public void Teachers_survive_reopening_and_same_names_have_different_ids()
     {

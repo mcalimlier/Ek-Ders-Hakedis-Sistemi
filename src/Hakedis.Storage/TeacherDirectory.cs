@@ -1,5 +1,6 @@
 using Hakedis.Contracts;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
@@ -25,10 +26,19 @@ public sealed class TeacherDirectory
         try
         {
             using var stream = File.OpenRead(path); using var json = JsonDocument.Parse(stream);
-            var catalog = json.RootElement.Deserialize<Catalog>(Options);
-            if (catalog is null || catalog.SchemaVersion is not (1 or 2) || catalog.Teachers is null)
+            if(json.RootElement.ValueKind!=JsonValueKind.Object ||
+               !json.RootElement.TryGetProperty("SchemaVersion",out var schema) || schema.ValueKind!=JsonValueKind.Number ||
+               !schema.TryGetInt32(out var version) || version is not (1 or 2 or 3))
                 throw new InvalidDataException("Öğretmen dosyasının sürümü veya içeriği geçersiz.");
-            if (catalog.SchemaVersion == 2 && json.RootElement.GetProperty("Teachers").EnumerateArray().Any(t =>
+            var node = JsonNode.Parse(json.RootElement.GetRawText())!;
+            // Yalnız eski şemaların kaldırılmış alanları temizlenir; diğer bilinmeyen alanlar reddedilir.
+            if (version is 1 or 2 && node["Teachers"] is JsonArray legacy)
+                foreach (var item in legacy.OfType<JsonObject>())
+                    foreach (var key in new[]{"InsuranceNumber","Branch","School2","Branch2"}) item.Remove(key);
+            var catalog = node.Deserialize<Catalog>(Options);
+            if (catalog is null || catalog.SchemaVersion is not (1 or 2 or 3) || catalog.Teachers is null)
+                throw new InvalidDataException("Öğretmen dosyasının sürümü veya içeriği geçersiz.");
+            if (catalog.SchemaVersion >= 2 && json.RootElement.GetProperty("Teachers").EnumerateArray().Any(t =>
                 t.ValueKind != JsonValueKind.Object || !t.TryGetProperty("ModuleId", out _)))
                 throw new InvalidDataException("Öğretmen kaydının ait olduğu modül belirtilmemiş.");
             var records = catalog.Teachers.Select(Normalize).ToArray();
@@ -45,6 +55,23 @@ public sealed class TeacherDirectory
     }
     public IReadOnlyList<TeacherRecord> Save(TeacherRecord teacher) => SaveCore(teacher, false);
     public IReadOnlyList<TeacherRecord> Update(TeacherRecord teacher) => SaveCore(teacher, true);
+    public IReadOnlyList<TeacherRecord> UpdateBatch(IReadOnlyList<TeacherRecord> expected, IReadOnlyList<TeacherRecord> replacements)
+        => Mutate(rows =>
+        {
+            if(expected.Count!=replacements.Count || expected.Select(t=>t.Id).Distinct().Count()!=expected.Count)
+                throw new ArgumentException("Düzenlenen kayıtlar uyuşmuyor.");
+            for(var i=0;i<expected.Count;i++)
+            {
+                var original=expected[i];var next=Normalize(replacements[i]);
+                var index=rows.FindIndex(t=>t.Id==original.Id);
+                if(index<0 || rows[index]!=original)throw new InvalidOperationException("Öğretmen bilgileri değişmiş. Listeyi yenileyin.");
+                if(original.ModuleId!=module || next.ModuleId!=module || next.Id!=original.Id)
+                    throw new InvalidOperationException("Öğretmenin kimliği veya modülü değiştirilemez.");
+                rows[index]=next;
+            }
+            if(rows.Where(t=>t.IdentityNumber!="").GroupBy(t=>t.IdentityNumber).Any(g=>g.Count()>1))
+                throw new ArgumentException("Bu T.C. kimlik numarası zaten kayıtlı. Aynı öğretmen farklı bir modüle kaydedilemez.");
+        });
     private IReadOnlyList<TeacherRecord> SaveCore(TeacherRecord teacher, bool requireExisting)
     {
         teacher = Normalize(teacher);
@@ -66,6 +93,7 @@ public sealed class TeacherDirectory
     });
     private IReadOnlyList<TeacherRecord> Mutate(Action<List<TeacherRecord>> action)
     {
+        new PayrollEditStore(path).Recover();
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var held = new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         // Ortak kilit altında tüm katalog okunur; diğer modüller korunur ve TCKN tekilliği denetlenir.
@@ -74,25 +102,25 @@ public sealed class TeacherDirectory
         try
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            { JsonSerializer.Serialize(stream, new Catalog(2, rows.ToArray()), Options); stream.Flush(true); }
+            { JsonSerializer.Serialize(stream, new Catalog(3, rows.ToArray()), Options); stream.Flush(true); }
             _ = new TeacherDirectory(temporary, module).Read();
             if (File.Exists(path)) File.Replace(temporary, path, path + ".bak"); else File.Move(temporary, path);
             return rows.Where(t => t.ModuleId == module).ToArray();
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
-    private static TeacherRecord Normalize(TeacherRecord teacher)
+    public static TeacherRecord Normalize(TeacherRecord teacher)
     {
         ArgumentNullException.ThrowIfNull(teacher);
         if (!Enum.IsDefined(teacher.ModuleId)) throw new ArgumentException("Öğretmenin modül bilgisi geçersiz.");
         if (teacher.Id == Guid.Empty || string.IsNullOrWhiteSpace(teacher.FullName))
             throw new ArgumentException("Öğretmenin adını ve soyadını girin.");
-        if (teacher.IdentityNumber is null || teacher.Iban is null || teacher.InsuranceNumber is null ||
-            teacher.School is null || teacher.Branch is null || teacher.OccupationCode is null || teacher.School2 is null || teacher.Branch2 is null)
+        if (teacher.IdentityNumber is null || teacher.Iban is null ||
+            teacher.School is null || teacher.OccupationCode is null)
             throw new ArgumentException("Öğretmen alanları eksik.");
         var normalized = teacher with { FullName = teacher.FullName.Trim(), IdentityNumber = teacher.IdentityNumber.Trim(),
-            Iban = teacher.Iban.Replace(" ", "").ToUpperInvariant(), InsuranceNumber = teacher.InsuranceNumber.Trim(),
-            School = teacher.School.Trim(), Branch = teacher.Branch.Trim(), School2=teacher.School2.Trim(),Branch2=teacher.Branch2.Trim(),OccupationCode = teacher.OccupationCode.Trim(),
+            Iban = teacher.Iban.Replace(" ", "").ToUpperInvariant(),
+            School = teacher.School.Trim(), OccupationCode = teacher.OccupationCode.Trim(),
             StartDate = teacher.StartDate?.Date, EndDate = teacher.EndDate?.Date };
         if (normalized.IdentityNumber != "" && !Regex.IsMatch(normalized.IdentityNumber, "^[0-9]{11}$"))
             throw new ArgumentException("T.C. kimlik numarası 11 rakam olmalıdır veya boş bırakılmalıdır.");

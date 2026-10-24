@@ -18,7 +18,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public ModuleDescriptor RegistrationModule
     {
         get => registrationModule;
-        set { if(value is null || value.Id == registrationModule.Id)return;registrationModule=value;Registration.SwitchModule(value.Id);PropertyChanged?.Invoke(this,new(nameof(RegistrationModule))); }
+        set { if(value is null || value.Id == registrationModule.Id)return;Registration.SwitchModule(value.Id);registrationModule=value;PropertyChanged?.Invoke(this,new(nameof(RegistrationModule))); }
     }
     public ModuleDescriptor ListModule
     {
@@ -27,6 +27,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     }
     public ShellViewModel(string teacherPath)
     {
+        new Hakedis.Storage.PayrollEditStore(teacherPath).Recover();
         Teachers = new(teacherPath, activeModule); Registration = new(teacherPath, activeModule);
         registrationModule = listModule = Workspace.Modules.Single(m=>m.Id==activeModule);
         Monthly = new(teacherPath); Calculation = new(teacherPath);
@@ -44,7 +45,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     private void PeriodChanged(object? sender,PropertyChangedEventArgs e)
     {if(e.PropertyName==nameof(PeriodWorkspace.Constants) && sender is PeriodWorkspace source)SyncConstants(source);}
     private void RefreshOther(PeriodWorkspace source)
-    {var other=Other(source);if(SamePeriod(source,other)) {other.RefreshTeachers();other.AcceptSavedSelection();}}
+    {Teachers.Reload();var other=Other(source);other.RefreshTeachers();if(SamePeriod(source,other))other.AcceptSavedSelection();}
     private void WorkspaceChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(Workspace.SelectedModule)) return;
@@ -83,9 +84,30 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         if(saved.ModuleId==activeModule)CalculationTeacher = saved;
         if(saved.ModuleId==Monthly.SelectedModule.Id)Monthly.SelectedTeacher=Monthly.Teachers.Single(t=>t.Id==saved.Id);
     }
+    public void BeginHybridTeacherEdit()
+    {
+        var row=Calculation.SelectedHybridRow??throw new InvalidOperationException("Önce öğretmen seçin.");
+        BeginTeacherEdit(row.Teacher,row.SourceTeacher);
+    }
+    private void BeginTeacherEdit(TeacherRecord record,TeacherRecord source)
+    {
+        if(Registration.IsEditingRecord)Registration.Reset();
+        RegistrationModule=Workspace.Modules.Single(m=>m.Id==record.ModuleId);
+        Registration.BeginEdit(record,source);Navigate("Entry");
+    }
+    public void SaveTeacherEdit()
+    {
+        var saved=Registration.SaveEdit();Teachers.Reload();
+        foreach(var workspace in new[]{Monthly,Calculation})
+        {workspace.Rows.FirstOrDefault(r=>r.Teacher.Id==saved.Id)?.RefreshTeacher(saved,true);workspace.RefreshTeachers();}
+        if(teacher is not null)CalculationTeacher=Calculation.Rows.FirstOrDefault(r=>r.Teacher.Id==teacher.Id)?.Teacher;
+        Navigate("Calculation");
+    }
+    public void CancelTeacherEdit(){Registration.Reset();Navigate("Calculation");}
     public void Navigate(string destination)
     {
         if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants")) throw new ArgumentException("Geçersiz panel.");
+        if(Registration.IsEditingRecord && destination!="Entry")Registration.Reset();
         panel = destination;
         foreach (var name in new[] { nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
             PropertyChanged?.Invoke(this, new(name));

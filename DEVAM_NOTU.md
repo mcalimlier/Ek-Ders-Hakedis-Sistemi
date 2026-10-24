@@ -1,3 +1,20 @@
+# Son değişiklik — 24 Ekim 2026: hibrit öğretmen düzenleme
+
+Kullanıcının beş maddesi uygulandı:
+- SİGORTA NO, görevlendirildiği branş, görev yeri 2 ve ikinci görev yeri branşı; TeacherRecord, TeacherEditor, formlar, tablolar ve yeni JSON kayıtlarından çıkarıldı. Eski alan adları yalnız şema 1/2 uyumluluk kodunda ve geçiş testlerinde kaldı. Şema 3 yazılıyor; eski dosyanın .bak yedeği korunuyor. Eski hakediş görüntüleri değiştirilmedi.
+- Bordro hibrit tablosu yalnız VERİ GİRİŞİ alanlarını kaynak sırasıyla gösterir (kaldırılan dört sütun hariç). 15 sütun: sıra, ad soyad, TC, IBAN, başlangıç/ayrılış ve ay içi tarihler, SGK meslek kodu, görev yeri, İBAN KONTROL, gündüz/DYK saatleri, SAAT TOPLAMI, icra. Sıra/kontrol/toplam otomatik; diğer hücreler düzenlenebilir. Hesaplanan bordro/SGK sütunları tablodan çıkarıldı; altı toplam kartı ve aylık SGK özeti korundu. Satırlar 30; hücreler yatay/dikey ortalı.
+- Başlık yanındaki Sil/Düzenle yalnız seçili satır varsa etkin. Sil ana öğretmen kaydını onayla siler; geçmiş dosyalar korunur.
+- Düzenle öğretmen formunda kopya açar; modül/aylık kart kilitlidir. Öğretmen Değişiklik kaydet / Vazgeç düğmeleri görünür. Kaydet bütün ekranları günceller, Hakediş Hesapla'ya döner ve Tamam ile kapatılan Kayıtlar güncellendi bildirimi verir. Vazgeç hiçbir kaydı değiştirmez; önceki tablo taslakları korunur. Döngü sonunda düğmeler Öğretmeni Kaydet / Formu Temizle olur.
+- Değişiklikleri kaydet düğmesi tablonun altında, yalnız değişiklik varken etkin. Öğretmen ve aylık bilgiler önce tüm satırlar için doğrulanır, sonra iki dosya kalıcı işlem günlüğüyle yazılır. Hatalı satır, yinelenen TC veya eski ekran çakışması kayıt yazmaz. Yarım işlem açılışta ve sonraki yazmadan önce tamamlanır/geri alınır. OEHS HybridSourceUpdate/HybridRow örnekleri kullanıldı.
+
+102 birim testi geçti: Excel hesap doğrulamaları, model temizliği, eski JSON geçişi/yedek, iptal, tüm görünümlerde güncelleme, geri alınan tablo değerinin temiz sayılması, geçersiz toplu kayıt, TC çakışması, eski ekran/aylık kayıt çakışması, değişmeyen arşiv, silme/seçim, yarım işlem ve ikinci dosyanın yazılamaması, kurtarma sonrası yeni kayıt, bozuk dosya şekilleri.
+
+Gerçek Debug verileri önce artifacts/private-backups/before-hybrid-editing-20261024-141039/Veriler altına kopyalandı; dosya hashleri eşleşti. Aktif Debug kataloğu yeni şema 3'e geçirildi; tüm kalan öğretmen alanları eşit ve aylık dosya byte düzeyinde aynı. 10 öğretmen, 10 aylık kayıt, 972 saat; brüt 214.395,70 TL / net 184.380,34 TL doğrulandı. Özel yedek/yardımcılar Git tarafından yok sayılır.
+
+Aktif veri yolu hâlâ src/Hakedis.App/bin/Debug/net10.0-windows/Veriler. Önceki dist/20261024-004600 programı ve verileri ayrıdır; otomatik eşitlenmez. Bu değişiklik için yeni dağıtım ZIP'i henüz oluşturulmadı. Kaynak Excel değiştirilmedi. WPF görüntüleri artifacts/ui-review-teacher-editing-final içindedir (sentetik öğretmenler).
+
+---
+
 # Güncel çalışma konumu — 24 Ekim 2026
 
 Proje artık C:\Users\MuratPC\Documents\GitHub\TemelEgitimUcretliOgretmenHakedis konumunda. Bundan sonraki tüm komutlarda bu klasörü çalışma dizini olarak kullanın; bu sohbetin eski Desktop çalışma kökü boş kaldı. Aşağıdaki eski yol kayıtları tarihçedir.

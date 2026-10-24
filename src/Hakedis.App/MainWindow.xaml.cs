@@ -6,9 +6,10 @@ namespace Hakedis.App;
 public partial class MainWindow : Window
 {
     private readonly ShellViewModel shell;
+    private readonly Action<string>? notify;
     private WorkspaceViewModel model => shell.Workspace;
     public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
-    public MainWindow(ShellViewModel viewModel) {shell=viewModel;InitializeComponent();DataContext=shell;}
+    public MainWindow(ShellViewModel viewModel,Action<string>? notification=null) {shell=viewModel;notify=notification;InitializeComponent();DataContext=shell;}
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
@@ -21,14 +22,14 @@ public partial class MainWindow : Window
     private void Navigate_Click(object sender, RoutedEventArgs e)
         => shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);
-    private void NewTeacher_Click(object sender, RoutedEventArgs e) => shell.Registration.Reset();
+    private void NewTeacher_Click(object sender, RoutedEventArgs e) {if(shell.Registration.IsEditingRecord)shell.CancelTeacherEdit();else shell.Registration.Reset();}
     private void RegisterTeacher_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             if(!Hakedis.Contracts.OccupationCatalog.Contains(shell.Registration.Editor.OccupationCode))
                 throw new ArgumentException("SGK MESLEK KODU için listeden kod ve karşılığını seçin.");
-            shell.SaveNewTeacher();
+            if(shell.Registration.IsEditingRecord){shell.SaveTeacherEdit();ShowSaved();}else shell.SaveNewTeacher();
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException)
         { shell.Registration.ShowStatus(ex.Message); }
@@ -51,6 +52,24 @@ public partial class MainWindow : Window
         if (MessageBox.Show(this, $"{teacher.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\nGeçmiş hesap taslakları korunur.",
             "Öğretmen kaydını sil", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
             RunTeacher(()=>{shell.Teachers.DeleteSelected();shell.Monthly.RefreshTeachers();shell.Calculation.RefreshTeachers();});
+    }
+    private void ShowSaved()
+    {if(notify is not null)notify("Kayıtlar güncellendi.");else MessageBox.Show(this,"Kayıtlar güncellendi.","Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}
+    private bool CommitHybrid()
+    {
+        if(HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell,true) &&
+           HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row,true) && !HasValidationError(HybridGrid))return true;
+        shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");return false;
+    }
+    private void EditHybrid_Click(object sender,RoutedEventArgs e)
+    {if(CommitHybrid())RunPeriod(shell.Calculation,()=>{shell.BeginHybridTeacherEdit();TeacherEntryScroll.ScrollToTop();});}
+    private void SaveHybrid_Click(object sender,RoutedEventArgs e)
+    {if(CommitHybrid())RunPeriod(shell.Calculation,()=>{shell.Calculation.SaveHybridChanges();ShowSaved();});}
+    private void DeleteHybrid_Click(object sender,RoutedEventArgs e)
+    {
+        if(!CommitHybrid())return;var row=shell.Calculation.SelectedHybridRow;if(row is null)return;
+        if(MessageBox.Show(this,$"{row.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\nGeçmiş hakedişler korunur.","Öğretmen kaydını sil",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes)
+            RunPeriod(shell.Calculation,shell.Calculation.DeleteHybridTeacher);
     }
     private void SaveMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,()=>shell.Monthly.Save(true));
     private void EditMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,shell.Monthly.BeginEdit);

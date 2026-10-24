@@ -10,7 +10,7 @@ public sealed class ModuleTeacherTests : IDisposable
     private string FilePath => Path.Combine(folder, "ogretmenler.json");
     private TeacherDirectory Store(ModuleId module) => new(FilePath, module);
     private static TeacherRecord Teacher(ModuleId module, string identity = "") => new(Guid.NewGuid(),
-        "Örnek Öğretmen", identity, "", "", "Okul", "Branş", "", null, null, module);
+        "Örnek Öğretmen", identity, "", "Okul", "", null, null, module);
     [Fact]
     public void Reads_only_own_module_and_retains_other_modules_after_updates_and_deletes()
     {
@@ -52,7 +52,7 @@ public sealed class ModuleTeacherTests : IDisposable
         Store(ModuleId.Ortaogretim).Save(Teacher(ModuleId.Ortaogretim));
         Assert.Equal(text, File.ReadAllText(FilePath + ".bak"));
         using var json = JsonDocument.Parse(File.ReadAllText(FilePath));
-        Assert.Equal(2, json.RootElement.GetProperty("SchemaVersion").GetInt32());
+        Assert.Equal(3, json.RootElement.GetProperty("SchemaVersion").GetInt32());
         Assert.Equal("TemelEgitim", json.RootElement.GetProperty("Teachers")[0].GetProperty("ModuleId").GetString());
         Assert.Equal(id, Assert.Single(Store(ModuleId.TemelEgitim).Read()).Id);
     }

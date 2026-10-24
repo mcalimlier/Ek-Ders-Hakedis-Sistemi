@@ -7,7 +7,6 @@ public static class ExcelHeadings
     public const string IbanCheck = "İBAN KONTROL";
     public const string FullName = "AD SOYAD";
     public const string IdentityNumber = "TC KİMLİK";
-    public const string InsuranceNumber = "SİGORTA NO";
     public const string Iban = "BANKA IBAN\n(IBAN GİRİLMEZSE HESAP YAPILMAZ)";
     public const string StartDate = "İŞE BAŞLAMA TARİHİ";
     public const string EndDate = "İŞTEN AYRILIŞ TARİHİ";
@@ -15,9 +14,6 @@ public static class ExcelHeadings
     public const string MonthEnd = "AY İÇİNDE İŞTEN AYRILIŞ TARİHİ";
     public const string Occupation = "SGK MESLEK KODU\n1.DÖNEM";
     public const string School = "GÖREV YERİ\n";
-    public const string Branch = "GÖREVLENDİRİLDİĞİ\nBRANŞ";
-    public const string School2 = "GÖREV YERİ 2";
-    public const string Branch2 = "GÖREVLENDİRİLDİĞİ\nGÖREV YERİ 2 \nBRANŞ";
     public const string DayHours = "GÜNDÜZ DERS SAATİ";
     public const string DykHours = "DESTEKLEME VE YETİŞTİRME KURSU";
     public const string Hours = "SAAT TOPLAMI";
@@ -44,7 +40,6 @@ public static class ExcelHeadings
     public const string BordroA6 = "SIRA NO";
     public const string BordroB6 = "Adı Soyadı";
     public const string BordroC6 = "Ünvanı";
-    public const string BordroD6 = "Sigorta Sicil No";
     public const string BordroE6 = "Tc Kimlik No";
     public const string BordroN6 = " SGK'YA ESAS ÜCRET             (Aylık Tutarı)";
     public const string BordroO6 = "Devlet Sigorta Katk.%21,75";

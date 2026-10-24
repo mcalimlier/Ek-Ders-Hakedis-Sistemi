@@ -18,11 +18,11 @@ internal static class Program
         var app = new Hakedis.App.App(); app.InitializeComponent();
         var model = new ShellViewModel(Path.Combine(output, Guid.NewGuid().ToString("N"), "ogretmenler.json"));
         model.Registration.Editor.FullName = "Deneme Öğretmeni"; model.Registration.Editor.School = "Örnek İlkokulu";
-        model.Registration.Editor.Branch = "Sınıf Öğretmenliği";
         model.Registration.Editor.Iban="TR330006100519786457841326";
         model.Registration.Editor.OccupationCode="2341.04";model.SaveNewTeacher();
         model.Monthly.DayHours = "117";
-        var window = new MainWindow(model) { ShowActivated = false, ShowInTaskbar = false };
+        var notifications=new List<string>();
+        var window = new MainWindow(model,notifications.Add) { ShowActivated = false, ShowInTaskbar = false };
         if(window.Width!=1366 || window.Height!=768)throw new InvalidOperationException("Varsayılan laptop boyutu 1366×768 değil.");
         window.Show();
         if(window.ActualWidth>SystemParameters.WorkArea.Width+1 || window.ActualHeight>SystemParameters.WorkArea.Height+1)
@@ -73,7 +73,10 @@ internal static class Program
         var grid=(DataGrid)window.FindName("HybridGrid");
         var row=model.Calculation.Rows.Single();
         var hoursColumn=grid.Columns.OfType<DataGridTextColumn>().Single(c=>(c.Binding as System.Windows.Data.Binding)?.Path.Path=="DayHours");
-        grid.CurrentCell=new DataGridCellInfo(row,hoursColumn);grid.BeginEdit();
+        grid.SelectedItem=row;grid.ScrollIntoView(row,hoursColumn);
+        window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);grid.UpdateLayout();
+        grid.CurrentCell=new DataGridCellInfo(row,hoursColumn);grid.Focus();
+        if(!grid.BeginEdit())throw new InvalidOperationException("Görünür saat hücresinde BeginEdit başarısız.");
         window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         var editor=Descendants<TextBox>(grid).FirstOrDefault(t=>t.IsVisible);
         if(editor is null)throw new InvalidOperationException("Hibrit hücre düzenleme açılamadı.");
@@ -83,9 +86,45 @@ internal static class Program
         grid.CommitEdit(DataGridEditingUnit.Cell,true);grid.CommitEdit(DataGridEditingUnit.Row,true);
         Descendants<Button>(window).Single(b=>b.IsVisible && b.Content as string=="Hakediş oluştur").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         if(!model.Calculation.Status.Contains("oluşturuldu"))throw new InvalidOperationException("Hakediş oluştur düğmesi kalıcı kayıt yapmadı: "+model.Calculation.Status);
-        var missingColumn=grid.Columns.OfType<DataGridTextColumn>().Single(c=>(c.Binding as System.Windows.Data.Binding)?.Path.Path=="MissingDays");
-        grid.ScrollIntoView(row,missingColumn);window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        Capture(window,Path.Combine(output,"Calculation-SGK.png"));
+        var expectedHeaders=new[]{Hakedis.Contracts.ExcelHeadings.Sequence,Hakedis.Contracts.ExcelHeadings.FullName,
+            Hakedis.Contracts.ExcelHeadings.IdentityNumber,Hakedis.Contracts.ExcelHeadings.Iban,Hakedis.Contracts.ExcelHeadings.StartDate,
+            Hakedis.Contracts.ExcelHeadings.EndDate,Hakedis.Contracts.ExcelHeadings.MonthStart,Hakedis.Contracts.ExcelHeadings.MonthEnd,
+            Hakedis.Contracts.ExcelHeadings.Occupation,Hakedis.Contracts.ExcelHeadings.School,Hakedis.Contracts.ExcelHeadings.IbanCheck,
+            Hakedis.Contracts.ExcelHeadings.DayHours,Hakedis.Contracts.ExcelHeadings.DykHours,Hakedis.Contracts.ExcelHeadings.Hours,
+            Hakedis.Contracts.ExcelHeadings.Garnishment};
+        if(!grid.Columns.Select(c=>c.Header as string).SequenceEqual(expectedHeaders))throw new InvalidOperationException("VERİ GİRİŞİ sütunları ve sırası uyuşmuyor.");
+        if(grid.RowHeight!=30)throw new InvalidOperationException("Hibrit satır yüksekliği 30 değil.");
+        var edit=(Button)window.FindName("EditHybridButton");var delete=(Button)window.FindName("DeleteHybridButton");
+        var saveHybrid=(Button)window.FindName("SaveHybridButton");
+        grid.SelectedItem=null;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(edit.IsEnabled || delete.IsEnabled)throw new InvalidOperationException("Seçim yokken satır düğmeleri açık.");
+        grid.SelectedItem=row;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!edit.IsEnabled || !delete.IsEnabled)throw new InvalidOperationException("Seçili satır düğmeleri pasif.");
+        edit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!model.EntryVisible || !model.Registration.IsEditingRecord || model.Registration.Editor.FullName!=row.FullName)
+            throw new InvalidOperationException("Satır düzenlemesi öğretmen formunu açmadı.");
+        var saveRegistration=(Button)window.FindName("SaveRegistrationButton");var cancelRegistration=(Button)window.FindName("CancelRegistrationButton");
+        if(saveRegistration.Content as string!="Öğretmen Değişiklik kaydet" || cancelRegistration.Content as string!="Vazgeç")
+            throw new InvalidOperationException("Düzenleme düğmeleri değişmedi.");
+        model.Registration.Editor.FullName="Kaydedilmez";cancelRegistration.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!model.CalculationVisible || row.FullName!="Deneme Öğretmeni" || model.Registration.IsEditingRecord)
+            throw new InvalidOperationException("Vazgeç kayıtları değiştirdi.");
+        edit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));model.Registration.Editor.FullName="Güncellenen Öğretmen";
+        saveRegistration.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!model.CalculationVisible || row.FullName!="Güncellenen Öğretmen" || notifications.Count!=1)
+            throw new InvalidOperationException("Öğretmen kaydı / dönüş / bildirim başarısız.");
+        if(saveRegistration.Content as string!="Öğretmeni Kaydet" || cancelRegistration.Content as string!="Formu Temizle")
+            throw new InvalidOperationException("Öğretmen düğmeleri normal moda dönmedi.");
+        row.School="Yeni okul";row.DayHours="90";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!saveHybrid.IsEnabled)throw new InvalidOperationException("Değişiklikleri kaydet etkinleşmedi.");
+        saveHybrid.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(saveHybrid.IsEnabled || notifications.Count!=2)throw new InvalidOperationException("Toplu kayıt değişiklikleri kabul etmedi.");
+        grid.ScrollIntoView(row,grid.Columns[1]);window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        foreach(var text in Descendants<TextBlock>(grid).Where(t=>System.Windows.Data.BindingOperations.GetBinding(t,TextBlock.TextProperty)?.Path?.Path=="FullName"))
+            if(text.TextAlignment!=TextAlignment.Center || text.VerticalAlignment!=VerticalAlignment.Center)
+                throw new InvalidOperationException("Hibrit hücre ortalanmadı.");
+        Capture(window,Path.Combine(output,"Calculation-edited.png"));
         var selectors=Descendants<ComboBox>(window).Where(c=>c.IsVisible).ToArray();
         selectors.Single(c=>c.Items.Count==201).SelectedItem=2027;
         selectors.Single(c=>c.Items.Count==12).SelectedValue=11;
@@ -94,7 +133,7 @@ internal static class Program
         Capture(window,Path.Combine(output,"Calculation-Kasim-2027.png"));
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"8 WPF panel görüntüsü + meslek araması; canlı hücre, bağımsız modül ve Kasım-2027 seçimi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"8 WPF panel görüntüsü + meslek araması; canlı hücre, seçim düğmeleri, form iptal/kayıt, toplu kayıt, kaynak sütunları ve Kasım-2027 seçimi doğrulandı; binding hatası yok. {output}"); return 0;
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T:DependencyObject
     {for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);if(child is T t)yield return t;foreach(var nested in Descendants<T>(child))yield return nested;}}
