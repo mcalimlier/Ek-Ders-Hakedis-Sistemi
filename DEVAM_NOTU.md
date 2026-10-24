@@ -1,3 +1,23 @@
+# Son değişiklik — 24 Ekim 2026: referans PDF'ler ve Çıktı akışı
+
+- Hakediş oluştur başarılı olunca Tamam ile kapanan başarı bildirimi görünür; kullanıcı Çıktı paneline yönlendirilir ve son kayıt seçilir. Hatalı kayıt başarı bildirimi üretmez.
+- Kayıtlı Hakedişler tablosunda bütün metin ve başlıklar ortalıdır. Çıktı-1/2/3 etiketleri belge adlarından, metinlerden ve arayüzden kaldırıldı.
+- Kurum ve İmza Bilgileri menüsü Veri Girişi ile Hakediş Hesapla arasına eklendi. Kurum/banka/imzacılar burada düzenlenir; hastalık izni beyanı da değiştirilebilir. Bu bilgiler yeni hakedişte dondurulur.
+- Banka PDF başlığı kullanıcının ekran görüntüsündeki etiket/değer yapısındadır; ay Türkçe büyük harftir. Toplam satırındaki etiket bölünmez.
+- Bordro PDF bütün alanları iki kompakt yatay bölümde, dar kenar boşluklarıyla TEK yatay A4 sayfasında gösterir. Gövde yazısı en az 6 puntodur. Sığmayan aşırı yoğun bordroda satır kesilmez veya ikinci sayfa üretilmez; açık hata ile çıktı oluşturulmaz. On öğretmenlik gerçek kayıt ve uzun isimli sentetik kayıt tek sayfada doğrulandı.
+- Personel Bildirimi verilen PDF'nin A4 koordinatlarıyla tekrar çizildi: dört ayrı yıl rakamı, ay, I/II tablolar, altı boş hastalık satırı, imzalar ve dipnotlar. Tahakkuk/net kayıtlı sonuçlardan gelir.
+- Personel sayımı employment-dates.v2: önceki sayı aynı modülün önceki takvim ayının son hakedişinden alınır; giriş/çıkışlar normal StartDate/EndDate ay ve yılıyla sayılır. Ödeme yapılacak sayı mevcut bordro satır sayısıdır. Katalogda bulunan ama ödeme satırında olmayan ayrılanlar da sayılır. Yeni hareket bilgisi kayıt anında dondurulur. Eski hareket hesabı çıktıda bellekte düzeltilir; kaynak JSON değiştirilmez. Ocak/Aralık sınırı, diğer modül, eski başlangıç tarihi ve sonradan katalog değişikliği testlidir.
+- Altı kartın önceki boyutu WPF ölçüm testiyle karşılaştırılarak korundu. Tahakkuk/net aynı kartta; SGK iştirakçi/işveren aynı kartta. Ödenek kartı 01.04_Kişi ücreti = Gross toplamı, 02.04_SGK Ücreti = EmployerPremium toplamı. Diğer kartlar SGK'ya esas ücret, toplam ders saati ve kesinti toplamıdır.
+- Standart WPF yazıcı seçimi penceresi belge önizlemesi sunmuyor. Üç belgenin ortak yazıcı paginator'ü testlidir; fiziksel yazıcıya iş gönderilmedi.
+
+VERİLER: Çalışma başında artifacts/private-backups/before-reference-outputs-* altına tam Veriler yedeği alındı. Güncel gerçek kayıt 10 öğretmen / 975 saat / 1 kayıtlı hakediş içeriyordu. Üç gerçek PDF test klasörüne üretildi; toplamlar kayıtla eşit. Yedekteki bütün veri dosyaları byte düzeyinde değişmeden duruyor. Gerçek kişi bilgileri, PDF'ler ve test görüntüleri Git dışında.
+
+Güncel Debug sürümü Visual Studio içinde F5 ile açıldı ve açık bırakıldı. Canlı pencerede yeni Kurum ve İmza menüsü ve 10 öğretmen kaydı doğrulandı; süreç yanıt veriyor.
+
+Doğrulama: 115 birim testi geçti; WPF testinde 12 panel görüntüsü, kart ölçüleri, başarı bildirimi/yönlendirme, merkezleme, eski sayımın bellekte düzeltilmesi, yoğun bordro sınırı, PDF ve yazıcı sayfaları kontrol edildi. Testler artifacts altında sentetik verilerle çalışır. --verify-local-archive seçeneği gerçek arşivi salt okunur inceleyip özel test çıktısı üretir.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: ortak sabitler, geçmiş ve üç çıktı
 
 Kullanıcının bu turdaki dört maddesi uygulandı. Önceki bölümler tarihçedir; güncel davranış:

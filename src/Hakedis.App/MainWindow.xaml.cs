@@ -109,7 +109,13 @@ public partial class MainWindow : Window
         if(!HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell,true) ||
            !HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row,true) || HasValidationError(HybridGrid))
         {shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");return;}
-        RunPeriod(shell.Calculation,shell.Calculation.CreatePayment);
+        RunPeriod(shell.Calculation,()=>{
+            shell.Calculation.CreatePayment();
+            const string message="İşlem başarılı. Hakediş oluşturuldu ve kaydedildi.";
+            if(notify is not null)notify(message);else MessageBox.Show(this,message,"Hakediş",MessageBoxButton.OK,MessageBoxImage.Information);
+            shell.Navigate("Outputs");
+            shell.Outputs.Selected=shell.Outputs.Records.FirstOrDefault();
+        });
     }
     private static bool HasValidationError(DependencyObject element)
     {

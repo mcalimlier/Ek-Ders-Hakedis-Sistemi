@@ -33,31 +33,28 @@ public static class PaymentReports
             Money(r.Result.StampTax),Money(r.Result.EmployeePremium),Money(r.Result.EmployerPremium),Money(r.Input.Garnishment),Money(r.Result.Deductions),Money(r.Result.Net)}).ToArray();
         var total2=new[]{"TOPLAM","","",Money(rows.Sum(r=>r.Result.IncomeBase)),"0,00","",Money(rows.Sum(r=>r.Result.IncomeTax)),"",Money(rows.Sum(r=>r.Result.StampTax)),Money(rows.Sum(r=>r.Result.EmployeePremium)),
             Money(rows.Sum(r=>r.Result.EmployerPremium)),Money(rows.Sum(r=>r.Input.Garnishment)),Money(rows.Sum(r=>r.Result.Deductions)),Money(rows.Sum(r=>r.Result.Net))};
-        var payroll=new PaymentReport("Bordro (Çıktı-1).pdf","DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (ÜCRETLİ ÖĞRETMEN)",true,info,
+        var payroll=new PaymentReport("Bordro.pdf","DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (ÜCRETLİ ÖĞRETMEN)",true,info,
             [new("Ders, ücret ve tahakkuk",h1,[40,108,52,66,42,42,43,47,47,53,53,38,58,58,58],a,total1),
              new("Vergi, kesinti ve net ödeme",h2,[40,108,66,58,53,55,57,55,53,54,54,52,55,58],b,total2)],
             ["Bordroda yazılı alacaklar kayıtlara uygundur.","SÜRE GELEN VERGİ MATRAHI kaynak hesapta kullanılmadığından 0,00 gösterilir."]);
         var bankRows=rows.Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,r.Teacher.IdentityNumber,r.Teacher.Iban,Money(r.Result.Net)}).ToArray();
-        var bank=new PaymentReport("Banka Listesi (Çıktı-2).pdf","B  A  N  K  A       L  İ  S  T  E  S  İ",false,
+        var bank=new PaymentReport("Banka Listesi.pdf","B  A  N  K  A       L  İ  S  T  E  S  İ",false,
             ["DAİRENİN ADI               "+details.Institution,"BANKANIN ADI              "+details.Bank,"AİT OLDUĞU AY             "+period],
             [new("",["SN","ADI SOYADI","Tc Kimlik No","BANKA IBAN HESAP NO","ÜCRET"],[28,125,77,183,82],bankRows,["Toplam","","","",Money(rows.Sum(r=>r.Result.Net))])],[]);
-        var movement=data.Movement??new PersonnelMovement(0,rows.Length,0);
+        var movement=data.Movement??new PersonnelMovement(0,rows.Count(r=>r.Teacher.StartDate is DateTime start && start.Year==data.Year && start.Month==data.Month),rows.Count(r=>r.Teacher.EndDate is DateTime end && end.Year==data.Year && end.Month==data.Month));
         var personnelRows=new[]{new[]{"1","Geçen Ay Personel Sayısı",movement.Previous.ToString(),"",""},
             new[]{"2","Bu Ay İçinde Giren(x)",movement.Entered.ToString(),"",""},new[]{"3","Bu Ay İçinde Çıkan",movement.Exited.ToString(),"",""},
             new[]{"4","Ödeme Yapılacak Personel Sayısı(1+2-3)",rows.Length.ToString(),Money(rows.Sum(r=>r.Result.Accrual)),Money(rows.Sum(r=>r.Result.Net))}};
-        var personnel=new PaymentReport("Personel Bildirimi (Çıktı-3).pdf","PERSONEL BİLDİRİMİ",false,
+        var personnel=new PaymentReport("Personel Bildirimi.pdf","PERSONEL BİLDİRİMİ",false,
             [details.Institution,"Ait Olduğu Ay: "+period,"Bütçe Yılı: "+data.Year],
             [new("1 Nolu Tablo",["","","Personel Sayısı","Tahakkuk Toplamı",ExcelHeadings.BordroAA5],[25,235,65,85,85],personnelRows),
              new("II Nolu Tablo   (xx)",["Sıra N","Memurun Adı Soyadı"," Geçen Aylarda\nKullandığı Hastalık\nizin süresi","Bu Ay Kullandığı\nHastalık İzni Süresi","Toplam Hastalık\nizni süresi"],[30,160,105,105,95],
                 [new[]{"","","","",""},new[]{"","","","",""}])],
-            ["Personel hareketleri önceki ayın son kayıtlı hakediş kadrosuyla karşılaştırılır. Önceki ay kaydı yoksa başlangıç sayısı 0 alınır; personel birimi kontrol etmelidir.",
+            ["Geçen ay sayısı aynı modülün önceki ay son hakedişinden; giriş ve çıkışlar ilgili aydaki normal işe giriş/çıkış tarihlerinden alınır.",
              "II Nolu tablo personel birimi tarafından kontrol edilerek tamamlanmalıdır.",
              "(x)Ay içinde girenlerin isim listesi eklenecektir",
              "(xx) II Nolu tablonun düzenlenmesinden sadece personel birimi yetkilisi sorumludur",
              "(xxx) Müstakil personel birimi olmayan dairelerde personel işleriyle görevlendirilmiş olanlar tarafından imzalanır."]);
-        var enteredIds=movement.EnteredIds??(movement.Previous==0?rows.Select(r=>r.Teacher.Id).ToArray():[]);
-        var entered=rows.Where(r=>enteredIds.Contains(r.Teacher.Id)).Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,r.Teacher.IdentityNumber,r.Teacher.StartDate?.ToString("dd.MM.yyyy",Tr)??""}).ToArray();
-        if(entered.Length>0)personnel=personnel with {Tables=personnel.Tables.Append(new ReportTable("(x) Ay içinde girenlerin isim listesi",["Sıra N","Memurun Adı Soyadı","T.C.","Göreve Başlama Tarihi"],[30,235,110,120],entered)).ToArray()};
         return [payroll,bank,personnel];
     }
 }

@@ -16,6 +16,17 @@ internal static class Program
         var output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/ui-review"); Directory.CreateDirectory(output);
         var listener = new BindingErrors(); PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
         var app = new Hakedis.App.App(); app.InitializeComponent();
+        if(args.Length==3 && args[1]=="--verify-local-archive")
+        {
+            var store=new Hakedis.Storage.PaymentArchiveStore(args[2]);var record=store.ReadAll().First();
+            var original=File.ReadAllBytes(record.Path);var svc=new PaymentReportService();
+            var fallback=new Hakedis.Storage.ReportDetailsStore(args[2]).Read();
+            var folder=svc.Export(record,fallback,Path.Combine(output,"private-pdfs"));
+            if(!original.SequenceEqual(File.ReadAllBytes(record.Path)))throw new InvalidOperationException("Çıktı kaynak kaydı değiştirdi.");
+            VerifyReportPages(svc,record,fallback,output,"local");
+            File.WriteAllText(Path.Combine(output,"pdf-local-folder.txt"),folder);
+            Console.WriteLine($"Yerel kayıt: {record.Count} öğretmen, üç PDF; kaynak dosya değişmedi.");return 0;
+        }
         var model = new ShellViewModel(Path.Combine(output, Guid.NewGuid().ToString("N"), "ogretmenler.json"));
         model.Registration.Editor.FullName = "Deneme Öğretmeni"; model.Registration.Editor.School = "Örnek İlkokulu";
         model.Registration.Editor.Iban="TR330006100519786457841326";
@@ -39,7 +50,7 @@ internal static class Program
         foreach (var width in new[] { 1366, 1040 })
         {
             window.Width = width; window.Height = width == 1366 ? 768 : 728;
-            foreach (var panel in new[] { "Entry", "Calculation", "Teachers", "Constants", "Outputs" })
+            foreach (var panel in new[] { "Entry", "Calculation", "Teachers", "Constants", "Details", "Outputs" })
             {
                 model.Navigate(panel);
                 if (panel == "Teachers") model.Teachers.Selected = model.Teachers.Records.Single();
@@ -52,7 +63,16 @@ internal static class Program
                 {
                     var scroll=(ScrollViewer)window.FindName("CalculationScroll");scroll.ScrollToEnd();
                     window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-                    Capture(window,Path.Combine(output,$"Calculation-cards-{width}.png"));scroll.ScrollToTop();
+                    Capture(window,Path.Combine(output,$"Calculation-cards-{width}.png"));
+                    var metrics=(System.Windows.Controls.Primitives.UniformGrid)window.FindName("PaymentMetrics");
+                    var cards=metrics.Children.OfType<Border>().ToArray();
+                    if(cards.Length!=6 || cards.Select(c=>c.ActualHeight).Distinct().Count()!=1)throw new InvalidOperationException("Altı eş boyutlu kart korunmadı.");
+                    var baseline=new Border{Style=(Style)window.FindResource("MetricCard"),Padding=new Thickness(16),Margin=new Thickness(0,0,10,10)};
+                    var originalContent=new StackPanel();originalContent.Children.Add(new TextBlock{Text=Hakedis.Contracts.ExcelHeadings.BordroW6,Style=(Style)window.FindResource("CardSubtitle"),TextWrapping=TextWrapping.Wrap,MinHeight=45});
+                    originalContent.Children.Add(new TextBlock{Text="3.612,96 TL",Style=(Style)window.FindResource("MetricValue"),FontSize=23});baseline.Child=originalContent;
+                    baseline.Measure(new Size(cards[0].ActualWidth+10,double.PositiveInfinity));
+                    if(Math.Abs(baseline.DesiredSize.Height-cards[0].DesiredSize.Height)>1.5)throw new InvalidOperationException($"Kart boyutu değişti: {baseline.DesiredSize.Height} / {cards[0].DesiredSize.Height}");
+                    scroll.ScrollToTop();
                 }
             }
         }
@@ -85,6 +105,11 @@ internal static class Program
         if(row.MissingDays!="15")throw new InvalidOperationException("Hücre yazılırken SGK bilgisi güncellenmedi.");
         grid.CommitEdit(DataGridEditingUnit.Cell,true);grid.CommitEdit(DataGridEditingUnit.Row,true);
         Descendants<Button>(window).Single(b=>b.IsVisible && b.Content as string=="Hakediş oluştur").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if(!model.OutputsVisible || notifications.Count!=1)throw new InvalidOperationException("Hakediş sonrası bildirim ve Çıktı yönlendirmesi yok.");
+        Capture(window,Path.Combine(output,"Outputs-saved.png"));
+        var outputsGrid=(DataGrid)window.FindName("OutputsGrid");
+        if(outputsGrid.Columns.OfType<DataGridTextColumn>().Any(c=>c.ElementStyle?.Setters.OfType<Setter>().Any(v=>v.Property==TextBlock.TextAlignmentProperty && Equals(v.Value,TextAlignment.Center))!=true))throw new InvalidOperationException("Çıktı hücreleri ortalı değil.");
+        model.Navigate("Calculation");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(!model.Calculation.Status.Contains("oluşturuldu"))throw new InvalidOperationException("Hakediş oluştur düğmesi kalıcı kayıt yapmadı: "+model.Calculation.Status);
         var expectedHeaders=new[]{Hakedis.Contracts.ExcelHeadings.Sequence,Hakedis.Contracts.ExcelHeadings.FullName,
             Hakedis.Contracts.ExcelHeadings.IdentityNumber,Hakedis.Contracts.ExcelHeadings.Iban,Hakedis.Contracts.ExcelHeadings.StartDate,
@@ -112,14 +137,14 @@ internal static class Program
             throw new InvalidOperationException("Vazgeç kayıtları değiştirdi.");
         edit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));model.Registration.Editor.FullName="Güncellenen Öğretmen";
         saveRegistration.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        if(!model.CalculationVisible || row.FullName!="Güncellenen Öğretmen" || notifications.Count!=1)
+        if(!model.CalculationVisible || row.FullName!="Güncellenen Öğretmen" || notifications.Count!=2)
             throw new InvalidOperationException("Öğretmen kaydı / dönüş / bildirim başarısız.");
         if(saveRegistration.Content as string!="Öğretmeni Kaydet" || cancelRegistration.Content as string!="Formu Temizle")
             throw new InvalidOperationException("Öğretmen düğmeleri normal moda dönmedi.");
         row.School="Yeni okul";row.DayHours="90";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(!saveHybrid.IsEnabled)throw new InvalidOperationException("Değişiklikleri kaydet etkinleşmedi.");
         saveHybrid.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        if(saveHybrid.IsEnabled || notifications.Count!=2)throw new InvalidOperationException("Toplu kayıt değişiklikleri kabul etmedi.");
+        if(saveHybrid.IsEnabled || notifications.Count!=3)throw new InvalidOperationException("Toplu kayıt değişiklikleri kabul etmedi.");
         grid.ScrollIntoView(row,grid.Columns[1]);window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         foreach(var text in Descendants<TextBlock>(grid).Where(t=>System.Windows.Data.BindingOperations.GetBinding(t,TextBlock.TextProperty)?.Path?.Path=="FullName"))
             if(text.TextAlignment!=TextAlignment.Center || text.VerticalAlignment!=VerticalAlignment.Center)
@@ -153,12 +178,18 @@ internal static class Program
         File.WriteAllText(Path.Combine(output,"pdf-folder.txt"),exports);
         VerifyReportPages(service,archived,details,output,"normal");
         var baseRow=archived.Document.Data.Rows[0];
-        var many=Enumerable.Range(1,65).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"ÇĞİÖŞÜ Deneme Öğretmeni {i} Uzun İsim Soyisim"}})
+        var many=Enumerable.Range(1,10).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"ÇĞİÖŞÜ Deneme Öğretmeni {i} Uzun İsim Soyisim"}})
             .Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray();
         var large=archived with {Document=archived.Document with {Data=archived.Document.Data with {Rows=many,Movement=new(0,many.Length,0,many.Select(r=>r.Teacher.Id).ToArray())}}};
         var largeExports=service.Export(large,details with {Institution="Çok uzun kurum adı olan Örnek İlçe Milli Eğitim Müdürlüğü - Okul Öncesi ve İlköğretim Okulları"},Path.Combine(output,"pdf-large-test"));
         File.WriteAllText(Path.Combine(output,"pdf-large-folder.txt"),largeExports);
         VerifyReportPages(service,large,details,output,"large");
+        var oversized=large with {Document=large.Document with {Data=large.Document.Data with {Rows=Enumerable.Range(1,65).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"Çok Uzun Ad Soyad Deneme Öğretmeni {i}"}}).Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray()}}};
+        try{service.Prepare(oversized,details);throw new Exception("Okunamayacak bordro için kapasite kontrolü yok.");}
+        catch(ArgumentException ex) when(ex.Message.Contains("tek yatay A4")){}
+        var legacy=archived with {Document=archived.Document with {Data=archived.Document.Data with {Movement=new(0,99,99)}}};
+        var corrected=service.Prepare(legacy,details)[2];
+        if(corrected.Pages[0].Cells.Where(c=>c.Y==178.4).SelectMany(c=>c.Lines).Contains("99"))throw new InvalidOperationException("Eski personel hesabı düzeltilmedi.");
         model.Navigate("Calculation");model.Calculation.Reload();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         var selectors=Descendants<ComboBox>(window).Where(c=>c.IsVisible).ToArray();
         selectors.Single(c=>c.Items.Count==201).SelectedItem=2027;
@@ -168,11 +199,16 @@ internal static class Program
         Capture(window,Path.Combine(output,"Calculation-Kasim-2027.png"));
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"10 WPF panel görüntüsü, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"12 WPF panel görüntüsü, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }
     private static void VerifyReportPages(PaymentReportService service,Hakedis.Storage.ArchivedPayment record,Hakedis.Contracts.ReportDetails details,string output,string prefix)
     {
         var prepared=service.Prepare(record,details);
+        if(prepared[0].Pages.Length!=1 || prepared[0].Pages[0].Width<prepared[0].Pages[0].Height)throw new InvalidOperationException("Bordro tek yatay A4 değil.");
+        if(prepared.Any(r=>r.FileName.Contains("Çıktı-")))throw new InvalidOperationException("Sıra etiketi kaldı.");
+        if(prepared[2].Pages.Length!=1)throw new InvalidOperationException("Personel bildirimi tek sayfa değil.");
+        var digits=prepared[2].Pages[0].Cells.Where(c=>c.Y==141 && c.Width==49).ToArray();
+        if(digits.Length!=4 || string.Concat(digits.Select(c=>c.Lines[0]))!=record.Document.Data.Year.ToString())throw new InvalidOperationException("Personel yılı ayrı hücrelerde değil.");
         var print=service.CreatePrintPaginator(prepared,new Size(793,1122));
         if(print.PageCount!=prepared.Sum(r=>r.Pages.Length))throw new InvalidOperationException("Yazıcı işi üç belgenin tüm sayfalarını içermiyor.");
         for(var n=0;n<print.PageCount;n++)if(print.GetPage(n).Visual is null)throw new InvalidOperationException("Yazıcı sayfası boş.");

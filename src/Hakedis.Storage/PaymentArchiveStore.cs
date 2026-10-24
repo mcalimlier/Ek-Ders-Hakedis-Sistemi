@@ -57,7 +57,12 @@ public sealed class PaymentArchiveStore(string root)
     {
         var prior=new DateTime(year,month,1).AddMonths(-1);
         var previous=ReadAll().FirstOrDefault(x=>x.Document.ModuleId==module && x.Document.Data.Year==prior.Year && x.Document.Data.Month==prior.Month)?.Document.Data.Rows??[];
-        var old=previous.Select(r=>r.Teacher.Id).ToHashSet();var current=rows.Select(r=>r.Teacher.Id).ToHashSet();
-        return new(old.Count,current.Except(old).Count(),old.Except(current).Count(),current.Except(old).ToArray());
+        // Listeye yeni eklenmek işe yeni başlamak anlamına gelmez. Tarih ve yıl birlikte eşleşir.
+        var teachers=previous.Select(r=>r.Teacher).Concat(new TeacherDirectory(System.IO.Path.Combine(root,"ogretmenler.json"),module).Read())
+            .Concat(rows.Select(r=>r.Teacher))
+            .GroupBy(t=>t.Id).Select(g=>g.Last()).Where(t=>t.ModuleId==module).ToArray();
+        bool InMonth(DateTime? date)=>date is DateTime d && d.Year==year && d.Month==month;
+        var entered=teachers.Where(t=>InMonth(t.StartDate)).Select(t=>t.Id).ToArray();
+        return new(previous.Length,entered.Length,teachers.Count(t=>InMonth(t.EndDate)),entered,"employment-dates.v2");
     }
 }

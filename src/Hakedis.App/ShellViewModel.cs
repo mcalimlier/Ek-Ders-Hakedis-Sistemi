@@ -66,14 +66,16 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         RegistrationModule=Workspace.Modules.Single(m=>m.Id==next); ListModule=RegistrationModule;
         PropertyChanged?.Invoke(this, new(nameof(CalculationTeacher)));
     }
+    public bool DetailsVisible=>panel=="Details";
     public bool OutputsVisible=>panel=="Outputs";
     public bool EntryVisible => panel == "Entry";
     public bool CalculationVisible => panel == "Calculation";
     public bool TeachersVisible => panel == "Teachers";
     public bool ConstantsVisible => panel == "Constants";
-    public string Title => panel switch { "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Ücretli Öğretmen Listesi", _ => "Veri Girişi" };
+    public string Title => panel switch { "Details" => "Kurum ve İmza Bilgileri", "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Ücretli Öğretmen Listesi", _ => "Veri Girişi" };
     public string Subtitle => panel switch
     {
+        "Details" => "Çıktılarda kullanılacak kurum, banka ve imza bilgilerini düzenleyin.",
         "Outputs" => "Kayıtlı hakedişleri görüntüleyin, üç belgeyi PDF oluşturun veya yazdırın.",
         "Constants" => "Tüm modüllerdeki aktif ve sonraki hesaplamalar için ortak sabitleri yönetin.",
         "Calculation" => "Modül ve dönemi seçin; aylık ders bilgilerini tabloda kontrol ederek hakedişi oluşturun.",
@@ -119,12 +121,12 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void CancelTeacherEdit(){Registration.Reset();Navigate("Calculation");}
     public void Navigate(string destination)
     {
-        if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants" or "Outputs")) throw new ArgumentException("Geçersiz panel.");
+        if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants" or "Outputs" or "Details")) throw new ArgumentException("Geçersiz panel.");
         if(Calculation.IsArchiveEditing && destination!="Calculation")throw new InvalidOperationException("Geçmiş düzenlemeyi Değiştir/Kaydet veya Vazgeç ile tamamlayın.");
         if(destination=="Outputs")Outputs.Reload();
         if(Registration.IsEditingRecord && destination!="Entry")Registration.Reset();
         panel = destination;
-        foreach (var name in new[] { nameof(OutputsVisible),nameof(CanUseEntry),nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
+        foreach (var name in new[] { nameof(DetailsVisible),nameof(OutputsVisible),nameof(CanUseEntry),nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
             PropertyChanged?.Invoke(this, new(name));
     }
     public void ClearCurrentWork()

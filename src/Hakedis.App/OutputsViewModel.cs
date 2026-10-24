@@ -14,8 +14,9 @@ public sealed class ReportDetailsEditor
     public string AuthorizedBy {get;set;}="";
     public string AuthorizedTitle {get;set;}="İlçe Milli Eğitim Müdürü";
     public string Treasurer {get;set;}="";
-    public ReportDetails Read()=>new(Institution.Trim(),Bank.Trim(),PreparedBy.Trim(),PreparedTitle.Trim(),AuthorizedBy.Trim(),AuthorizedTitle.Trim(),Treasurer.Trim());
-    public static ReportDetailsEditor From(ReportDetails d)=>new(){Institution=d.Institution,Bank=d.Bank,PreparedBy=d.PreparedBy,PreparedTitle=d.PreparedTitle,AuthorizedBy=d.AuthorizedBy,AuthorizedTitle=d.AuthorizedTitle,Treasurer=d.Treasurer};
+    public string SickLeaveStatement {get;set;}="Hastalık izni kullanan personel yoktur";
+    public ReportDetails Read()=>new(Institution.Trim(),Bank.Trim(),PreparedBy.Trim(),PreparedTitle.Trim(),AuthorizedBy.Trim(),AuthorizedTitle.Trim(),Treasurer.Trim(),SickLeaveStatement.Trim());
+    public static ReportDetailsEditor From(ReportDetails d)=>new(){Institution=d.Institution,Bank=d.Bank,PreparedBy=d.PreparedBy,PreparedTitle=d.PreparedTitle,AuthorizedBy=d.AuthorizedBy,AuthorizedTitle=d.AuthorizedTitle,Treasurer=d.Treasurer,SickLeaveStatement=d.SickLeaveStatement};
 }
 
 public sealed class OutputsViewModel : INotifyPropertyChanged
@@ -28,10 +29,11 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     public bool HasSelection=>Selected is not null;
     public ReportDetailsEditor Details {get;}
     public string Status {get;private set;}="";
+    public string DetailsStatus {get;private set;}="";
     public event PropertyChangedEventHandler? PropertyChanged;
     public OutputsViewModel(string root)
     {store=new(root);detailsStore=new(root);Details=ReportDetailsEditor.From(detailsStore.Read());Reload();}
-    public void SaveDetails(){detailsStore.Save(Details.Read());ShowStatus("Belge bilgileri kaydedildi. Bundan sonra oluşturulacak hakedişlere bu bilgiler eklenir.");}
+    public void SaveDetails(){detailsStore.Save(Details.Read());DetailsStatus="Belge bilgileri kaydedildi. Bundan sonra oluşturulacak hakedişlere bu bilgiler eklenir.";Notify();}
     public void Reload()
     {
         var path=Selected?.Path;Records.Clear();selected=null;
@@ -45,5 +47,5 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
         if(current.Version!=Selected!.Version)throw new InvalidOperationException("Kayıt değişmiş. Listeyi yenileyin.");return current;
     }
     public void ShowStatus(string message){Status=message;Notify();}
-    private void Notify(){foreach(var name in new[]{nameof(Selected),nameof(HasSelection),nameof(Status)})PropertyChanged?.Invoke(this,new(name));}
+    private void Notify(){foreach(var name in new[]{nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status)})PropertyChanged?.Invoke(this,new(name));}
 }

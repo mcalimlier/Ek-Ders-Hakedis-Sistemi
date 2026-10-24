@@ -59,7 +59,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             if(!OccupationCatalog.Contains(record.OccupationCode))throw new ArgumentException("Listeden SGK MESLEK KODU seçin.");
             result.Add(new(record,input,row.Result??throw new ArgumentException(row.Error),row.SgkInformation,row.SgkError));
         }
-        return original with {Rows=result.ToArray()};
+        return original with {Rows=result.ToArray(),Movement=new PaymentArchiveStore(System.IO.Path.GetDirectoryName(teacherPath)!).Movement(SelectedModule.Id,year,month,result)};
     }
     private void RequireNormal(){if(IsArchiveEditing)throw new InvalidOperationException("Geçmiş kayıt için Değiştir/Kaydet veya Vazgeç kullanın.");}
     private Action? constantsHandler;
@@ -279,11 +279,12 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public string EmployeeText=>Total(r=>r.EmployeePremium);
     public string EmployerText=>Total(r=>r.EmployerPremium);
     public string DeductionsText=>Total(r=>r.Deductions);
+    public string HoursText=>Rows.Sum(r=>(decimal.TryParse(r.DayHours,NumberStyles.Number,CultureInfo.GetCultureInfo("tr-TR"),out var day)?day:0)+(decimal.TryParse(r.DykHours,NumberStyles.Number,CultureInfo.GetCultureInfo("tr-TR"),out var dyk)?dyk:0)).ToString("N2",CultureInfo.GetCultureInfo("tr-TR"))+" saat";
     public string CountText=>$"{Rows.Count} öğretmen · {Rows.Count(r=>r.HasInput)} aylık giriş";
     public void ShowError(string text){Status=text;Notify();}
     private void Notify()
     {
-        foreach(var name in new[]{nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
+        foreach(var name in new[]{nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }
 }

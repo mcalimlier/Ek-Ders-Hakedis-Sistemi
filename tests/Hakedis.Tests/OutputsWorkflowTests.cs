@@ -98,11 +98,43 @@ public sealed class OutputsWorkflowTests : IDisposable
     {
         var s=Setup();s.Calculation.CreatePayment();var data=s.Outputs.Records.Single().Document.Data;
         var reports=Hakedis.TemelEgitim.Core.PaymentReports.Build(data,new("Kurum","Banka","Görevli","Ünvan","Yetkili"));
-        Assert.Equal(3,reports.Length);Assert.Equal("Bordro (Çıktı-1).pdf",reports[0].FileName);
+        Assert.Equal(3,reports.Length);Assert.Equal("Bordro.pdf",reports[0].FileName);
         Assert.Equal("22.193,93",reports[1].Tables[0].Rows[0][4]);
         Assert.Equal(reports[0].Tables[1].Rows[0][13],reports[1].Tables[0].Rows[0][4]);
         Assert.Contains("Eylül-2026",string.Join(" ",reports[2].Information));
         Assert.DoesNotContain("#REF!",string.Join(" ",reports.SelectMany(x=>x.Information)));
+    }
+    [Fact] public void Personnel_entries_use_employment_dates_not_roster_differences()
+    {
+        var s=Setup();s.Calculation.CreatePayment();var rows=s.Outputs.Records.Single().Document.Data.Rows;
+        var old=rows[0] with {Teacher=rows[0].Teacher with {StartDate=new DateTime(2026,8,1)}};
+        var store=new PaymentArchiveStore(root);
+        var september=store.Movement(ModuleId.TemelEgitim,2026,9,[old]);
+        Assert.Equal(0,september.Entered);Assert.Equal(0,september.Exited);
+        var joined=old with {Teacher=old.Teacher with {StartDate=new DateTime(2026,10,5),EndDate=new DateTime(2026,10,25)}};
+        var october=store.Movement(ModuleId.TemelEgitim,2026,10,[joined]);
+        Assert.Equal(1,october.Previous);Assert.Equal(1,october.Entered);Assert.Equal(1,october.Exited);
+        var nextYear=store.Movement(ModuleId.TemelEgitim,2027,10,[joined]);
+        Assert.Equal(0,nextYear.Entered);Assert.Equal(0,nextYear.Exited);
+    }
+    [Fact] public void Personnel_movement_crosses_year_and_counts_departures_outside_the_paid_roster()
+    {
+        var s=Setup();s.Calculation.Year=2026;s.Calculation.Month=12;s.Calculation.Rows[0].DayHours="117";
+        s.Calculation.CreatePayment();
+        var catalog=new TeacherDirectory(PathName);var person=catalog.Read().Single();
+        catalog.Update(person with {EndDate=new DateTime(2027,1,25)});
+        new TeacherDirectory(PathName,ModuleId.Ortaogretim).Save(person with {Id=Guid.NewGuid(),ModuleId=ModuleId.Ortaogretim,StartDate=new DateTime(2027,1,1),IdentityNumber=""});
+        var movement=new PaymentArchiveStore(root).Movement(ModuleId.TemelEgitim,2027,1,[]);
+        Assert.Equal(1,movement.Previous);Assert.Equal(0,movement.Entered);Assert.Equal(1,movement.Exited);
+        Assert.Equal("employment-dates.v2",movement.RuleVersion);
+    }
+    [Fact] public void Recorded_personnel_movement_is_frozen_when_master_dates_change()
+    {
+        var s=Setup();s.Calculation.Rows[0].StartDate=new DateTime(2026,9,5);s.Calculation.SaveHybridChanges();s.Calculation.CreatePayment();
+        var archived=s.Outputs.Records.Single();Assert.Equal(1,archived.Document.Data.Movement!.Entered);
+        var catalog=new TeacherDirectory(PathName);var person=catalog.Read().Single();catalog.Update(person with {StartDate=new DateTime(2026,8,1)});
+        var reopened=new PaymentArchiveStore(root).Read(archived.Path);
+        Assert.Equal(1,reopened.Document.Data.Movement!.Entered);
     }
     public void Dispose(){if(Directory.Exists(root))Directory.Delete(root,true);}
 }
