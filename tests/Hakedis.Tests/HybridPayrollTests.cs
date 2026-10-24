@@ -92,9 +92,9 @@ public sealed class HybridPayrollTests : IDisposable
         Assert.Equal("—",shell.Calculation.NetText);Assert.Null(shell.Monthly.Rows[0].Result);
         Assert.Throws<ArgumentException>(shell.Monthly.SaveConstants);
         shell.Monthly.Constants.Coefficient="1,575512";
-        shell.Monthly.MonthStart=new DateTime(2027,1,1);
+        shell.Monthly.Rows[0].StartDate=new DateTime(2027,1,1);
         Assert.NotEqual("—",shell.Calculation.NetText);Assert.Equal("—",shell.Monthly.Rows[0].MissingDays);
-        Assert.Throws<ArgumentException>(()=>shell.Monthly.Save(false));
+        shell.Monthly.Save(false); // Gelecek başlangıç tarihi yalnız SGK yan bilgisini etkiler.
     }
     [Fact]
     public void Blank_zero_entry_is_saved_and_preview_syncs_and_corrupt_file_cannot_be_replaced()

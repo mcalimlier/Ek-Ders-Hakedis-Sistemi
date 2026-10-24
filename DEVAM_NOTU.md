@@ -1,3 +1,23 @@
+# Son değişiklik — 24 Ekim 2026: ortak sabitler, geçmiş ve üç çıktı
+
+Kullanıcının bu turdaki dört maddesi uygulandı. Önceki bölümler tarihçedir; güncel davranış:
+- Ay içinde işe giriş/ay içinde işten ayrılış alanları MonthlyInput, PayrollRow, PeriodWorkspace, arayüz ve yeni JSON'dan kaldırıldı. SGK hesabı yalnız TeacherRecord.StartDate/EndDate kullanır. Eski anahtar adları yalnız JsonDraftStore okuma geçişinde tanınır. Eski hakediş sonuçları yeniden hesaplanmaz.
+- Ücretli Öğretmen Listesi iki yan yana karttır. Solda yalnız ad-soyad/TC; seçim sağdaki tüm kalan alanları açar. Sağ kart kendi içinde kayar.
+- Dönem sabitleri panelinde modül/ay/yıl seçimi yok. OrtakSabitler.json bütün canlı ve sonraki hesapları besler. Alanlar salt okunur; Güncelle açar, Dönem sabitlerini değiştir kaydeder ve tekrar kilitler. Aktif önizleme canlı değişir; kayıtlı aylık dosyalar ve hakediş görüntüleri yalnız sabit değişikliğiyle yazılmaz. Geçmiş düzenlemesi kaydın sabitleriyle çalışır. Emekli grupları henüz eklenmedi.
+- Çıktı paneli hakediş-*.json görüntülerini listeler. Satır başına PDF oluştur / Yazdır / Düzenle vardır. PDFsharp-WPF 6.2.4 (MIT) ile Excel gerektirmeden Bordro (Çıktı-1), Banka Listesi (Çıktı-2), Personel Bildirimi (Çıktı-3) üretilir. PDF ve doğrudan yazdırma aynı sayfa modelini kullanır. Fiziksel yazıcıya test işi gönderilmedi; tek işte bütün sayfalar, sığdırma ve otomatik yön testi yapıldı.
+- PDF hedefi: Masaüstü/ÜcretliUsta Öğretici Hakediş Sistemi/Çıktılar/modül/YYYY-MM/kayıt-sürümü. Üç belge ayrı PDF; uzun tablo birden çok sayfa olabilir. Bordro A4 yatay, başlıklar kısaltılmadan iki tablo; banka/personel A4 dikey. Tamamlanmadan son klasör görünmez, eski PDF'ler ezilmez.
+- Kaynak Excel'deki kırık #REF ve eski bütçe yılı düzeltilerek kaydın dönemi/sonuçları kullanılır. AGİ için kişiye özel eski açıklama taşınmaz. Personel hareketleri önceki ayın son kayıtlı kadrosuyla kıyaslanır; önceki ay yoksa 0 başlangıç ve kontrol notu vardır. Girenlerin isim listesi eklenir. Hastalık izni kaynağı olmadığı için ilgili tablo personel birimine bırakılır; yoktur diye uydurulmaz.
+- Kullanıcı kurum/banka/imza bilgilerinin Excel'den başlangıçta alınmasını ayrıca onayladı. Bu bilgiler yalnız yerel Veriler/BelgeBilgileri.json içine aktarıldı; Çıktı panelinde düzenlenebilir. Yeni görüntü içine kopyalanır; eski görüntüde bilgi yoksa paneldeki bilgiler kullanılır. Kaynak Excel değiştirilmedi; kişi/kurum/imza verileri Git'e alınmaz.
+- Geçmiş Düzenle aktif iş/form/sabit değişikliği varken engellenir. Önce Hakediş oluştur veya onaylı Çalışmayı temizle gerekir. Temizle hiçbir kayıtlı dosyayı silmez. Geçmiş ayrı kopyada açılır; normal kayıt/öğretmen silme düğmeleri yerine yalnız Değiştir/Kaydet ve Vazgeç kullanılır. Onaylı kayıt yalnız seçili hakediş dosyasını değiştirir, .bak korur; aylık ve ana öğretmen dosyası değişmez. Vazgeç/onaysız kayıt dokunmaz. Başka süreçte değişen sürüm SHA256 kontrolüyle reddedilir. Silinmiş öğretmen de arşiv kopyasından açılır.
+
+Doğrulama: 112 birim testi geçti; 10 WPF panel görüntüsü, iki boyutta yerleşim, sabitlerin salt okunur/düzenleme döngüsü, geçmiş iptali ve PDF/yazıcı sayfalaması doğrulandı; binding hatası yok. Sentetik 1 ve 65 öğretmenle altı PDF üretildi. Gerçek PDF'ler Poppler ile render edildi; tüm sayfalar artifacts/pdf-render-outputs-final/contact.png üzerinde incelendi. Türkçe karakter, katsayının altı ondalığı, toplamların kaynak kayda eşitliği ve sayfa sınırları denetlendi. Görseller/PDF'ler test amaçlıdır; Git dışında.
+
+GERÇEK VERİLER: Kullanıcı son denemesinde saatleri değiştirmiş: güncel Debug verilerinde 10 öğretmen / 10 aylık kayıt / **975 saat** var. Kaynak örnekteki 972 saati tekrar yüklemeyin! Değişiklik öncesi 8 dosya artifacts/private-backups/before-outputs-20261024-150510/Veriler içine kopyalandı; tüm hashler doğrulandı. Geçişte yalnız bir aylık dosyanın kaldırılmış tarih anahtarları çıkarıldı; diğer tüm aylık alanlar ve sabitler eşit kaldı. Ana öğretmen kataloğu byte düzeyinde aynı. Mevcut hakediş arşiv sayısı **0**; dolayısıyla Çıktı listesinin dolması için kullanıcının Hakediş oluştur düğmesini kullanması gerekir. Otomatik gerçek hakediş veya ödeme kaydı yaratılmadı.
+
+Aktif yol: src/Hakedis.App/bin/Debug/net10.0-windows/Veriler. Önceki dist programı ve verileri ayrıdır; otomatik eşitlenmez. Yeni dağıtım ZIP'i bu turda hazırlanmadı. Sonraki ürün işi: isteğe bağlı Excel/banka aktarım dosyası ve diğer modül çekirdekleri.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: hibrit öğretmen düzenleme
 
 Kullanıcının beş maddesi uygulandı:

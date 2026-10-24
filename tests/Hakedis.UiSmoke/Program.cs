@@ -39,7 +39,7 @@ internal static class Program
         foreach (var width in new[] { 1366, 1040 })
         {
             window.Width = width; window.Height = width == 1366 ? 768 : 728;
-            foreach (var panel in new[] { "Entry", "Calculation", "Teachers", "Constants" })
+            foreach (var panel in new[] { "Entry", "Calculation", "Teachers", "Constants", "Outputs" })
             {
                 model.Navigate(panel);
                 if (panel == "Teachers") model.Teachers.Selected = model.Teachers.Records.Single();
@@ -88,7 +88,7 @@ internal static class Program
         if(!model.Calculation.Status.Contains("oluşturuldu"))throw new InvalidOperationException("Hakediş oluştur düğmesi kalıcı kayıt yapmadı: "+model.Calculation.Status);
         var expectedHeaders=new[]{Hakedis.Contracts.ExcelHeadings.Sequence,Hakedis.Contracts.ExcelHeadings.FullName,
             Hakedis.Contracts.ExcelHeadings.IdentityNumber,Hakedis.Contracts.ExcelHeadings.Iban,Hakedis.Contracts.ExcelHeadings.StartDate,
-            Hakedis.Contracts.ExcelHeadings.EndDate,Hakedis.Contracts.ExcelHeadings.MonthStart,Hakedis.Contracts.ExcelHeadings.MonthEnd,
+            Hakedis.Contracts.ExcelHeadings.EndDate,
             Hakedis.Contracts.ExcelHeadings.Occupation,Hakedis.Contracts.ExcelHeadings.School,Hakedis.Contracts.ExcelHeadings.IbanCheck,
             Hakedis.Contracts.ExcelHeadings.DayHours,Hakedis.Contracts.ExcelHeadings.DykHours,Hakedis.Contracts.ExcelHeadings.Hours,
             Hakedis.Contracts.ExcelHeadings.Garnishment};
@@ -125,6 +125,41 @@ internal static class Program
             if(text.TextAlignment!=TextAlignment.Center || text.VerticalAlignment!=VerticalAlignment.Center)
                 throw new InvalidOperationException("Hibrit hücre ortalanmadı.");
         Capture(window,Path.Combine(output,"Calculation-edited.png"));
+        // Yeni panel yerleşimi ve salt okunur ortak sabitler.
+        model.Navigate("Teachers");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);window.UpdateLayout();
+        var listCard=(FrameworkElement)window.FindName("TeacherListCard");var detailsCard=(FrameworkElement)window.FindName("TeacherDetailsCard");
+        if(detailsCard.TranslatePoint(new Point(0,0),window).X<=listCard.TranslatePoint(new Point(0,0),window).X || ((DataGrid)window.FindName("TeacherListGrid")).Columns.Count!=2)
+            throw new InvalidOperationException("Öğretmen kartları yan yana / iki sütun değil.");
+        model.Navigate("Constants");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(Descendants<ComboBox>(window).Any(c=>c.IsVisible))throw new InvalidOperationException("Ortak sabit panelinde modül/dönem seçimi kalmış.");
+        if(Descendants<TextBox>(window).Where(t=>t.IsVisible).Any(t=>!t.IsReadOnly))throw new InvalidOperationException("Sabitler başlangıçta salt okunur değil.");
+        var update=(Button)window.FindName("ConstantsUpdateButton");update.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(model.CommonConstants.IsReadOnly || update.Content as string!="Dönem sabitlerini değiştir")throw new InvalidOperationException("Sabit güncelleme modu açılmadı.");
+        update.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!model.CommonConstants.IsReadOnly || update.Content as string!="Güncelle")throw new InvalidOperationException("Sabit kaydı kilitlemedi.");
+        model.Registration.Reset();model.ClearCurrentWork();model.Navigate("Outputs");model.Outputs.Selected=model.Outputs.Records.Single();
+        var archived=model.Outputs.ReadSelected();var archiveBytes=File.ReadAllBytes(archived.Path);
+        model.BeginArchiveEdit();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!((Button)window.FindName("SaveArchiveButton")).IsVisible || ((Button)window.FindName("SaveHybridButton")).IsVisible)
+            throw new InvalidOperationException("Geçmiş düzenlemede düğmeler doğru değişmedi.");
+        if(Descendants<Button>(window).Any(b=>b.IsVisible && b.Content as string=="Hakediş oluştur"))throw new InvalidOperationException("Geçmiş düzenlemede yeni kayıt düğmesi açık.");
+        model.Calculation.Rows[0].DayHours="75";
+        Capture(window,Path.Combine(output,"Archive-edit.png"));
+        ((Button)window.FindName("CancelArchiveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if(!archiveBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("Geçmiş Vazgeç dosyayı değiştirdi.");
+        var details=new Hakedis.Contracts.ReportDetails("Örnek İlçe Milli Eğitim Müdürlüğü","Örnek Banka Şubesi","Deneme Görevli","Şube Müdürü","Deneme Yetkili","İlçe Milli Eğitim Müdürü","Deneme Sayman");
+        var service=new PaymentReportService();var exports=service.Export(archived,details,Path.Combine(output,"pdf-test"));
+        if(Directory.GetFiles(exports,"*.pdf").Length!=3)throw new InvalidOperationException("Üç çıktı PDF oluşmadı.");
+        File.WriteAllText(Path.Combine(output,"pdf-folder.txt"),exports);
+        VerifyReportPages(service,archived,details,output,"normal");
+        var baseRow=archived.Document.Data.Rows[0];
+        var many=Enumerable.Range(1,65).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"ÇĞİÖŞÜ Deneme Öğretmeni {i} Uzun İsim Soyisim"}})
+            .Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray();
+        var large=archived with {Document=archived.Document with {Data=archived.Document.Data with {Rows=many,Movement=new(0,many.Length,0,many.Select(r=>r.Teacher.Id).ToArray())}}};
+        var largeExports=service.Export(large,details with {Institution="Çok uzun kurum adı olan Örnek İlçe Milli Eğitim Müdürlüğü - Okul Öncesi ve İlköğretim Okulları"},Path.Combine(output,"pdf-large-test"));
+        File.WriteAllText(Path.Combine(output,"pdf-large-folder.txt"),largeExports);
+        VerifyReportPages(service,large,details,output,"large");
+        model.Navigate("Calculation");model.Calculation.Reload();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         var selectors=Descendants<ComboBox>(window).Where(c=>c.IsVisible).ToArray();
         selectors.Single(c=>c.Items.Count==201).SelectedItem=2027;
         selectors.Single(c=>c.Items.Count==12).SelectedValue=11;
@@ -133,7 +168,28 @@ internal static class Program
         Capture(window,Path.Combine(output,"Calculation-Kasim-2027.png"));
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"8 WPF panel görüntüsü + meslek araması; canlı hücre, seçim düğmeleri, form iptal/kayıt, toplu kayıt, kaynak sütunları ve Kasım-2027 seçimi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"10 WPF panel görüntüsü, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
+    }
+    private static void VerifyReportPages(PaymentReportService service,Hakedis.Storage.ArchivedPayment record,Hakedis.Contracts.ReportDetails details,string output,string prefix)
+    {
+        var prepared=service.Prepare(record,details);
+        var print=service.CreatePrintPaginator(prepared,new Size(793,1122));
+        if(print.PageCount!=prepared.Sum(r=>r.Pages.Length))throw new InvalidOperationException("Yazıcı işi üç belgenin tüm sayfalarını içermiyor.");
+        for(var n=0;n<print.PageCount;n++)if(print.GetPage(n).Visual is null)throw new InvalidOperationException("Yazıcı sayfası boş.");
+        var reportIndex=0;
+        foreach(var report in prepared)
+        {
+            var fixedDocument=service.PrintDocument(report);fixedDocument.DocumentPaginator.ComputePageCount();
+            if(fixedDocument.DocumentPaginator.PageCount!=report.Pages.Length)throw new InvalidOperationException("Yazdırma ve PDF sayfa sayıları farklı.");
+            for(var i=0;i<report.Pages.Length;i++)
+            {
+                var sheet=report.Pages[i];
+                if(sheet.Cells.Any(c=>c.X<0 || c.Y<0 || c.X+c.Width>sheet.Width+.1 || c.Y+c.Height>sheet.Height+.1))throw new InvalidOperationException("Rapor sayfa sınırını aşıyor.");
+                var page=fixedDocument.Pages[i].GetPageRoot(false);page.Measure(new Size(page.Width,page.Height));page.Arrange(new Rect(0,0,page.Width,page.Height));page.UpdateLayout();
+                Capture(page,Path.Combine(output,$"report-{prefix}-{reportIndex}-{i+1}.png"));
+            }
+            reportIndex++;
+        }
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T:DependencyObject
     {for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);if(child is T t)yield return t;foreach(var nested in Descendants<T>(child))yield return nested;}}

@@ -39,8 +39,7 @@ public sealed class MonthlyPayrollStore(string root)
             throw new InvalidDataException("Aylık kayıt dönemi veya girdileri geçersiz; dosya değiştirilmedi.");
         var p=data.Constants;
         if(p.Coefficient<=0 || p.Indicator<=0 || p.DykMultiplier<=0 || p.IncomeExemption<0 || p.StampExemption<0 ||
-            new[]{p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate}.Any(x=>x<0 || x>1) ||
-            data.Entries.Any(e=>e.MonthEnd<e.MonthStart || new[]{e.MonthStart,e.MonthEnd}.Any(d=>d.HasValue && (d.Value.Year!=year || d.Value.Month!=month))))
-            throw new InvalidDataException("Dönem sabitleri veya ay içi tarihleri geçersiz; dosya değiştirilmedi.");
+            new[]{p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate}.Any(x=>x<0 || x>1))
+            throw new InvalidDataException("Dönem sabitleri geçersiz; dosya değiştirilmedi.");
     }
 }

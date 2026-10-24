@@ -1,7 +1,6 @@
 namespace Hakedis.Contracts;
 
-public sealed record MonthlyInput(Guid TeacherId, decimal DayHours, decimal DykHours, decimal Garnishment,
-    DateTime? MonthStart = null, DateTime? MonthEnd = null);
+public sealed record MonthlyInput(Guid TeacherId, decimal DayHours, decimal DykHours, decimal Garnishment);
 public sealed record PeriodValues(decimal Coefficient, decimal Indicator, decimal IncomeExemption, decimal StampExemption,
     decimal EmployeeRate = .14m, decimal EmployerRate = .2175m, decimal IncomeRate = .15m,
     decimal StampRate = .00759m, decimal DykMultiplier = 2m)

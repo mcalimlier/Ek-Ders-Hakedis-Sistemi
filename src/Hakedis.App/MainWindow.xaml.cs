@@ -20,7 +20,7 @@ public partial class MainWindow : Window
         Left=workArea.Left+(workArea.Width-Width)/2;Top=workArea.Top+(workArea.Height-Height)/2;
     }
     private void Navigate_Click(object sender, RoutedEventArgs e)
-        => shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);
+        {try{shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);}catch(InvalidOperationException ex){MessageBox.Show(this,ex.Message,"Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}}
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);
     private void NewTeacher_Click(object sender, RoutedEventArgs e) {if(shell.Registration.IsEditingRecord)shell.CancelTeacherEdit();else shell.Registration.Reset();}
     private void RegisterTeacher_Click(object sender, RoutedEventArgs e)
@@ -73,7 +73,32 @@ public partial class MainWindow : Window
     }
     private void SaveMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,()=>shell.Monthly.Save(true));
     private void EditMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,shell.Monthly.BeginEdit);
-    private void SaveConstants_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Calculation,shell.Calculation.SaveConstants);
+    private void SaveConstants_Click(object sender,RoutedEventArgs e)
+    {try{shell.CommonConstants.ToggleSave();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.CommonConstants.ShowError(ex.Message);}}
+    private void ClearWork_Click(object sender,RoutedEventArgs e)
+    {
+        if(MessageBox.Show(this,"Ekrandaki çalışma temizlensin mi? Kaydedilmemiş girişler bırakılır; kayıtlı hakedişler ve aylık dosyalar silinmez.","Çalışmayı temizle",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)
+            RunPeriod(shell.Calculation,shell.ClearCurrentWork);
+    }
+    private void ReloadOutputs_Click(object sender,RoutedEventArgs e)=>shell.Outputs.Reload();
+    private void SaveReportDetails_Click(object sender,RoutedEventArgs e)=>RunOutput(shell.Outputs.SaveDetails);
+    private void SelectOutput(object sender)
+    {if(((FrameworkElement)sender).DataContext is Hakedis.Storage.ArchivedPayment record)shell.Outputs.Selected=record;}
+    private void EditArchive_Click(object sender,RoutedEventArgs e)
+    {SelectOutput(sender);RunOutput(shell.BeginArchiveEdit);}
+    private void SaveArchive_Click(object sender,RoutedEventArgs e)
+    {
+        if(!CommitHybrid())return;
+        if(MessageBox.Show(this,"Geçmiş hakediş bu değişikliklerle güncellensin mi? Önceki sürüm yedeklenir. Hayır seçilirse eski kayıt korunur.","Geçmiş hakedişi değiştir",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)!=MessageBoxResult.Yes)return;
+        RunPeriod(shell.Calculation,()=>{if(shell.SaveArchiveEdit(true))ShowSaved();});
+    }
+    private void CancelArchive_Click(object sender,RoutedEventArgs e)=>shell.CancelArchiveEdit();
+    private void ExportOutputs_Click(object sender,RoutedEventArgs e)
+    {SelectOutput(sender);RunOutput(()=>{var folder=new PaymentReportService().Export(shell.Outputs.ReadSelected(),shell.Outputs.Details.Read());shell.Outputs.ShowStatus("Üç PDF kaydedildi: "+folder);MessageBox.Show(this,"Üç PDF kaydedildi:\n"+folder,"Çıktı",MessageBoxButton.OK,MessageBoxImage.Information);});}
+    private void PrintOutputs_Click(object sender,RoutedEventArgs e)
+    {SelectOutput(sender);RunOutput(()=>{if(new PaymentReportService().Print(shell.Outputs.ReadSelected(),shell.Outputs.Details.Read()))shell.Outputs.ShowStatus("Üç belge yazıcıya gönderildi.");});}
+    private void RunOutput(Action action)
+    {try{action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or NotSupportedException or System.Printing.PrintSystemException or System.Windows.Xps.XpsException){shell.Outputs.ShowStatus(ex.Message);MessageBox.Show(this,ex.Message,"Çıktı",MessageBoxButton.OK,MessageBoxImage.Information);}}
     private void ReloadPayment_Click(object sender,RoutedEventArgs e)
     {
         if(MessageBox.Show(this,"Kaydedilmemiş tablo değişiklikleri yerine son kayıtlar yüklensin mi?","Kayıtları yenile",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)

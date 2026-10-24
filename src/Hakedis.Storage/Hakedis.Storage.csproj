@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Hakedis.Contracts\Hakedis.Contracts.csproj" />
@@ -10,4 +10,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-</Project>
+<ItemGroup><ProjectReference Include="../Hakedis.TemelEgitim.Core/Hakedis.TemelEgitim.Core.csproj"/></ItemGroup></Project>

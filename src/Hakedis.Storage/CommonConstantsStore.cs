@@ -1,0 +1,24 @@
+using Hakedis.Contracts;
+using Hakedis.TemelEgitim.Core;
+
+namespace Hakedis.Storage;
+
+public sealed class CommonConstantsStore(string root)
+{
+    private string PathName=>Path.Combine(root,"OrtakSabitler.json");
+    private const string Rule="ortak-sabitler.v1";
+    public PeriodValues Read()=>File.Exists(PathName)?new JsonDraftStore().Load<PeriodValues>(PathName,ModuleId.TemelEgitim,Rule).Data:PeriodValues.Source;
+    public void Save(PeriodValues values)
+    {
+        _=new TeacherPayrollModule().Calculate(new(0,0,0),new(values.Coefficient,values.Indicator,values.DykMultiplier,
+            values.EmployeeRate,values.EmployerRate,values.IncomeRate,values.StampRate,values.IncomeExemption,values.StampExemption));
+        new JsonDraftStore().Save(PathName,new DraftDocument<PeriodValues>(1,ModuleId.TemelEgitim,Rule,DateTimeOffset.UtcNow,values));
+    }
+}
+
+public sealed class ReportDetailsStore(string root)
+{
+    private string PathName=>Path.Combine(root,"BelgeBilgileri.json");
+    public ReportDetails Read()=>File.Exists(PathName)?new JsonDraftStore().Load<ReportDetails>(PathName,ModuleId.TemelEgitim,"belge-bilgileri.v1").Data:new();
+    public void Save(ReportDetails value)=>new JsonDraftStore().Save(PathName,new DraftDocument<ReportDetails>(1,ModuleId.TemelEgitim,"belge-bilgileri.v1",DateTimeOffset.UtcNow,value));
+}

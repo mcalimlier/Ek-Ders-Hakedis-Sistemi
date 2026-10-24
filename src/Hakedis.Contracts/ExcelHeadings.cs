@@ -10,8 +10,6 @@ public static class ExcelHeadings
     public const string Iban = "BANKA IBAN\n(IBAN GİRİLMEZSE HESAP YAPILMAZ)";
     public const string StartDate = "İŞE BAŞLAMA TARİHİ";
     public const string EndDate = "İŞTEN AYRILIŞ TARİHİ";
-    public const string MonthStart = "AY İÇİNDE İŞE GİRİŞ TARİHİ";
-    public const string MonthEnd = "AY İÇİNDE İŞTEN AYRILIŞ TARİHİ";
     public const string Occupation = "SGK MESLEK KODU\n1.DÖNEM";
     public const string School = "GÖREV YERİ\n";
     public const string DayHours = "GÜNDÜZ DERS SAATİ";

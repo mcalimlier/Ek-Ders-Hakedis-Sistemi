@@ -5,6 +5,11 @@ namespace Hakedis.App;
 
 public sealed class ShellViewModel : INotifyPropertyChanged
 {
+    private Hakedis.Storage.ArchivedPayment? archiveEdit;
+    private readonly Hakedis.Storage.PaymentArchiveStore archiveStore;
+    public CommonConstantsViewModel CommonConstants {get;}
+    public OutputsViewModel Outputs {get;}
+    public bool CanUseEntry=>!Calculation.IsArchiveEditing;
     private string panel = "Entry";
     private TeacherRecord? teacher;
     public WorkspaceViewModel Workspace { get; } = new();
@@ -28,22 +33,28 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public ShellViewModel(string teacherPath)
     {
         new Hakedis.Storage.PayrollEditStore(teacherPath).Recover();
+        var root=System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(teacherPath))!;
+        CommonConstants=new(root);Outputs=new(root);archiveStore=new(root);
         Teachers = new(teacherPath, activeModule); Registration = new(teacherPath, activeModule);
         registrationModule = listModule = Workspace.Modules.Single(m=>m.Id==activeModule);
         Monthly = new(teacherPath); Calculation = new(teacherPath);
         Monthly.RowChanged += SyncRow; Calculation.RowChanged += SyncRow;
         Monthly.Saved += RefreshOther; Calculation.Saved += RefreshOther;
-        Monthly.ConstantsChanged += SyncConstants; Calculation.ConstantsChanged += SyncConstants;
+
         Monthly.PropertyChanged += PeriodChanged; Calculation.PropertyChanged += PeriodChanged;
-        Calculation.AdoptConstants(Monthly.Constants);
+        Monthly.AdoptConstants(CommonConstants.Editor);Calculation.AdoptConstants(CommonConstants.Editor);
+        Calculation.PaymentCreated+=Outputs.Reload;
+        CommonConstants.Saved+=()=>{if(!Calculation.IsArchiveEditing)Calculation.AdoptConstants(CommonConstants.Editor);Monthly.AdoptConstants(CommonConstants.Editor);};
         Workspace.PropertyChanged += WorkspaceChanged;
     }
     private static bool SamePeriod(PeriodWorkspace a,PeriodWorkspace b)=>a.SelectedModule.Id==b.SelectedModule.Id && a.Year==b.Year && a.Month==b.Month;
     private PeriodWorkspace Other(PeriodWorkspace source)=>ReferenceEquals(source,Monthly)?Calculation:Monthly;
-    private void SyncRow(PeriodWorkspace source,PayrollRow row) {var other=Other(source);if(SamePeriod(source,other))other.ApplyPreview(row);}
-    private void SyncConstants(PeriodWorkspace source) {var other=Other(source);if(SamePeriod(source,other))other.AdoptConstants(source.Constants);}
+    private void SyncRow(PeriodWorkspace source,PayrollRow row) {if(source.IsArchiveEditing)return;var other=Other(source);if(!other.IsArchiveEditing && SamePeriod(source,other))other.ApplyPreview(row);}
     private void PeriodChanged(object? sender,PropertyChangedEventArgs e)
-    {if(e.PropertyName==nameof(PeriodWorkspace.Constants) && sender is PeriodWorkspace source)SyncConstants(source);}
+    {
+        if(e.PropertyName==nameof(PeriodWorkspace.Constants) && sender is PeriodWorkspace source && !source.IsArchiveEditing)
+            source.AdoptConstants(CommonConstants.Editor);
+    }
     private void RefreshOther(PeriodWorkspace source)
     {Teachers.Reload();var other=Other(source);other.RefreshTeachers();if(SamePeriod(source,other))other.AcceptSavedSelection();}
     private void WorkspaceChanged(object? sender, PropertyChangedEventArgs e)
@@ -55,14 +66,16 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         RegistrationModule=Workspace.Modules.Single(m=>m.Id==next); ListModule=RegistrationModule;
         PropertyChanged?.Invoke(this, new(nameof(CalculationTeacher)));
     }
+    public bool OutputsVisible=>panel=="Outputs";
     public bool EntryVisible => panel == "Entry";
     public bool CalculationVisible => panel == "Calculation";
     public bool TeachersVisible => panel == "Teachers";
     public bool ConstantsVisible => panel == "Constants";
-    public string Title => panel switch { "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Ücretli Öğretmen Listesi", _ => "Veri Girişi" };
+    public string Title => panel switch { "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Ücretli Öğretmen Listesi", _ => "Veri Girişi" };
     public string Subtitle => panel switch
     {
-        "Constants" => "Seçili modül ve dönemin katsayı, gösterge ve kesinti değerlerini düzenleyin.",
+        "Outputs" => "Kayıtlı hakedişleri görüntüleyin, üç belgeyi PDF oluşturun veya yazdırın.",
+        "Constants" => "Tüm modüllerdeki aktif ve sonraki hesaplamalar için ortak sabitleri yönetin.",
         "Calculation" => "Modül ve dönemi seçin; aylık ders bilgilerini tabloda kontrol ederek hakedişi oluşturun.",
         "Teachers" => "Kayıtlı öğretmen bilgilerini görüntüleyin, düzenleyin ve yönetin.",
         _ => "Öğretmen kaydını oluşturun, ödeme dönemini ve ders bilgilerini hazırlayın."
@@ -106,12 +119,36 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void CancelTeacherEdit(){Registration.Reset();Navigate("Calculation");}
     public void Navigate(string destination)
     {
-        if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants")) throw new ArgumentException("Geçersiz panel.");
+        if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants" or "Outputs")) throw new ArgumentException("Geçersiz panel.");
+        if(Calculation.IsArchiveEditing && destination!="Calculation")throw new InvalidOperationException("Geçmiş düzenlemeyi Değiştir/Kaydet veya Vazgeç ile tamamlayın.");
+        if(destination=="Outputs")Outputs.Reload();
         if(Registration.IsEditingRecord && destination!="Entry")Registration.Reset();
         panel = destination;
-        foreach (var name in new[] { nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
+        foreach (var name in new[] { nameof(OutputsVisible),nameof(CanUseEntry),nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
             PropertyChanged?.Invoke(this, new(name));
     }
+    public void ClearCurrentWork()
+    {
+        if(Calculation.IsArchiveEditing)throw new InvalidOperationException("Önce geçmiş düzenlemeden vazgeçin veya kaydedin.");
+        Calculation.ClearWork();Monthly.ClearWork();Registration.Reset();
+    }
+    public void BeginArchiveEdit()
+    {
+        if(Calculation.HasActiveWork || Monthly.HasHybridChanges || Registration.IsEditingRecord || CommonConstants.IsEditing ||
+           Registration.HasDraft)
+            throw new InvalidOperationException("Aktif bir çalışma veya veri girişi var. Önce hakedişi oluşturun ya da Çalışmayı temizle düğmesini kullanın.");
+        var record=Outputs.ReadSelected();archiveEdit=record;Calculation.LoadArchive(record);Navigate("Calculation");
+    }
+    public bool SaveArchiveEdit(bool confirmed)
+    {
+        if(!confirmed)return false;
+        var original=archiveEdit??throw new InvalidOperationException("Düzenlenen hakediş bulunamadı.");
+        archiveStore.Replace(original,Calculation.EditedSnapshot(original.Document.Data),true);
+        EndArchiveEdit();Outputs.ShowStatus("Geçmiş hakediş güncellendi. Önceki sürüm yedek olarak korundu.");return true;
+    }
+    public void CancelArchiveEdit(){if(archiveEdit is null)return;EndArchiveEdit();Outputs.ShowStatus("Vazgeçildi. Eski hakediş kaydı değiştirilmedi.");}
+    private void EndArchiveEdit()
+    {archiveEdit=null;Calculation.ClearWork();Calculation.AdoptConstants(CommonConstants.Editor);Outputs.Reload();Navigate("Outputs");}
     public void UseSelectedTeacher()
     {
         var record = Teachers.Selected ?? throw new InvalidOperationException("Önce öğretmen seçin.");

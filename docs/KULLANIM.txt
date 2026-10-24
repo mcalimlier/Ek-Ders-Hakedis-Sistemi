@@ -14,18 +14,20 @@ Listeden kod ve meslek adını seçin. PDF'deki 7.190 kayıt dahildir.
 Her öğretmen tek modüle aittir; aynı TCKN başka modüle kaydedilemez.
 
 Aylık Ders Bilgileri kartının en üstünden modül, DÖNEM (ay adı) ve YIL seçin.
-Listeden o modülün öğretmenini çağırın; saatleri, kesintiyi ve varsa ay içi
-başlama/ayrılış tarihlerini girin. Kaydet kalıcı kayıt yapar. Mevcut aylık
+Listeden o modülün öğretmenini çağırın; saatleri ve kesintiyi girin.
+Kaydet kalıcı kayıt yapar. Mevcut aylık
 kayıt seçildiğinde Düzenle ile alanları açın, sonra Kaydet'e basın.
 Öğretmen kayıt modülü ile aylık ders modülü bağımsız seçimlerdir.
 Ondalık ayırıcı virgül; binlik ayırıcı kullanmayın.
 
 DÖNEM SABİTLERİ
-Modül, ay ve yılı seçip katsayı, gösterge, vergi/SGK değerlerini düzenleyin.
-Dönem sabitlerini kaydet düğmesi o dönemin değerlerini saklar.
-Başlangıç değerleri Eylül-2026 kaynak Excel'indendir; başka aylara ait
-katsayı ve istisna değerlerini ilgili dönem için ayrıca girin.
-Hakediş ekranı ile Dönem sabitleri paneli aynı modül ve dönemi kullanır.
+Bu panelde modül veya dönem seçimi yoktur; sabitler ortaktır.
+Alanlar başlangıçta yalnız okunabilir. Güncelle ile düzenleme açılır.
+Düğme Dönem sabitlerini değiştir olur; kaydedince yeniden kilitlenir.
+Düzenlenen değerler aktif önizlemeye, kaydedilen değerler sonraki
+hesaplara uygulanır. Eski aylık dosyalar ve kayıtlı hakedişler bu işlemde
+üzerine yazılmaz. Geçmiş hakedişler kendi sabitleriyle açılır.
+Emekli modülleri bu sürümde henüz eklenmemiştir.
 
 HAKEDİŞ HESAPLA
 Modül, DÖNEM ve YIL seçin; birleşik dönem Eylül-2026 gibi gösterilir.
@@ -50,8 +52,12 @@ Hatalı girdiler toplamı geçersiz yapar; eski sonuç gösterilmez.
 Hakediş oluştur, girdileri ve hesap sonuçlarını JSON hakediş kaydına alır.
 Aylık bilgisi girilmemiş öğretmenler bu kayda dahil edilmez; IBAN zorunludur.
 Kayıtları yenile son kayıtları yükler; kaydedilmemiş önizlemeyi bırakır.
+Çalışmayı temizle ekranı boşaltır; öğretmenleri, kayıtlı aylık girdileri ve
+geçmiş hakedişleri silmez. Temizleme için onay istenir.
 
 ÜCRETLİ ÖĞRETMEN LİSTESİ
+Kartlar yan yanadır. Soldaki listede yalnız AD SOYAD ve TC KİMLİK vardır.
+Seçilen kişinin bütün kalan bilgileri sağ kartta açılır.
 Modül seçip mevcut öğretmeni düzenleyebilir veya onayla silebilirsiniz.
 Yeni kayıt yalnızca Veri Girişi'ndeki Öğretmen Bilgileri kartından yapılır.
 Öğretmen silinince geçmiş hakediş görüntüleri silinmez.
@@ -74,15 +80,42 @@ SGK YAN BİLGİLERİ
 Eksik Gün Sayısı hakediş tutarını etkilemez; SGK sitesine giriş içindir.
 Ay içinde giriş/çıkış yoksa azami gün, seçili ayın gerçek takvim günüdür.
 Giriş varsa giriş günü, çıkış varsa çıkış günü dahil aralık hesaplanır.
-Aylık tarih alanları doluysa bunlar; boşsa öğretmen kaydındaki tarihler
-kullanılır. Örnek: 5 Ekim giriş => 31 - 5 + 1 = 27 azami gün.
+Yalnız öğretmenin İŞE BAŞLAMA TARİHİ ve İŞTEN AYRILIŞ TARİHİ kullanılır. Örnek: 5 Ekim giriş => 31 - 5 + 1 = 27 azami gün.
 117 saat => 16 çalışma günü; 27 - 16 = 11 eksik gün.
 Şubat 28/29, diğer aylar gerçek 30/31 gün uzunluğuyla ele alınır.
 Hesap aylık girişin altında canlı görünür ve hakediş
 JSON kaydına yan bilgi olarak alınır. Çalışma günü azami günü aşarsa
 negatif sayı yerine ayrı SGK uyarısı gösterilir; para hesabı iptal edilmez.
 
-TAMAMLANMAYAN ALAN
-Basılı üç resmî belge, isteğe bağlı Excel/PDF çıktıları ve banka aktarımı
-bu sürümde henüz yoktur. Diğer modüllerin hesaplama çekirdekleri de
-kendi Excel kaynakları geldiğinde eklenecektir.
+ÇIKTI
+Hakediş Hesapla'da Hakediş oluştur ile kaydettiğiniz hakedişler burada
+listelenir. Aylık ders girdisi kaydetmek tek başına çıktı kaydı oluşturmaz.
+PDF oluştur üç belgeyi Excel gerektirmeden üretir:
+Bordro (Çıktı-1), Banka Listesi (Çıktı-2), Personel Bildirimi (Çıktı-3).
+Masaüstü/ÜcretliUsta Öğretici Hakediş Sistemi/Çıktılar altında modül,
+dönem ve kayıt sürümüne göre yeni klasör açılır; eski PDF'ler ezilmez.
+Bordro uzun başlıkları korumak için iki tablo halindedir; satır sayısına
+göre bir belge birden fazla sayfa olabilir. A4 yatay bordro, A4 dikey banka
+ve personel bildirimi üretilir. Yazdır aynı sayfaları tek yazıcı işiyle,
+yazıcı seçimi sonrası gönderir; kağıda sığdırma ve yön ayarı uygulanır.
+Kurum, banka, imzacı ve ünvanlar alt karttan düzenlenip kaydedilebilir.
+Yeni hakediş bu bilgileri kendi içine alır. Eski kayıtta belge bilgileri
+yoksa çıktı panelindeki bilgiler kullanılır.
+Personel hareketleri önceki ayın son hakediş kadrosuyla karşılaştırılır.
+Önceki ay kaydı yoksa başlangıç 0 alınır; personel birimi kontrol etmelidir.
+Hastalık izin tablosu personel birimi tarafından tamamlanmak üzere boştur.
+
+GEÇMİŞ HAKEDİŞİ DÜZENLEME
+Kayıt yanındaki Düzenle, ayrı bir çalışma açar. Aktif hakediş / veri girişi
+varsa önce bitirmeniz veya Çalışmayı temizle ile bırakmanız istenir.
+Geçmişin modül/dönemi ve kendi sabitleri korunur; daha sonra silinmiş
+öğretmenler de kayıttaki bilgilerinden düzenlenebilir.
+Yalnız Değiştir/Kaydet ve Vazgeç kullanılır. Değiştir/Kaydet eski kaydı
+değiştirmeden önce onay ister; Hayır dosyayı değiştirmez. Vazgeç de eski
+kaydı aynen korur. Onaylı değişiklik yalnız seçili arşivi günceller;
+önceki sürümü .bak olur, ana öğretmen ve aylık giriş dosyası değişmez.
+Başka bir işlemde değişen dosyanın üzerine eski ekranla yazılmaz.
+
+SONRAKİ ALANLAR
+İsteğe bağlı Excel dışa aktarma, banka aktarım dosyası ve diğer modüllerin
+hesaplama çekirdekleri bu sürümde henüz eklenmemiştir.

@@ -29,8 +29,7 @@ public sealed class SgkInformationTests : IDisposable
     [Fact]
     public void October_fifth_entry_uses_twenty_seven_available_days_and_keeps_money_unchanged()
     {
-        var shell=Create(2026,10);shell.Monthly.DayHours="117";var before=shell.Monthly.Rows[0].Result;
-        shell.Monthly.MonthStart=new DateTime(2026,10,5);
+        var shell=Create(2026,10,new(2026,10,5));shell.Monthly.DayHours="117";var before=shell.Monthly.Rows[0].Result;
         Assert.Equal("11",shell.Monthly.Rows[0].MissingDays);
         Assert.Equal(before,shell.Monthly.Rows[0].Result);
         shell.Monthly.Save(false);
@@ -39,12 +38,10 @@ public sealed class SgkInformationTests : IDisposable
         Assert.Equal("11",reopened.Calculation.Rows[0].MissingDays);
     }
     [Fact]
-    public void Exit_and_both_dates_are_inclusive_and_clearing_override_uses_registered_dates()
+    public void Registered_entry_and_exit_dates_are_inclusive()
     {
         var shell=Create(2026,10,new(2026,10,5),new(2026,10,20));
         shell.Monthly.DayHours="75";Assert.Equal("6",shell.Monthly.Rows[0].MissingDays);
-        shell.Monthly.MonthStart=new(2026,10,10);Assert.Equal("1",shell.Monthly.Rows[0].MissingDays);
-        shell.Monthly.MonthStart=null;Assert.Equal("6",shell.Monthly.Rows[0].MissingDays);
     }
     [Fact]
     public void Old_entry_has_no_effect_on_full_month_and_dyk_hours_count_toward_work_days()
