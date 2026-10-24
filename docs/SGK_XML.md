@@ -7,14 +7,17 @@ Doğrulama kaynağı, kullanıcının verdiği XSD 2.1 dosyasının değiştiril
 Resmî başvuru kaynakları:
 
 - [SGK XML şeması 2.1](https://ebildirge.sgk.gov.tr/WPEB/jsp/duyuru/meslekkod_files/AYLIKBILDIRGELER.xsd)
-- [SGK'nın XML oluşturan Excel örneği](https://ebildirge.sgk.gov.tr/WPEB/jsp/duyuru/meslekkod_files/xls2xmly.xls): M/N sütunlarının GGAA başlıkları tarih biçimini doğrular; mahiyet açıklamasında A/E/T bulunur. İndirilen makrolar yalnız metin olarak incelendi, çalıştırılmadı.
+- [SGK'nın XML oluşturan Excel örneği](https://ebildirge.sgk.gov.tr/WPEB/jsp/duyuru/meslekkod_files/xls2xmly.xls): M/N sütunlarının GGAA başlıkları tarih biçimini doğrular. Module1.bas içindeki Input_Check, E10 için A/E/T kontrolü yapar; hata metni yalnız Asıl=A ve Ek=E anlamlarını açıklar. T'nin anlamı bu kaynakta açıklanmaz. Önceki arayüzdeki T=TİS açıklaması doğrulanmamış bir yorumdu ve kaldırıldı. İndirilen makrolar yalnız metin olarak incelendi, çalıştırılmadı.
+
+Mahiyet kaynağı ve kullanıcı onayı: [SGK_MAHIYET_KAYNAK_KONTROLU.md](SGK_MAHIYET_KAYNAK_KONTROLU.md). Kullanıcı doğru kodları açıkça **A=Asıl, E=Ek, İ=İptal** olarak bildirdi. Uygulama bu kodları kullanır; İptal için Türkçe büyük İ (U+0130) XML'e aynen yazılır. T ve noktasız I kabul edilmez. XSD yalnız tek karakter sınırı koyar; kodların iş anlamlarını tanımlamaz.
 
 | XML alanı | Kaynak |
 | --- | --- |
 | ISYERISICIL / KONTROLNO / ISYERIARACINO | Kullanıcının onayladığı 26 rakamın 21 + 2 + 3 ayrımı |
 | ISYERIUNVAN / ISYERIADRES | XML ekranında düzenlenebilen yerel SGK işyeri bilgileri; boş veya 50 karakterden uzun olamaz |
 | DONEMAY / DONEMYIL | Seçili kayıtlı hakedişin ayı ve yılı |
-| BELGETURU / KANUN / BELGEMAHIYET | Kullanıcının belirlediği kodlar; şema sınırları ve A/E/T kontrolü uygulanır |
+| BELGETURU / KANUN | Kullanıcının belirlediği kodlar; şema sınırları uygulanır |
+| BELGEMAHIYET | Kullanıcının onayladığı A=Asıl, E=Ek, İ=İptal. İ, Türkçe büyük İ harfidir; T/I dönüşümü yapılmaz. Eski profilde geçersiz kod varsa seçim boş açılır ve kullanıcıdan yeni seçim istenir. |
 | AD / SOYAD | Kullanıcının onayladığı ayrım; her biri en fazla 18 karakter, kısaltma yapılmaz |
 | TCKNO / MESLEKKOD | Hakedişte dondurulmuş öğretmen kaydı |
 | PEK | Hakedişte dondurulmuş Result.Gross; mali hesap yeniden yapılmaz |

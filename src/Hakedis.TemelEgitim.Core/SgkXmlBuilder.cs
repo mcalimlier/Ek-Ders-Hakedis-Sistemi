@@ -20,7 +20,7 @@ public static class SgkXmlBuilder
         Text(w.Title,50,"ISYERIUNVAN / İşyeri unvanı");Text(w.Address,50,"ISYERIADRES / İşyeri adresi");
         _=Code(w.DocumentType,1,92,"BELGETURU / Belge türü");
         if(!Regex.IsMatch(w.LawCode,"^[0-9]{5}$"))throw new ArgumentException("KANUN beş rakam olmalıdır; SGK ekranındaki kanun kodunu girin.");
-        if(w.DocumentNature is not ("A" or "E" or "T"))throw new ArgumentException("Belge mahiyeti A (Asıl), E (Ek) veya T (Toplu İş Sözleşmesi) olmalıdır.");
+        if(w.DocumentNature is not ("A" or "E" or "İ"))throw new ArgumentException("Belge mahiyetini seçin: A (Asıl), E (Ek) veya İ (İptal). İptal kodu Türkçe büyük İ harfidir.");
         if(w.DefaultMissingReason!="")_=Code(w.DefaultMissingReason,1,26,"Varsayılan eksik gün nedeni");
         if(w.TaxNumber!="" && !Regex.IsMatch(w.TaxNumber,"^[0-9]{10}$"))throw new ArgumentException("Vergi numarası boş veya 10 rakam olmalıdır.");
     }

@@ -18,6 +18,27 @@ public sealed class SgkXmlTests
     }
     private static SgkWorkplace Workplace=>new("12345678901234567890120000","TEST & KURUM","ÖRNEK ADRES","13","00000");
     private static SgkPerson Person=>new(Id,"ALİ VELİ","ÖZTÜRK","13","22");
+    [Theory] [InlineData("A")] [InlineData("E")] [InlineData("İ")]
+    public void User_confirmed_nature_code_is_written_exactly_and_validates_against_original_schema(string code)
+    {
+        var bytes=SgkXmlBuilder.Build(Snapshot(),Workplace with{DocumentNature=code},[Person]);
+        var document=XDocument.Parse(Encoding.UTF8.GetString(bytes));
+        Assert.Equal(code,document.Root!.Element("BORDRO")!.Attribute("BELGEMAHIYET")!.Value);
+        SgkXmlBuilder.Validate(bytes);
+    }
+    [Theory] [InlineData("T")] [InlineData("I")]
+    public void Unsupported_T_and_dotless_I_are_not_accepted_as_cancellation(string code)
+    {
+        Assert.Throws<ArgumentException>(()=>SgkXmlBuilder.Build(Snapshot(),Workplace with{DocumentNature=code},[Person]));
+    }
+    [Theory] [InlineData("T")] [InlineData("I")]
+    public void Old_unsupported_saved_nature_requires_an_explicit_new_selection(string code)
+    {
+        var record=new Hakedis.Storage.ArchivedPayment("unused","version",new(1,ModuleId.TemelEgitim,"rule",DateTimeOffset.UtcNow,Snapshot()));
+        var editor=new Hakedis.App.SgkXmlEditor(record,new(Workplace with{DocumentNature=code},[])){Confirmed=true};
+        Assert.Equal("",editor.DocumentNature);
+        Assert.Throws<ArgumentException>(editor.Build);
+    }
     [Fact] public void Embedded_schema_is_the_exact_user_supplied_file()
     {
         using var schema=SgkXmlBuilder.OpenSchema();

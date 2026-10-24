@@ -6,6 +6,8 @@ using Hakedis.TemelEgitim.Core;
 
 namespace Hakedis.App;
 
+public sealed record SgkNatureOption(string Code,string Label);
+
 public sealed class SgkPersonEditor
 {
     public Guid TeacherId {get;init;}
@@ -37,17 +39,19 @@ public sealed class SgkXmlEditor
     public string Address {get;set;}
     public string DocumentType {get;set;}
     public string LawCode {get;set;}
-    public string DocumentNature {get;set;}
+    private string nature="";
+    public string DocumentNature {get=>nature;set=>nature=value??"";}
     public string DefaultMissingReason {get;set;}
     public string TaxNumber {get;set;}
     public bool Confirmed {get;set;}
-    public string[] Natures {get;}=["A","E","T"];
+    public IReadOnlyList<SgkNatureOption> Natures {get;}=[new("A","A — Asıl"),new("E","E — Ek"),new("İ","İ — İptal")];
     public ObservableCollection<SgkPersonEditor> People {get;}=[];
     public SgkXmlEditor(ArchivedPayment record,SgkXmlSettings settings)
     {
         Record=record;initial=settings;var w=settings.Workplace;
         RegistrationNumber=w.RegistrationNumber;WorkplaceTitle=w.Title;Address=w.Address;DocumentType=w.DocumentType;LawCode=w.LawCode;
-        DocumentNature=w.DocumentNature;DefaultMissingReason=w.DefaultMissingReason;TaxNumber=w.TaxNumber;
+        DocumentNature=Natures.Any(n=>n.Code==w.DocumentNature)?w.DocumentNature:"";
+        DefaultMissingReason=w.DefaultMissingReason;TaxNumber=w.TaxNumber;
         var data=record.Document.Data;
         foreach(var row in data.Rows)
         {

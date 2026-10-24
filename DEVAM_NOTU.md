@@ -1,3 +1,14 @@
+# Son değişiklik — 24 Ekim 2026: mahiyet T/TİS açıklaması sorgulandı
+
+- Kullanıcı son XML panelindeki T'nin kaynağını sordu; normal seçeneklerin Asıl/Ek/İptal olduğunu ve İptal için İ beklediğini söyledi.
+- Kaynak tekrar incelendi: kullanıcının XSD'sinde BELGEMAHIYET yalnız length=1 ve default=A ile tanımlı, değer listesi yok. T, SGK'nın eski xls2xmly.xls örneğinin Module1.bas / Input_Check kontrolünden gelmiş; E10 için A/E/T kontrol ediyor. Aynı hata metni yalnız Asıl=A, Ek=E anlamlarını açıklıyor; T anlamını vermiyor. Makrolar çalıştırılmadı.
+- Önceki T=Toplu İş Sözleşmesi/TİS açıklaması doğrulanmamış yorumdu. Ekrandaki ve hata metnindeki yanlış anlam kaldırıldı.
+- Kullanıcı soruya açıkça A=Asıl, E=Ek, İ=İptal yanıtını verdi. Buna göre seçenekler A — Asıl / E — Ek / İ — İptal yapıldı; XML'e kullanıcı onaylı **Türkçe büyük İ (U+0130)** aynen yazılır. T ve noktasız I kabul edilmez. Eski geçersiz profil kodu otomatik eşlenmez; XML ekranında seçim boş gelir ve yeniden seçilmelidir. Açılışta profil dosyasına yazılmaz.
+- Ayrıntı ve XSD parçası docs/SGK_MAHIYET_KAYNAK_KONTROLU.md; docs/SGK_XML.md güncellendi. XSD kontrolü iş anlamındaki kod doğrulamasının yerine geçmez. Gerçek dosyalar değiştirilmedi.
+- Doğrulama: 158 Release testi geçti. WPF testi gerçek ComboBox'tan İ — İptal seçip XML'de BELGEMAHIYET="İ" değerini ve özgün XSD doğrulamasını kontrol etti; bütün eski akışlar geçti, binding hatası yok. Görüntü artifacts/ui-sgk-nature/SGK-cancellation.png. Release derlemesi sıfır uyarı/hata. Açık Debug uygulaması/Visual Studio dosya kilidi nedeniyle Debug kopyası güncellenemedi; kullanıcının açık işine müdahale edilmedi. Visual Studio'da durdurulup F5 ile yeniden derlenince düzeltme görünür. Bu tur dist ZIP yeniden üretilmedi.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: yeni çekirdekler öncesi kapsamlı denetim
 
 - Kullanıcı diğer Excel'leri göndermeden önce mevcut Temel Eğitim çekirdeğinin ve uygulamanın doğrulanmasını istedi. Denetim tamamlandı; rapor docs/CEKIRDEK_ONCESI_DENETIM_2026-10-24.md. Gelecek çekirdekler henüz eklenmedi.

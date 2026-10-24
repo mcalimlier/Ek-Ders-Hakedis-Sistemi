@@ -191,12 +191,17 @@ internal static class Program
                 if(xmlDialog.OutputPath is not null || string.IsNullOrWhiteSpace(((TextBlock)xmlDialog.FindName("ErrorText")).Text))throw new InvalidOperationException("SGK inceleme onayı atlandı.");
                 Capture(xmlDialog,Path.Combine(output,"SGK-review-required.png"));
                 ((CheckBox)xmlDialog.FindName("ReviewCheck")).IsChecked=true;
+                var nature=(ComboBox)xmlDialog.FindName("NatureField");
+                nature.SelectedValue="İ";
+                if(nature.SelectedItem is not SgkNatureOption {Code:"İ",Label:"İ — İptal"})throw new InvalidOperationException("İptal mahiyeti seçilemedi.");
+                Capture(xmlDialog,Path.Combine(output,"SGK-cancellation.png"));
                 button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 if(xmlDialog.OutputPath is null)throw new InvalidOperationException("SGK XML oluşturulmadı: "+((TextBlock)xmlDialog.FindName("ErrorText")).Text);
             }catch(Exception ex){xmlFailure=ex;xmlDialog.Close();}
         }));
         if(xmlDialog.ShowDialog()!=true || xmlFailure is not null)throw new InvalidOperationException("SGK XML ekranı başarısız.",xmlFailure);
         Hakedis.TemelEgitim.Core.SgkXmlBuilder.Validate(File.ReadAllBytes(xmlDialog.OutputPath!));
+        if(System.Xml.Linq.XDocument.Load(xmlDialog.OutputPath!).Root!.Element("BORDRO")!.Attribute("BELGEMAHIYET")!.Value!="İ")throw new InvalidOperationException("İptal seçimi XML'e Türkçe İ olarak yazılmadı.");
         if(!archiveBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("SGK çıktısı hakedişi değiştirdi.");
         model.BeginArchiveEdit();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(!((Button)window.FindName("SaveArchiveButton")).IsVisible || ((Button)window.FindName("SaveHybridButton")).IsVisible)
