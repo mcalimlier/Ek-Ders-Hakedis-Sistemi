@@ -7,6 +7,8 @@ Kullanıcının beş maddesi uygulandı:
 - Düzenle öğretmen formunda kopya açar; modül/aylık kart kilitlidir. Öğretmen Değişiklik kaydet / Vazgeç düğmeleri görünür. Kaydet bütün ekranları günceller, Hakediş Hesapla'ya döner ve Tamam ile kapatılan Kayıtlar güncellendi bildirimi verir. Vazgeç hiçbir kaydı değiştirmez; önceki tablo taslakları korunur. Döngü sonunda düğmeler Öğretmeni Kaydet / Formu Temizle olur.
 - Değişiklikleri kaydet düğmesi tablonun altında, yalnız değişiklik varken etkin. Öğretmen ve aylık bilgiler önce tüm satırlar için doğrulanır, sonra iki dosya kalıcı işlem günlüğüyle yazılır. Hatalı satır, yinelenen TC veya eski ekran çakışması kayıt yazmaz. Yarım işlem açılışta ve sonraki yazmadan önce tamamlanır/geri alınır. OEHS HybridSourceUpdate/HybridRow örnekleri kullanıldı.
 
+Visual Studio içinde güncel Debug sürümü F5 ile başlatıldı ve Hakediş Hesapla ekranı açık bırakıldı. Gerçek uygulama erişilebilirlik ağacında 10 öğretmen / 10 aylık giriş ve 0 binding hatası doğrulandı.
+
 102 birim testi geçti: Excel hesap doğrulamaları, model temizliği, eski JSON geçişi/yedek, iptal, tüm görünümlerde güncelleme, geri alınan tablo değerinin temiz sayılması, geçersiz toplu kayıt, TC çakışması, eski ekran/aylık kayıt çakışması, değişmeyen arşiv, silme/seçim, yarım işlem ve ikinci dosyanın yazılamaması, kurtarma sonrası yeni kayıt, bozuk dosya şekilleri.
 
 Gerçek Debug verileri önce artifacts/private-backups/before-hybrid-editing-20261024-141039/Veriler altına kopyalandı; dosya hashleri eşleşti. Aktif Debug kataloğu yeni şema 3'e geçirildi; tüm kalan öğretmen alanları eşit ve aylık dosya byte düzeyinde aynı. 10 öğretmen, 10 aylık kayıt, 972 saat; brüt 214.395,70 TL / net 184.380,34 TL doğrulandı. Özel yedek/yardımcılar Git tarafından yok sayılır.
