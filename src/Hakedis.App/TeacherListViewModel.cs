@@ -32,6 +32,7 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
     public string Status { get; private set; } = "Düzenlemek için listeden öğretmen seçin. Yeni kayıtlar Veri Girişi ekranından yapılır.";
     public string CountText => $"{Records.Count} kayıtlı öğretmen";
     public bool HasSelection => Selected is not null;
+    public bool HasChanges=>Selected is not null && Editor.ToRecord(Module)!=Selected;
     public TeacherRecord? Selected
     {
         get => selected;
@@ -62,7 +63,7 @@ public sealed class TeacherListViewModel : INotifyPropertyChanged
     {
         var id = Selected?.Id ?? throw new InvalidOperationException("Düzenlemek için kayıtlı bir öğretmen seçin. Yeni kayıt için Veri Girişi ekranını kullanın.");
         if (Editor.Id != id) throw new InvalidOperationException("Seçili öğretmen ile düzenlenen kayıt uyuşmuyor.");
-        Replace(directory.Update(Editor.ToRecord(Module))); Selected = Records.Single(r => r.Id == id);
+        Replace(directory.UpdateBatch([Selected!],[Editor.ToRecord(Module)])); Selected = Records.Single(r => r.Id == id);
         Status = "Öğretmen bilgileri güncellendi."; Notify();
     }
     public void DeleteSelected()

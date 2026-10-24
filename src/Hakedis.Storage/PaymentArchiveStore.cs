@@ -79,7 +79,21 @@ public sealed class PaymentArchiveStore(string root)
             _=TeacherDirectory.Normalize(row.Teacher);
             if(row.Input.DayHours<0 || row.Input.DykHours<0 || row.Input.Garnishment<0 || row.Result.Net!=row.Result.Accrual-row.Result.Deductions)
                 throw new InvalidDataException("Hakediş satırının tutarları tutarsız.");
+            if(module==ModuleId.TemelEgitim)
+            {
+                try
+                {
+                    var p=data.Constants;
+                    var calculated=new TeacherPayrollModule().Calculate(new(row.Input.DayHours,row.Input.DykHours,row.Input.Garnishment),
+                        new(p.Coefficient,p.Indicator,p.DykMultiplier,p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate,p.IncomeExemption,p.StampExemption));
+                    if(calculated!=row.Result)throw new InvalidDataException("Hakediş tutarları kayıtlı girdiler ve dönem sabitleriyle uyuşmuyor; kaynak dosya korunuyor.");
+                }
+                catch(Exception ex) when(ex is ArgumentException or OverflowException)
+                {throw new InvalidDataException("Hakediş girdileri veya dönem sabitleri geçersiz; kaynak dosya korunuyor.",ex);}
+            }
         }
+        if(data.Rows.Where(r=>r.Teacher.IdentityNumber!="").GroupBy(r=>r.Teacher.IdentityNumber).Any(g=>g.Count()>1))
+            throw new InvalidDataException("Hakedişte yinelenen T.C. kimlik numarası var.");
     }
     public bool Replace(ArchivedPayment original,PaymentSnapshot data,bool confirmed)
     {

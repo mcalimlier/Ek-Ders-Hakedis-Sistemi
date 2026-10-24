@@ -168,6 +168,10 @@ public sealed class HybridEditingTests : IDisposable
         shell.Monthly.DayHours="45";shell.Monthly.Save(true);var afterMonth=File.ReadAllBytes(monthly);
         var changes=new[]{new PayrollEditStore.FileChange(Catalog,beforeCatalog,beforeCatalog),new PayrollEditStore.FileChange(monthly,beforeMonth,afterMonth)};
         File.WriteAllText(Path.Combine(root,"hibrit-islem.json"),System.Text.Json.JsonSerializer.Serialize(new PayrollEditStore.BatchJournal(true,changes)));
+        shell.Monthly.DayHours="60";Assert.Throws<InvalidOperationException>(()=>shell.Monthly.Save(true));
+        Assert.Equal(30,new MonthlyPayrollStore(root).Read(ModuleId.TemelEgitim,2026,9).Entries.Single().DayHours);
+        Assert.False(File.Exists(Path.Combine(root,"hibrit-islem.json")));
+        shell.Monthly.Reload();shell.Monthly.SelectedTeacher=shell.Monthly.Teachers[0];
         shell.Monthly.DayHours="60";shell.Monthly.Save(true);new PayrollEditStore(Catalog).Recover();
         Assert.Equal(60,new MonthlyPayrollStore(root).Read(ModuleId.TemelEgitim,2026,9).Entries.Single().DayHours);
     }

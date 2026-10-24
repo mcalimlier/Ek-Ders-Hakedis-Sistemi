@@ -212,13 +212,13 @@ internal static class Program
         File.WriteAllText(Path.Combine(output,"pdf-folder.txt"),exports);
         VerifyReportPages(service,archived,details,output,"normal");
         var baseRow=archived.Document.Data.Rows[0];
-        var many=Enumerable.Range(1,10).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"ÇĞİÖŞÜ Deneme Öğretmeni {i} Uzun İsim Soyisim"}})
+        var many=Enumerable.Range(1,10).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),IdentityNumber=$"100000{i:D5}",FullName=$"ÇĞİÖŞÜ Deneme Öğretmeni {i} Uzun İsim Soyisim"}})
             .Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray();
         var large=archived with {Document=archived.Document with {Data=archived.Document.Data with {Rows=many,Movement=new(0,many.Length,0,many.Select(r=>r.Teacher.Id).ToArray())}}};
         var largeExports=service.Export(large,details with {Institution="Çok uzun kurum adı olan Örnek İlçe Milli Eğitim Müdürlüğü - Okul Öncesi ve İlköğretim Okulları"},Path.Combine(output,"pdf-large-test"));
         File.WriteAllText(Path.Combine(output,"pdf-large-folder.txt"),largeExports);
         VerifyReportPages(service,large,details,output,"large");
-        var oversized=large with {Document=large.Document with {Data=large.Document.Data with {Rows=Enumerable.Range(1,65).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),FullName=$"Çok Uzun Ad Soyad Deneme Öğretmeni {i}"}}).Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray()}}};
+        var oversized=large with {Document=large.Document with {Data=large.Document.Data with {Rows=Enumerable.Range(1,65).Select(i=>baseRow with {Teacher=baseRow.Teacher with {Id=Guid.NewGuid(),IdentityNumber=$"100000{i:D5}",FullName=$"Çok Uzun Ad Soyad Deneme Öğretmeni {i}"}}).Select(r=>r with {Input=r.Input with {TeacherId=r.Teacher.Id}}).ToArray()}}};
         try{service.Prepare(oversized,details);throw new Exception("Okunamayacak bordro için kapasite kontrolü yok.");}
         catch(ArgumentException ex) when(ex.Message.Contains("tek yatay A4")){}
         var legacy=archived with {Document=archived.Document with {Data=archived.Document.Data with {Movement=new(0,99,99)}}};
@@ -250,6 +250,21 @@ internal static class Program
         if(archivePrompts.Count!=4 || !archivePrompts[0].Contains("yalnızca bir hakediş"))throw new InvalidOperationException("Onay pencereleri eksik.");
         Capture(window,Path.Combine(output,"Outputs-after-confirmed-delete.png"));
 
+        foreach(var pendingKind in new[]{"hours","teacher","constants","teacher-list","details"})
+        {
+            var pending=new ShellViewModel(Path.Combine(output,Guid.NewGuid().ToString("N"),"ogretmenler.json"));
+            pending.Registration.Editor.FullName="Kaydedilmemiş Öğretmen";
+            if(pendingKind=="hours"){pending.SaveNewTeacher();pending.Monthly.DayHours="45";}
+            if(pendingKind=="constants") {pending.Registration.Reset();pending.CommonConstants.ToggleSave();pending.CommonConstants.Editor.Coefficient="2";}
+            if(pendingKind=="teacher-list"){pending.SaveNewTeacher();pending.Teachers.Selected=pending.Teachers.Records.Single();pending.Teachers.Editor.FullName="Değişen öğretmen";}
+            if(pendingKind=="details"){pending.Registration.Reset();pending.Outputs.Details.Institution="Kaydedilmemiş kurum";}
+            var allowClose=false;var closeAsked=0;
+            var pendingWindow=new MainWindow(pending,notifications.Add,(_,_)=>{closeAsked++;return allowClose;}){ShowActivated=false,ShowInTaskbar=false};
+            pendingWindow.Show();pendingWindow.Close();
+            if(!pendingWindow.IsVisible || closeAsked!=1)throw new InvalidOperationException("Kaydedilmemiş "+pendingKind+" bilgileri için kapanış Hayır çalışmadı.");
+            allowClose=true;pendingWindow.Close();
+            if(pendingWindow.IsVisible || closeAsked!=2)throw new InvalidOperationException("Kapanış onayı çalışmadı.");
+        }
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
         Console.WriteLine($"12 WPF panel görüntüsü, eşit beş çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;

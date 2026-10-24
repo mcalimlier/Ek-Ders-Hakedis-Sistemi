@@ -25,6 +25,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     public bool HasHybridSelection=>hybridRow is not null && !IsArchiveEditing;
     public bool HasHybridChanges=>Rows.Any(r=>r.HasChanges);
+    public bool CanChangePeriod=>!IsArchiveEditing && !HasHybridChanges;
     public string HybridChangeText=>HasHybridChanges?$"{Rows.Count(r=>r.HasChanges)} satırda kaydedilmemiş değişiklik var.":"Tüm değişiklikler kaydedildi.";
     private bool loading,editing=true,completed;
     public bool IsArchiveEditing {get;private set;}
@@ -77,9 +78,16 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public string SgkSummary => selectedRow is null ? "SGK yan bilgisi için öğretmen seçin." :
         selectedRow.SgkError!="" ? "SGK yan bilgisi: "+selectedRow.SgkError :
         $"SGK yan bilgisi · En fazla gün: {selectedRow.MaximumDaysText} · Çalışma Gün Sayısı: {selectedRow.WorkingDaysText} · Eksik Gün Sayısı: {selectedRow.MissingDays}";
-    public ModuleDescriptor SelectedModule { get=>selectedModule; set { if(value is null || value.Id==selectedModule.Id)return; RequireNormal();selectedModule=value;Reload(); } }
-    public int Year { get=>year; set { if(value is <1900 or >2100 || value==year)return;RequireNormal();year=value;Reload(); } }
-    public int Month { get=>month;set { if(value is <1 or >12 || value==month)return;RequireNormal();month=value;Reload(); } }
+    private bool AllowPeriodChange()
+    {
+        RequireNormal();
+        if(!HasHybridChanges)return true;
+        Status="Kaydedilmemiş değişiklik var. Önce kaydedin veya Hakediş Hesapla panelindeki Çalışmayı temizle düğmesini kullanın.";
+        Notify();return false;
+    }
+    public ModuleDescriptor SelectedModule { get=>selectedModule; set { if(value is null || value.Id==selectedModule.Id)return; if(!AllowPeriodChange())return;selectedModule=value;Reload(); } }
+    public int Year { get=>year; set { if(value is <1900 or >2100 || value==year)return;if(!AllowPeriodChange())return;year=value;Reload(); } }
+    public int Month { get=>month;set { if(value is <1 or >12 || value==month)return;if(!AllowPeriodChange())return;month=value;Reload(); } }
     public TeacherRecord? SelectedTeacher
     {
         get=>teacher;
@@ -188,9 +196,11 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         var teachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
         if(!teachers.Any(t=>t.Id==input.TeacherId))throw new InvalidOperationException("Öğretmen kaydı artık bulunmuyor.");
         var constants=ValidatedConstants();
-        if(IsAvailable)_=new TeacherPayrollModule().Calculate(new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());
+        try {if(IsAvailable)_=new TeacherPayrollModule().Calculate(new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());}
+        catch(OverflowException ex){throw new ArgumentException("Girilen değer hesaplama sınırlarını aşıyor; kayıt yapılmadı.",ex);}
         store.Update(SelectedModule.Id,year,month,existing=>
         {
+            CheckMonthlyVersion(existing,[row]);
             if(!update && existing.Entries.Any(e=>e.TeacherId==input.TeacherId))throw new InvalidOperationException("Bu dönemde kayıt var. Düzenle düğmesini kullanın.");
             return new(year,month,constants,existing.Entries.Where(e=>e.TeacherId!=input.TeacherId).Append(input).ToArray());
         });
@@ -212,6 +222,17 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     private static void ValidateInput(MonthlyInput input)
     {
         if(input.DayHours<0 || input.DykHours<0 || input.Garnishment<0)throw new ArgumentException("Ders saati ve kesinti negatif olamaz.");
+    }
+    private static void CheckMonthlyVersion(MonthlyDocument document,IEnumerable<PayrollRow> rows)
+    {
+        foreach(var row in rows)
+        {
+            var actual=document.Entries.SingleOrDefault(e=>e.TeacherId==row.Teacher.Id);
+            // An interrupted creation may already have persisted exactly these inputs.
+            // Accepting identical content cannot overwrite another user's different values.
+            if(actual!=row.SavedInput && (!row.HasInput || actual!=row.Read()))
+                throw new InvalidOperationException("Aylık kayıt başka bir ekranda değişmiş. Kayıtları yenileyin; mevcut kayıt değiştirilmedi.");
+        }
     }
     public void SaveHybridChanges()
     {
@@ -257,12 +278,19 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             if(string.IsNullOrWhiteSpace(row.Teacher.Iban))throw new ArgumentException(row.Teacher.FullName+": "+ExcelHeadings.Iban);
         }
         var values=ValidatedConstants();var inputs=rows.Select(r=>r.Read()).ToArray();
-        // Read first so a corrupted monthly file cannot be replaced by a new calculation.
-        store.Update(SelectedModule.Id,year,month,current=>new(year,month,values,current.Entries.Where(e=>inputs.All(i=>i.TeacherId!=e.TeacherId)).Concat(inputs).ToArray()));
         var warningCount=rows.Count(r=>r.SgkError!="");
         var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!,r.SgkInformation,r.SgkError)).ToArray(),
             "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),TeacherCalendar.RuleVersion);
         snapshot=snapshot with {Details=new ReportDetailsStore(System.IO.Path.GetDirectoryName(teacherPath)!).Read(),Movement=archiveStore.Movement(SelectedModule.Id,year,month,snapshot.Rows)};
+        PaymentArchiveStore.Validate(snapshot,SelectedModule.Id);
+        // Read first so a corrupted monthly file cannot be replaced by a new calculation.
+        store.Update(SelectedModule.Id,year,month,current=>
+        {
+            CheckMonthlyVersion(current,Rows);
+            if(current.Entries.Any(e=>validTeachers.Any(t=>t.Id==e.TeacherId) && !Rows.Any(r=>r.Teacher.Id==e.TeacherId)))
+                throw new InvalidOperationException("Aylık kayıtlara yeni öğretmen eklenmiş. Kayıtları yenileyin.");
+            return new(year,month,values,current.Entries.Where(e=>inputs.All(i=>i.TeacherId!=e.TeacherId)).Concat(inputs).ToArray());
+        });
         var path=System.IO.Path.Combine(store.Folder(SelectedModule.Id),$"hakediş-{year:D4}-{month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
         new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,new TeacherPayrollModule().RuleVersion,DateTimeOffset.UtcNow,snapshot));
         Status=$"{PeriodText} · {rows.Length} öğretmen için hakediş kaydı oluşturuldu."+
@@ -285,7 +313,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public void ShowError(string text){Status=text;Notify();}
     private void Notify()
     {
-        foreach(var name in new[]{nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
+        foreach(var name in new[]{nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }
 }

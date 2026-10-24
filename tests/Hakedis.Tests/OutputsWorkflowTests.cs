@@ -24,7 +24,7 @@ public sealed class OutputsWorkflowTests : IDisposable
         Assert.Contains("kayıtlı hakediş",error.Message);
         Assert.Equal(bytes,File.ReadAllBytes(original.Path));Assert.Equal(input,File.ReadAllBytes(monthly));
         Assert.Single(new PaymentArchiveStore(root).ReadAll());
-        s.Calculation.Month=10;s.Calculation.Rows[0].DayHours="90";s.Calculation.CreatePayment();
+        s.Calculation.ClearWork();s.Calculation.Month=10;s.Calculation.Rows[0].DayHours="90";s.Calculation.CreatePayment();
         Assert.Equal(2,new PaymentArchiveStore(root).ReadAll().Count);
     }
     [Fact] public async Task Concurrent_windows_cannot_create_duplicate_payrolls()
@@ -183,7 +183,7 @@ public sealed class OutputsWorkflowTests : IDisposable
     }
     [Fact] public void Personnel_movement_crosses_year_and_counts_departures_outside_the_paid_roster()
     {
-        var s=Setup();s.Calculation.Year=2026;s.Calculation.Month=12;s.Calculation.Rows[0].DayHours="117";
+        var s=Setup();s.Calculation.ClearWork();s.Calculation.Year=2026;s.Calculation.Month=12;s.Calculation.Rows[0].DayHours="117";
         s.Calculation.CreatePayment();
         var catalog=new TeacherDirectory(PathName);var person=catalog.Read().Single();
         catalog.Update(person with {EndDate=new DateTime(2027,1,25)});

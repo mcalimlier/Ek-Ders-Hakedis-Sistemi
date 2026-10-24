@@ -75,12 +75,13 @@ public sealed class HybridPayrollTests : IDisposable
     [Fact]
     public void Monthly_entry_is_live_in_matching_period_and_november_2027_keeps_separate_data()
     {
-        var shell=new ShellViewModel(PathName);shell.Registration.Editor.FullName="Öğretmen";shell.SaveNewTeacher();
+        var shell=new ShellViewModel(PathName);shell.Registration.Editor.FullName="Öğretmen";shell.Registration.Editor.OccupationCode="2341.04";shell.SaveNewTeacher();
         shell.Monthly.DayHours="117";Assert.Equal(25806.89m,shell.Calculation.Rows[0].Result!.Gross);
         shell.Monthly.Save(false);
         shell.Calculation.Year=2027;shell.Calculation.Month=11;
         Assert.Equal("Kasım-2027",shell.Calculation.PeriodText);Assert.False(shell.Calculation.Rows[0].HasInput);
         shell.Calculation.Rows[0].DayHours="45";Assert.Equal("117",shell.Monthly.DayHours);
+        shell.Calculation.SaveHybridChanges();
         shell.Calculation.Year=2026;shell.Calculation.Month=9;
         Assert.Equal("117",shell.Calculation.Rows[0].DayHours);
     }

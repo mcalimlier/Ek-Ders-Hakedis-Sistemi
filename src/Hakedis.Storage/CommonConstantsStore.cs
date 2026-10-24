@@ -10,8 +10,12 @@ public sealed class CommonConstantsStore(string root)
     public PeriodValues Read()=>File.Exists(PathName)?new JsonDraftStore().Load<PeriodValues>(PathName,ModuleId.TemelEgitim,Rule).Data:PeriodValues.Source;
     public void Save(PeriodValues values)
     {
-        _=new TeacherPayrollModule().Calculate(new(0,0,0),new(values.Coefficient,values.Indicator,values.DykMultiplier,
-            values.EmployeeRate,values.EmployerRate,values.IncomeRate,values.StampRate,values.IncomeExemption,values.StampExemption));
+        try
+        {
+            _=new TeacherPayrollModule().Calculate(new(0,0,0),new(values.Coefficient,values.Indicator,values.DykMultiplier,
+                values.EmployeeRate,values.EmployerRate,values.IncomeRate,values.StampRate,values.IncomeExemption,values.StampExemption));
+        }
+        catch(OverflowException ex){throw new ArgumentException("Dönem sabitleri hesaplama sınırlarını aşıyor; kayıtlı sabitler değiştirilmedi.",ex);}
         new JsonDraftStore().Save(PathName,new DraftDocument<PeriodValues>(1,ModuleId.TemelEgitim,Rule,DateTimeOffset.UtcNow,values));
     }
 }

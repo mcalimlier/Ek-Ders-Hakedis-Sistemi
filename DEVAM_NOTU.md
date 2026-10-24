@@ -1,3 +1,19 @@
+# Son değişiklik — 24 Ekim 2026: yeni çekirdekler öncesi kapsamlı denetim
+
+- Kullanıcı diğer Excel'leri göndermeden önce mevcut Temel Eğitim çekirdeğinin ve uygulamanın doğrulanmasını istedi. Denetim tamamlandı; rapor docs/CEKIRDEK_ONCESI_DENETIM_2026-10-24.md. Gelecek çekirdekler henüz eklenmedi.
+- 131 testten 151 teste çıkıldı; Debug ve Release 151/151 geçti. Kaynak Excel, salt okunur Microsoft Excel CalculateFullRebuild ile yeniden hesaplandı: 50 senaryo / 14 hesap alanı eşleşiyor; 850 sayısal referans alanı da eski fixture ile aynı. Kaynak XLSX SHA-256 değişmedi.
+- Aylık Kaydet, Hakediş oluştur ve öğretmen listesi Kaydet işlemlerinin eski ekranla daha yeni kaydı ezmesi kapatıldı. Farklı aylık içerik veya öğretmen sürümü reddedilir; aynı içeriğin güvenli yeniden denenmesine izin verilir. Başka pencerede yeni girilen öğretmenin saatleri sessizce dışarıda bırakılamaz.
+- Kaydedilmemiş hücre/aylık bilgi varken dönem/modül seçimi kilitlidir; önce Kaydet/Değişiklikleri kaydet ya da onaylı Çalışmayı temizle gerekir. Kapanışta aylık, yeni öğretmen, öğretmen listesi, sabit ve kurum bilgi taslakları için varsayılan Hayır uyarısı var. Bu, kaydedilmemiş metnin elektrik kesintisinde otomatik kurtarıldığı anlamına gelmez.
+- Arşiv sonuçları artık kendi kayıtlı girdileri ve sabitleriyle bütün alanlarda karşılaştırılır; bozuk sonuç sessizce kabul edilmez ve özgün dosya değiştirilmez. Dolu TCKN tekrarları reddedilir. Aşırı büyük aylık sayılar ve ortak sabitler dosyaya ulaşmadan doğrulama hatası verir. Sıfır saatli kayıt geçerlidir.
+- Kurum/imza ve hakediş doğrulaması aylık dosya yazılmadan önce yapılır. Kurtarma günlüğüyle geri alınmış aylık girdiyi eski ekrandan ezmeye çalışma artık reddedilir; yenilemeden sonra kayıt testlidir. İlgili eski testler, yeni güvenli geçiş için açıkça kaydetme/temizleme/yenileme yapacak şekilde güncellendi; hesap beklentileri değiştirilmedi.
+- 8 öğretmen Eylül, 4 ayrılış + 6 yeni girişle 10 ödeme satırlı Ekim, değişen saatler ve yeni yıl senaryosu geçti. Eski aylık hakediş byte düzeyinde aynı kalır. Eksik gün, onaylı silme/değiştirme, tek kayıt ve kesintili hibrit işlem kurtarma testleri de geçti.
+- WPF: artifacts/ui-core-audit-final-151 altında 12 panel görüntüsü, 1366/1040 genişlik, bütün eski akışlar ve beş tür taslak için kapanış Hayır/Evet geçti; binding hatası yok. Gerçek arşivden 3 tek A4 PDF ve 10 kişilik XML özel test klasörüne üretildi. Python/lxml özgün XSD, her kişinin PEK/gün ve PDF sayfa/yön kontrollerini ayrıca geçti. SGK yükleme ve fiziksel yazdırma yapılmadı.
+- Başlangıç yedeği artifacts/private-backups/before-core-audit-20261024-180112/Veriler. Manifestteki **19 gerçek veri dosyası ve dosya listesi değişmedi**. Güncel gerçek 975 saatlik verileri eski 972 saatlik örnekle değiştirmeyin. Kaynakta/Git'te gerçek kişi/SGK profil verisi yok.
+- Debug uygulaması yeniden derlendi: sıfır uyarı/hata. Gerçek uygulama açılıp veri değiştirilmedi. Bağımsız temiz EXE/ZIP dist/Hakedis-win-x64-20261024-182518.zip üretildi ve son sabit sınır kontrolüyle güncellendi (151 Release testi geçti). ZIP yalnız EXE + KULLANIM.txt içeriyor; Veriler yok. Kurulu .NET arama yolları kapatılmış ayrı süreçte EXE penceresi açıldı, yanıt verdi ve normal kapandı. Bu paket sentetik/boş test içindir; kullanıcının gerçek Veriler klasörünü değiştirmez. Mevcut yayın betiği portable EXE/ZIP'tir; installer henüz yoktur.
+- MODUL_MIMARISI.md ve README güncellendi: mevcut tablo/arşiv/çıktı tipleri ilk çekirdeğe bağlıdır. Yeni Excel'lerde ayrı Core + module yönlendirme + girdi/sonuç/arşiv kuralı/çıktı uyarlayıcıları gerekecek. Yalnız katalog kaydı yapmak yeterli değildir; diğer modüle Temel Eğitim hesabı çalıştırılmayacak.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: hakediş silme ve düzenlemede tek kayıt
 
 - Çıktı listesinde düğme sırası PDF oluştur / Yazdır / Düzenle / Sil / XML oluştur. Beş düğme 100×32; Sil hafif kırmızı tonludur. 1366 ekranda beşi birlikte görülecek şekilde bilgi sütunları ayarlandı.

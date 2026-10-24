@@ -20,6 +20,14 @@ public partial class MainWindow : Window
         Width=Math.Min(1366,workArea.Width);Height=Math.Min(768,workArea.Height);
         Left=workArea.Left+(workArea.Width-Width)/2;Top=workArea.Top+(workArea.Height-Height)/2;
     }
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if(shell.Monthly.HasHybridChanges || shell.Calculation.HasHybridChanges || shell.Calculation.IsArchiveEditing ||
+           shell.Registration.HasDraft || shell.Registration.IsEditingRecord || shell.CommonConstants.IsEditing ||
+           shell.Teachers.HasChanges || shell.Outputs.HasDetailsChanges)
+            e.Cancel=!ConfirmArchive("Kaydedilmemiş giriş veya tamamlanmamış düzenleme var.\nProgram kapatılırsa bu değişiklikler kaybolur; kayıtlı dosyalar korunur.\nYine de kapatılsın mı?","Kaydedilmemiş değişiklikler");
+        base.OnClosing(e);
+    }
     private void Navigate_Click(object sender, RoutedEventArgs e)
         {try{shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);}catch(InvalidOperationException ex){MessageBox.Show(this,ex.Message,"Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}}
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);

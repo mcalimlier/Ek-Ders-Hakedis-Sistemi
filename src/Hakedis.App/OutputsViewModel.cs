@@ -24,17 +24,19 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     public string DataRoot {get;}
     private readonly PaymentArchiveStore store;
     private readonly ReportDetailsStore detailsStore;
+    private ReportDetails savedDetails;
     private ArchivedPayment? selected;
     public ObservableCollection<ArchivedPayment> Records {get;}=[];
     public ArchivedPayment? Selected {get=>selected;set{selected=value;Notify();}}
     public bool HasSelection=>Selected is not null;
     public ReportDetailsEditor Details {get;}
+    public bool HasDetailsChanges=>Details.Read()!=savedDetails;
     public string Status {get;private set;}="";
     public string DetailsStatus {get;private set;}="";
     public event PropertyChangedEventHandler? PropertyChanged;
     public OutputsViewModel(string root)
-    {DataRoot=System.IO.Path.GetFullPath(root);store=new(root);detailsStore=new(root);Details=ReportDetailsEditor.From(detailsStore.Read());Reload();}
-    public void SaveDetails(){detailsStore.Save(Details.Read());DetailsStatus="Belge bilgileri kaydedildi. Bundan sonra oluşturulacak hakedişlere bu bilgiler eklenir.";Notify();}
+    {DataRoot=System.IO.Path.GetFullPath(root);store=new(root);detailsStore=new(root);savedDetails=detailsStore.Read();Details=ReportDetailsEditor.From(savedDetails);Reload();}
+    public void SaveDetails(){var details=Details.Read();detailsStore.Save(details);savedDetails=details;DetailsStatus="Belge bilgileri kaydedildi. Bundan sonra oluşturulacak hakedişlere bu bilgiler eklenir.";Notify();}
     public void Reload()
     {
         var path=Selected?.Path;Records.Clear();selected=null;

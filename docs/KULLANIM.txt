@@ -19,6 +19,12 @@ Kaydet kalıcı kayıt yapar. Mevcut aylık
 kayıt seçildiğinde Düzenle ile alanları açın, sonra Kaydet'e basın.
 Öğretmen kayıt modülü ile aylık ders modülü bağımsız seçimlerdir.
 Ondalık ayırıcı virgül; binlik ayırıcı kullanmayın.
+Kaydedilmemiş aylık/hücre değişikliği varken modül, ay ve yıl seçimi kilitlenir.
+Önce Kaydet/Değişiklikleri kaydet kullanın veya Hakediş Hesapla panelinden
+Çalışmayı temizle ile bilinçli olarak vazgeçin. Program kapatılırken
+kaydedilmemiş girişler için varsayılanı Hayır olan uyarı gösterilir.
+Başka pencerede kaydedilmiş farklı saatler veya öğretmen bilgileri eski
+ekrandan ezilemez; kayıtları yenileyip güncel bilgileri kontrol edin.
 
 DÖNEM SABİTLERİ
 Bu panelde modül veya dönem seçimi yoktur; sabitler ortaktır.
