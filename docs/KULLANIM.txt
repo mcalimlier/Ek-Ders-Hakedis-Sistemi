@@ -61,12 +61,26 @@ Kayıtları yenile son kayıtları yükler; kaydedilmemiş önizlemeyi bırakır
 Çalışmayı temizle ekranı boşaltır; öğretmenleri, kayıtlı aylık girdileri ve
 geçmiş hakedişleri silmez. Temizleme için onay istenir.
 
-ÜCRETLİ ÖĞRETMEN LİSTESİ
+ÖĞRETMEN LİSTESİ
 Kartlar yan yanadır. Soldaki listede yalnız AD SOYAD ve TC KİMLİK vardır.
 Seçilen kişinin bütün kalan bilgileri sağ kartta açılır.
 Modül seçip mevcut öğretmeni düzenleyebilir veya onayla silebilirsiniz.
 Yeni kayıt yalnızca Veri Girişi'ndeki Öğretmen Bilgileri kartından yapılır.
 Öğretmen silinince geçmiş hakediş görüntüleri silinmez.
+
+KİŞİSEL BORDRO
+Sol menü iki gruptur: üstte temel işlemler, altta Kişisel Bordro ve Dönem Sabitleri.
+Kişisel Bordro'da modül, ay ve yılı seçin. Liste yalnız o dönemin kayıtlı
+hakedişindeki öğretmenlerin ad/soyad ve TC kimlik bilgilerini gösterir.
+Bir öğretmen seçip Bordro oluştur düğmesine basın; tek kişiye ait tek
+A4 dikey PDF oluşturulur. Güncel sabitler veya öğretmen kataloğundaki
+sonraki değişiklikler geçmiş bordro tutarlarını değiştirmez.
+Bu modül/dönemde kayıtlı hakediş yoksa önce Hakediş oluştur kullanılmalıdır.
+Hakediş başka ekranda değişmişse Listeyi yenile ile güncel kaydı alın.
+Klasör düğmesi PDF kaydedildikten sonra etkinleşir ve dosyanın bulunduğu
+klasörü açar. Dönem veya öğretmen değişince önce yeni bordroyu oluşturun.
+Dosyalar Masaüstü/ÜcretliUsta Öğretici Hakediş Sistemi/Çıktılar/
+Kişisel Bordrolar altında modül ve döneme göre ayrı klasörlere kaydedilir.
 
 SAKLAMA
 SQL kullanılmaz. EXE yanındaki Veriler/ogretmenler.json öğretmen kataloğudur.

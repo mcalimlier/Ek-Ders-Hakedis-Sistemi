@@ -46,7 +46,8 @@ internal static class Program
         model.Registration.Editor.OccupationCode="2341.04";model.Registration.Editor.IdentityNumber="10000000146";model.SaveNewTeacher();
         model.Monthly.DayHours = "117";
         var notifications=new List<string>();var archiveConfirm=false;var archivePrompts=new List<string>();
-        var window = new MainWindow(model,notifications.Add,(message,title)=>{archivePrompts.Add(message);return archiveConfirm;}) { ShowActivated = false, ShowInTaskbar = false };
+        var openedFolders=new List<string>();
+        var window = new MainWindow(model,notifications.Add,(message,title)=>{archivePrompts.Add(message);return archiveConfirm;},openedFolders.Add,Path.Combine(output,"personal-pdfs")) { ShowActivated = false, ShowInTaskbar = false };
         if(window.Width!=1366 || window.Height!=768)throw new InvalidOperationException("Varsayılan laptop boyutu 1366×768 değil.");
         window.Show();
         if(window.ActualWidth>SystemParameters.WorkArea.Width+1 || window.ActualHeight>SystemParameters.WorkArea.Height+1)
@@ -85,6 +86,12 @@ internal static class Program
                     originalContent.Children.Add(new TextBlock{Text="3.612,96 TL",Style=(Style)window.FindResource("MetricValue"),FontSize=23});baseline.Child=originalContent;
                     baseline.Measure(new Size(cards[0].ActualWidth+10,double.PositiveInfinity));
                     if(Math.Abs(baseline.DesiredSize.Height-cards[0].DesiredSize.Height)>1.5)throw new InvalidOperationException($"Kart boyutu değişti: {baseline.DesiredSize.Height} / {cards[0].DesiredSize.Height}");
+                    PersonalPayrollChecks.VerifyMetricRegions(cards);
+                    var originalHours=model.Calculation.Rows[0].DayHours;
+                    model.Calculation.Rows[0].DayHours="100000";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);window.UpdateLayout();
+                    PersonalPayrollChecks.VerifyMetricRegions(cards);
+                    Capture(window,Path.Combine(output,$"Calculation-large-amounts-{width}.png"));
+                    model.Calculation.Rows[0].DayHours=originalHours;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
                     scroll.ScrollToTop();
                 }
             }
@@ -229,6 +236,7 @@ internal static class Program
         var legacy=archived with {Document=archived.Document with {Data=archived.Document.Data with {Movement=new(0,99,99)}}};
         var corrected=service.Prepare(legacy,details)[2];
         if(corrected.Pages[0].Cells.Where(c=>c.Y==178.4).SelectMany(c=>c.Lines).Contains("99"))throw new InvalidOperationException("Eski personel hesabı düzeltilmedi.");
+        PersonalPayrollChecks.Run(model,window,output,Capture,openedFolders);
         model.Navigate("Calculation");model.Calculation.Reload();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         var selectors=Descendants<ComboBox>(window).Where(c=>c.IsVisible).ToArray();
         selectors.Single(c=>c.Items.Count==201).SelectedItem=2027;

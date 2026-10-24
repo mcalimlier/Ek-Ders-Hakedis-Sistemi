@@ -29,3 +29,5 @@ Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları
 [Excel denetimi, 50 senaryo karşılaştırması ve yeni ekran akışı](docs/EXCEL_DENETIMI.md).
 
 [Yeni çekirdekler öncesi uygulama denetimi](docs/CEKIRDEK_ONCESI_DENETIM_2026-10-24.md).
+
+Kişisel Bordro ekranında modül ve ay/yıl seçilerek kayıtlı hakedişten tek öğretmen için A4 PDF alınır; Klasör düğmesi kaydedilen konumu açar. Sol menüde temel işlemler ve Kişisel Bordro/Dönem Sabitleri grupları ayrıdır. Öğretmen Listesi adı, sabitlerin hizaları ve simgelerden ayrı tutar alanları günceldir; sol altta kullanıcı imzası bulunur.

@@ -8,9 +8,17 @@ public partial class MainWindow : Window
     private readonly ShellViewModel shell;
     private readonly Action<string>? notify;
     private readonly Func<string,string,bool>? confirmation;
+    private readonly Action<string> openFolder;
+    private readonly string? personalOutputRoot;
     private WorkspaceViewModel model => shell.Workspace;
     public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
-    public MainWindow(ShellViewModel viewModel,Action<string>? notification=null,Func<string,string,bool>? confirmation=null) {shell=viewModel;notify=notification;this.confirmation=confirmation;InitializeComponent();DataContext=shell;}
+    public MainWindow(ShellViewModel viewModel,Action<string>? notification=null,Func<string,string,bool>? confirmation=null,
+        Action<string>? folderOpener=null,string? personalOutputRoot=null)
+    {
+        shell=viewModel;notify=notification;this.confirmation=confirmation;this.personalOutputRoot=personalOutputRoot;
+        openFolder=folderOpener??(folder=>{_=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder){UseShellExecute=true});});
+        InitializeComponent();DataContext=shell;
+    }
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
@@ -90,6 +98,25 @@ public partial class MainWindow : Window
             RunPeriod(shell.Calculation,shell.ClearCurrentWork);
     }
     private void ReloadOutputs_Click(object sender,RoutedEventArgs e)=>shell.Outputs.Reload();
+    private void ReloadPersonal_Click(object sender,RoutedEventArgs e)=>shell.Personal.Reload();
+    private void CreatePersonal_Click(object sender,RoutedEventArgs e)=>RunPersonal(()=>
+    {
+        var source=shell.Personal.ReadSelection();var teacher=shell.Personal.SelectedTeacher!;
+        var path=new PaymentReportService().ExportPersonal(source,teacher.Id,shell.Outputs.Details.Read(),personalOutputRoot);
+        shell.Personal.AcceptOutput(path);
+    });
+    private void OpenPersonalFolder_Click(object sender,RoutedEventArgs e)=>RunPersonal(()=>
+    {
+        var folder=shell.Personal.OutputFolder;
+        if(!shell.Personal.CanOpenFolder || folder is null || !System.IO.Directory.Exists(folder))throw new InvalidOperationException("Önce kişisel bordroyu oluşturun. Kaydedilen dosya veya klasör taşınmış olabilir.");
+        openFolder(folder);
+    });
+    private void RunPersonal(Action action)
+    {
+        try{action();}
+        catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or UnauthorizedAccessException or NotSupportedException or System.ComponentModel.Win32Exception)
+        {shell.Personal.ShowError(ex.Message);}
+    }
     private void SaveReportDetails_Click(object sender,RoutedEventArgs e)=>RunOutput(shell.Outputs.SaveDetails);
     private void SelectOutput(object sender)
     {if(((FrameworkElement)sender).DataContext is Hakedis.Storage.ArchivedPayment record)shell.Outputs.Selected=record;}

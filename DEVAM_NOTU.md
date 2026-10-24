@@ -1,3 +1,18 @@
+# Son değişiklik — 24 Ekim 2026: kişisel bordro ve menü grupları
+
+- Kullanıcının beş maddesi uygulandı: üst menüde Veri Girişi / Kurum ve İmza Bilgileri / Hakediş Hesapla / Öğretmen Listesi / Çıktı; ayrı alt grupta Kişisel Bordro ve onun altında Dönem Sabitleri. Sol altta program adı, altın çizgi ve tam olarak created by Murat ÇALIMLIER imzası var. Referans OEHS arayüzünün mevcut renk/kart dili kullanıldı.
+- Eski Ücretli Öğretmen Listesi adı güncel arayüz başlığı, sol düğme ve kullanım belgesinde Öğretmen Listesi yapıldı. İç Teachers anahtarı ve JSON veri şemaları değiştirilmedi.
+- PersonalPayrollViewModel yeni seçim modeli: modül/ay/yıl ile yalnız kayıtlı hakedişteki öğretmenler (ad/soyad, TC) listelenir; mevcut ana öğretmen kataloğu veya canlı taslaktan veri çekmez. Silinmiş öğretmenin geçmiş bordrosu kendi arşiv kaydından açılır. Kaynak SHA sürümü değişmişse PDF öncesi yenileme gerekir. Boş dönem/eklenmemiş modülde çıktı engellenir.
+- Bordro oluştur tek öğretmen için A4 dikey PDF yazar. Güncel sabitlerle yeniden hesap yapmaz; kayıtlı girdi/sonuç/kurum/imzaları kullanır. Banka/kurum/imzalar kaynakta yoksa mevcut ortak bilgiler kullanılır. PDF kimlik/IBAN/görev/ders bilgilerini, ücret/kesinti/net ve SGK yan bilgisini içerir. Klasör düğmesi yalnız başarılı kayıt sonrası etkinleşir; son PDF'nin klasörünü açar. Dönem/öğretmen değişince eski dosyaya ilişkin seçim temizlenir; PDF silinmez.
+- Çıktı: Masaüstü/ÜcretliUsta Öğretici Hakediş Sistemi/Çıktılar/Kişisel Bordrolar/modül/YYYY-MM/benzersiz-klasör/Kişisel Bordro.pdf. Zaman + tam GUID klasöründe tek PDF, ortak atomik/staging yazıcısı ile hazırlanır. İlk derin test yolu 260 karaktere ulaştığı için gereksiz öğretmen GUID/sürüm tekrarları çıkarıldı; kısa yol bağımsız PDF okuyucusunda tekrar doğrulandı.
+- Dönem Sabitleri dokuz alanı üç eşit sütun/üç satır yapıldı; etiket yüksekliği sabit ve textbox genişlik/Y konumları eşit. Güncelle / Dönem sabitlerini değiştir ve salt okunur davranışı korundu.
+- Altı lacivert/altın kart aynı ölçüdedir. Simge üst başlık satırında, tutarlar ayrı alt satırdadır; büyük değerler taşmadan ölçeklenir. Ödenek satırlarında etiket/tutar boşlukları korunur. WPF geometrik testinde 100.000 saatlik büyük tutarlar dahil 1366 ve 1040 genişlikte simge çakışması/taşma yok.
+- 164 birim testi geçti; altı yeni kişisel seçim testi var. WPF bütün eski akışları ve yeni kişisel PDF/Klasör olaylarını geçti; bağlama hatası yok. Klasör açma OS sınırı testte yakalanarak doğru dizin doğrulandı, test amacıyla Explorer açılmadı. Tek kişilik PDF pypdf ile okundu: bir dikey A4, kimlik/IBAN ve 12 parasal alan kaynak arşivle aynı. Poppler render ve iki ekran ölçüsündeki görüntüler incelendi.
+- Testler artifacts/ui-personal-compatible; günlükler artifacts/personal-*.log. Kullanım ve README güncellendi. Plan: docs/superpowers/plans/2026-10-24-personal-payroll-and-sidebar.md. Eski modüllere otomatik Temel Eğitim hesabı yapılmaz; yeni çekirdek gelince kişisel çıktı eşlemesi de eklenmelidir.
+- Veri yedeği artifacts/private-backups/before-personal-payroll-20261024-201531/Veriler; manifestteki **19 gerçek dosya ve dosya listesi aynı**. Gerçek kişi/ödemeler üzerinde düzenleme/silme/test kaydı yapılmadı. Bu tur dağıtım ZIP'i üretilmedi. Debug ve Release güncel kaynakla sıfır uyarı/hatayla derlendi; gerçek uygulama otomatik açılmadı. Visual Studio F5 güncel arayüzü açar.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: mahiyet T/TİS açıklaması sorgulandı
 
 - Kullanıcı son XML panelindeki T'nin kaynağını sordu; normal seçeneklerin Asıl/Ek/İptal olduğunu ve İptal için İ beklediğini söyledi.

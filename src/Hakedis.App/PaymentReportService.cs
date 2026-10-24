@@ -28,11 +28,7 @@ public sealed partial class PaymentReportService
     public LaidOutReport[] Prepare(ArchivedPayment record,ReportDetails fallback)
     {
         PaymentArchiveStore.Validate(record.Document.Data,record.Document.ModuleId);
-        var details=record.Document.Data.Details;
-        if(details is null || string.IsNullOrWhiteSpace(details.Institution))details=fallback;
-        if(string.IsNullOrWhiteSpace(details.Institution) || string.IsNullOrWhiteSpace(details.Bank) ||
-           string.IsNullOrWhiteSpace(details.PreparedBy) || string.IsNullOrWhiteSpace(details.AuthorizedBy))
-            throw new ArgumentException("Önce Kurum ve İmza Bilgileri panelindeki kurum, banka ve imzacı bilgilerini doldurun ve kaydedin.");
+        var details=ResolveDetails(record,fallback);
         var data=record.Document.Data;
         if(data.Movement?.RuleVersion!="employment-dates.v2")
         {
@@ -52,6 +48,19 @@ public sealed partial class PaymentReportService
         var documents=Prepare(record,fallback);var basePath=Path.GetFullPath(outputRoot??DefaultOutputRoot);
         var folder=Path.Combine(basePath,record.Document.ModuleId.ToString(),$"{record.Document.Data.Year:D4}-{record.Document.Data.Month:D2}",
             $"{DateTime.Now:yyyyMMdd-HHmmss}-{record.Version[..8]}-{Guid.NewGuid():N}");
+        return ExportDocuments(documents,basePath,folder);
+    }
+    private static ReportDetails ResolveDetails(ArchivedPayment record,ReportDetails fallback)
+    {
+        var details=record.Document.Data.Details;
+        if(details is null || string.IsNullOrWhiteSpace(details.Institution))details=fallback;
+        if(string.IsNullOrWhiteSpace(details.Institution) || string.IsNullOrWhiteSpace(details.Bank) ||
+           string.IsNullOrWhiteSpace(details.PreparedBy) || string.IsNullOrWhiteSpace(details.AuthorizedBy))
+            throw new ArgumentException("Önce Kurum ve İmza Bilgileri panelindeki kurum, banka ve imzacı bilgilerini doldurun ve kaydedin.");
+        return details;
+    }
+    private static string ExportDocuments(LaidOutReport[] documents,string basePath,string folder)
+    {
         var stage=folder+".hazirlaniyor";Directory.CreateDirectory(stage);
         try
         {
