@@ -14,6 +14,40 @@ public sealed class OutputsWorkflowTests : IDisposable
         s.Registration.Editor.Iban="TR330006100519786457841326";s.Registration.Editor.OccupationCode="2341.04";
         s.SaveNewTeacher();s.Monthly.DayHours="117";return s;
     }
+    [Fact] public void Second_payroll_for_same_module_month_is_rejected_before_any_files_change()
+    {
+        var s=Setup();s.Calculation.CreatePayment();
+        var original=s.Outputs.Records.Single();var bytes=File.ReadAllBytes(original.Path);
+        var monthly=new MonthlyPayrollStore(root).FilePath(ModuleId.TemelEgitim,2026,9);var input=File.ReadAllBytes(monthly);
+        s.Calculation.Rows[0].DayHours="90";
+        var error=Assert.Throws<InvalidOperationException>(s.Calculation.CreatePayment);
+        Assert.Contains("kayıtlı hakediş",error.Message);
+        Assert.Equal(bytes,File.ReadAllBytes(original.Path));Assert.Equal(input,File.ReadAllBytes(monthly));
+        Assert.Single(new PaymentArchiveStore(root).ReadAll());
+        s.Calculation.Month=10;s.Calculation.Rows[0].DayHours="90";s.Calculation.CreatePayment();
+        Assert.Equal(2,new PaymentArchiveStore(root).ReadAll().Count);
+    }
+    [Fact] public async Task Concurrent_windows_cannot_create_duplicate_payrolls()
+    {
+        var first=Setup();var second=new ShellViewModel(PathName);second.Calculation.Rows[0].DayHours="90";
+        using var gate=new ManualResetEventSlim();
+        Task<bool> Create(ShellViewModel s)=>Task.Run(()=>{gate.Wait();try{s.Calculation.CreatePayment();return true;}catch(InvalidOperationException){return false;}});
+        var a=Create(first);var b=Create(second);gate.Set();var results=await Task.WhenAll(a,b);
+        Assert.Single(results,x=>x);Assert.Single(new PaymentArchiveStore(root).ReadAll());
+    }
+    [Fact] public void Period_locks_are_scoped_to_module_and_released_after_disposal()
+    {
+        var store=new PaymentArchiveStore(root);
+        using(var first=store.BeginNewPeriod(ModuleId.TemelEgitim,2026,9))
+        {Assert.Throws<InvalidOperationException>(()=>store.BeginNewPeriod(ModuleId.TemelEgitim,2026,9));using var other=store.BeginNewPeriod(ModuleId.Ortaogretim,2026,9);using var next=store.BeginNewPeriod(ModuleId.TemelEgitim,2026,10);}
+        using var retry=store.BeginNewPeriod(ModuleId.TemelEgitim,2026,9);
+    }
+    [Fact] public void Xml_export_detects_an_archive_changed_while_its_review_window_is_open()
+    {
+        var s=Setup();s.Calculation.CreatePayment();var record=s.Outputs.Records.Single();
+        var store=new SgkXmlStore(root);store.EnsureCurrent(record);
+        File.AppendAllText(record.Path," ");Assert.Throws<InvalidOperationException>(()=>store.EnsureCurrent(record));
+    }
     [Fact] public void Monthly_contract_has_no_extra_employment_date_fields()
     {
         var names=typeof(MonthlyInput).GetProperties().Select(p=>p.Name);

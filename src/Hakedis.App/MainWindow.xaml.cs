@@ -97,6 +97,14 @@ public partial class MainWindow : Window
     {SelectOutput(sender);RunOutput(()=>{var folder=new PaymentReportService().Export(shell.Outputs.ReadSelected(),shell.Outputs.Details.Read());shell.Outputs.ShowStatus("Üç PDF kaydedildi: "+folder);MessageBox.Show(this,"Üç PDF kaydedildi:\n"+folder,"Çıktı",MessageBoxButton.OK,MessageBoxImage.Information);});}
     private void PrintOutputs_Click(object sender,RoutedEventArgs e)
     {SelectOutput(sender);RunOutput(()=>{if(new PaymentReportService().Print(shell.Outputs.ReadSelected(),shell.Outputs.Details.Read()))shell.Outputs.ShowStatus("Üç belge yazıcıya gönderildi.");});}
+    private void XmlOutput_Click(object sender,RoutedEventArgs e)
+    {
+        SelectOutput(sender);RunOutput(()=>{
+            var dialog=new SgkXmlWindow(shell.Outputs.ReadSelected(),new Hakedis.Storage.SgkXmlStore(shell.Outputs.DataRoot)){Owner=this};
+            if(dialog.ShowDialog()==true)
+            {shell.Outputs.ShowStatus("SGK şemasına uygun XML kaydedildi: "+dialog.OutputPath);MessageBox.Show(this,"XML kaydedildi:\n"+dialog.OutputPath,"SGK XML",MessageBoxButton.OK,MessageBoxImage.Information);}
+        });
+    }
     private void RunOutput(Action action)
     {try{action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or NotSupportedException or System.Printing.PrintSystemException or System.Windows.Xps.XpsException){shell.Outputs.ShowStatus(ex.Message);MessageBox.Show(this,ex.Message,"Çıktı",MessageBoxButton.OK,MessageBoxImage.Information);}}
     private void ReloadPayment_Click(object sender,RoutedEventArgs e)

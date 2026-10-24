@@ -16,6 +16,19 @@ internal static class Program
         var output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/ui-review"); Directory.CreateDirectory(output);
         var listener = new BindingErrors(); PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
         var app = new Hakedis.App.App(); app.InitializeComponent();
+        if(args.Length==3 && args[1]=="--verify-local-sgk")
+        {
+            var store=new Hakedis.Storage.PaymentArchiveStore(args[2]);var record=store.ReadAll().First();
+            var original=File.ReadAllBytes(record.Path);var settings=new Hakedis.Storage.SgkXmlStore(args[2]).Read(record.Document.ModuleId);
+            var sgkEditor=new SgkXmlEditor(record,settings){Confirmed=true};var bytes=sgkEditor.Build();
+            var path=Hakedis.Storage.SgkXmlStore.Export(Path.Combine(output,"private-xml"),record.Document.ModuleId,record.Document.Data,sgkEditor.Workplace(),sgkEditor.ReadPeople());
+            if(!original.SequenceEqual(File.ReadAllBytes(record.Path)))throw new InvalidOperationException("XML kaynak hakedişi değiştirdi.");
+            if(!bytes.SequenceEqual(File.ReadAllBytes(path)))throw new InvalidOperationException("Dosya doğrulanan XML'den farklı.");
+            var view=new SgkXmlWindow(record,new Hakedis.Storage.SgkXmlStore(args[2]),Path.Combine(output,"private-xml"));view.Show();
+            view.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);Capture(view,Path.Combine(output,"SGK-local-review.png"));view.Close();
+            File.WriteAllText(Path.Combine(output,"xml-local-path.txt"),path);
+            Console.WriteLine($"Yerel SGK: {record.Count} sigortalı; özgün XSD doğrulaması geçti; kayıt dosyası değişmedi. Yükleme yapılmadı.");return 0;
+        }
         if(args.Length==3 && args[1]=="--verify-local-archive")
         {
             var store=new Hakedis.Storage.PaymentArchiveStore(args[2]);var record=store.ReadAll().First();
@@ -30,7 +43,7 @@ internal static class Program
         var model = new ShellViewModel(Path.Combine(output, Guid.NewGuid().ToString("N"), "ogretmenler.json"));
         model.Registration.Editor.FullName = "Deneme Öğretmeni"; model.Registration.Editor.School = "Örnek İlkokulu";
         model.Registration.Editor.Iban="TR330006100519786457841326";
-        model.Registration.Editor.OccupationCode="2341.04";model.SaveNewTeacher();
+        model.Registration.Editor.OccupationCode="2341.04";model.Registration.Editor.IdentityNumber="10000000146";model.SaveNewTeacher();
         model.Monthly.DayHours = "117";
         var notifications=new List<string>();
         var window = new MainWindow(model,notifications.Add) { ShowActivated = false, ShowInTaskbar = false };
@@ -164,6 +177,27 @@ internal static class Program
         if(!model.CommonConstants.IsReadOnly || update.Content as string!="Güncelle")throw new InvalidOperationException("Sabit kaydı kilitlemedi.");
         model.Registration.Reset();model.ClearCurrentWork();model.Navigate("Outputs");model.Outputs.Selected=model.Outputs.Records.Single();
         var archived=model.Outputs.ReadSelected();var archiveBytes=File.ReadAllBytes(archived.Path);
+        window.Width=1366;window.Height=768;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        var rowButtons=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Where(b=>b.Content is string text && new[]{"PDF oluştur","Yazdır","Düzenle","XML oluştur"}.Contains(text)).ToArray();
+        if(rowButtons.Length!=4 || rowButtons.Any(b=>Math.Abs(b.ActualWidth-100)>1 || Math.Abs(b.ActualHeight-32)>1))throw new InvalidOperationException("Çıktı düğmeleri eşit ölçüde değil.");
+        Capture(window,Path.Combine(output,"Outputs-four-actions.png"));
+        var sgkStore=new Hakedis.Storage.SgkXmlStore(model.Outputs.DataRoot);
+        sgkStore.Save(Hakedis.Contracts.ModuleId.TemelEgitim,new(new("12345678901234567890120000","ÖRNEK KURUM","ÖRNEK ADRES","13","00000",DefaultMissingReason:"07"),[]));
+        var xmlDialog=new SgkXmlWindow(archived,sgkStore,Path.Combine(output,"xml-test")){Owner=window};
+        Exception? xmlFailure=null;
+        xmlDialog.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>{
+            try{
+                var button=(Button)xmlDialog.FindName("ExportXmlButton");button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if(xmlDialog.OutputPath is not null || string.IsNullOrWhiteSpace(((TextBlock)xmlDialog.FindName("ErrorText")).Text))throw new InvalidOperationException("SGK inceleme onayı atlandı.");
+                Capture(xmlDialog,Path.Combine(output,"SGK-review-required.png"));
+                ((CheckBox)xmlDialog.FindName("ReviewCheck")).IsChecked=true;
+                button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if(xmlDialog.OutputPath is null)throw new InvalidOperationException("SGK XML oluşturulmadı: "+((TextBlock)xmlDialog.FindName("ErrorText")).Text);
+            }catch(Exception ex){xmlFailure=ex;xmlDialog.Close();}
+        }));
+        if(xmlDialog.ShowDialog()!=true || xmlFailure is not null)throw new InvalidOperationException("SGK XML ekranı başarısız.",xmlFailure);
+        Hakedis.TemelEgitim.Core.SgkXmlBuilder.Validate(File.ReadAllBytes(xmlDialog.OutputPath!));
+        if(!archiveBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("SGK çıktısı hakedişi değiştirdi.");
         model.BeginArchiveEdit();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(!((Button)window.FindName("SaveArchiveButton")).IsVisible || ((Button)window.FindName("SaveHybridButton")).IsVisible)
             throw new InvalidOperationException("Geçmiş düzenlemede düğmeler doğru değişmedi.");
@@ -199,7 +233,7 @@ internal static class Program
         Capture(window,Path.Combine(output,"Calculation-Kasim-2027.png"));
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"12 WPF panel görüntüsü, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"12 WPF panel görüntüsü, eşit dört çıktı düğmesi, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }
     private static void VerifyReportPages(PaymentReportService service,Hakedis.Storage.ArchivedPayment record,Hakedis.Contracts.ReportDetails details,string output,string prefix)
     {

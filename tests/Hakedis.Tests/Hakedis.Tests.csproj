@@ -19,6 +19,7 @@
     <None Update="Fixtures/excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/Hakedis.App/CommonConstantsViewModel.cs" Link="CommonConstantsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/OutputsViewModel.cs" Link="OutputsViewModel.cs"/>
+    <Compile Include="../../src/Hakedis.App/SgkXmlEditor.cs" Link="SgkXmlEditor.cs"/>
     <Compile Include="../../src/Hakedis.App/PeriodWorkspace.cs" Link="PeriodWorkspace.cs" />
     <Compile Include="../../src/Hakedis.App/PeriodConstantsEditor.cs" Link="PeriodConstantsEditor.cs" />
     <Compile Include="../../src/Hakedis.App/PayrollRow.cs" Link="PayrollRow.cs" />

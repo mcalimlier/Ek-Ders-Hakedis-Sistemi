@@ -1,0 +1,46 @@
+<Window x:Class="Hakedis.App.SgkXmlWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="SGK XML Oluştur" Width="1200" Height="700" MinWidth="1000" MinHeight="620" WindowStartupLocation="CenterOwner" Background="#071F38" Foreground="White" xml:lang="tr-TR">
+ <Window.Resources>
+  <Style x:Key="XmlLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}"><Setter Property="FontSize" Value="11"/></Style>
+  <Style x:Key="XmlField" TargetType="StackPanel"><Setter Property="Width" Value="210"/><Setter Property="Margin" Value="0,0,12,10"/></Style>
+  <Style x:Key="XmlCell" TargetType="TextBlock"><Setter Property="TextAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+ </Window.Resources>
+ <Grid Margin="20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+ <StackPanel><TextBlock Text="{Binding Title}" Foreground="#F2D58B" FontSize="21" FontWeight="Bold"/><TextBlock Text="Kayıtlı hakedişten hazırlanır · XSD 2.1 doğrulaması · UTF-8" Foreground="#ACBED0" Margin="0,5,0,15"/></StackPanel>
+ <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"><StackPanel>
+ <WrapPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="İşyeri sicili + kontrol + aracı (26 rakam)" Style="{StaticResource XmlLabel}"/><TextBox x:Name="RegistryField" Style="{StaticResource FormText}" Text="{Binding RegistrationNumber,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="İşyeri unvanı (zorunlu, en fazla 50)" Style="{StaticResource XmlLabel}"/><TextBox x:Name="TitleField" Style="{StaticResource FormText}" Text="{Binding WorkplaceTitle,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="İşyeri adresi (zorunlu, en fazla 50)" Style="{StaticResource XmlLabel}"/><TextBox x:Name="AddressField" Style="{StaticResource FormText}" Text="{Binding Address,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="Belge türü (01–92)" Style="{StaticResource XmlLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding DocumentType,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="Kanun kodu (5 rakam)" Style="{StaticResource XmlLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding LawCode,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="Mahiyet: A Asıl / E Ek / T TİS" Style="{StaticResource XmlLabel}"/><ComboBox Style="{StaticResource FormCombo}" ItemsSource="{Binding Natures}" SelectedItem="{Binding DocumentNature}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="Ortak eksik gün nedeni (1–26)" Style="{StaticResource XmlLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding DefaultMissingReason,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+  <StackPanel Style="{StaticResource XmlField}"><TextBlock Text="Vergi numarası (isteğe bağlı)" Style="{StaticResource XmlLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding TaxNumber,UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+ </WrapPanel>
+ <TextBlock Text="Sigortalı bilgileri" FontSize="16" FontWeight="Bold" Foreground="#F2D58B" Margin="0,5,0,6"/>
+ <TextBlock Text="Ad ve soyad ayrı alanlardır; birden fazla soyadı varsa düzeltin. Satırdaki eksik gün nedeni boşsa ortak kod kullanılır. Çıkış yapan kişinin çıkış nedeni zorunludur." Foreground="#C4D2E0" TextWrapping="Wrap" Margin="0,0,0,10"/>
+ <DataGrid x:Name="PeopleGrid" ItemsSource="{Binding People}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" Style="{StaticResource ModernDataGrid}" RowHeight="34" Height="220" SelectionMode="Single"><DataGrid.Columns>
+  <DataGridTextColumn Header="Kayıtlı ad soyad" Binding="{Binding FullName}" IsReadOnly="True" Width="170"/>
+  <DataGridTextColumn Header="TCKNO" Binding="{Binding IdentityNumber}" IsReadOnly="True" Width="115"/>
+  <DataGridTextColumn Header="AD (en fazla 18)" Binding="{Binding GivenName,UpdateSourceTrigger=PropertyChanged}" Width="140"/>
+  <DataGridTextColumn Header="SOYAD (en fazla 18)" Binding="{Binding FamilyName,UpdateSourceTrigger=PropertyChanged}" Width="140"/>
+  <DataGridTextColumn Header="GÜN" Binding="{Binding Days}" IsReadOnly="True" Width="50" ElementStyle="{StaticResource XmlCell}"/>
+  <DataGridTextColumn Header="Eksik gün" Binding="{Binding MissingDays}" IsReadOnly="True" Width="70" ElementStyle="{StaticResource XmlCell}"/>
+  <DataGridTextColumn Header="Eksik neden" Binding="{Binding MissingReason,UpdateSourceTrigger=PropertyChanged}" Width="85"/>
+  <DataGridTextColumn Header="Giriş tarihi" Binding="{Binding Start}" IsReadOnly="True" Width="90"/>
+  <DataGridTextColumn Header="Çıkış tarihi" Binding="{Binding End}" IsReadOnly="True" Width="90"/>
+  <DataGridTextColumn Header="Çıkış nedeni" Binding="{Binding ExitReason,UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+  <DataGridTextColumn Header="RAPCALISTI (isteğe bağlı)" Binding="{Binding WorkedOnReport,UpdateSourceTrigger=PropertyChanged}" Width="155"/>
+  <DataGridTextColumn Header="İlk soyadı (isteğe bağlı)" Binding="{Binding FirstSurname,UpdateSourceTrigger=PropertyChanged}" Width="145"/>
+  <DataGridTextColumn Header="PRIM_IKRAMIYE (PEK içindeki)" Binding="{Binding Bonus,UpdateSourceTrigger=PropertyChanged}" Width="180"/>
+  <DataGridTextColumn Header="UCRETLIIZINGUN" Binding="{Binding PaidLeaveDays,UpdateSourceTrigger=PropertyChanged}" Width="125"/>
+  <DataGridTextColumn Header="UIPEK" Binding="{Binding PaidLeaveGross,UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+ </DataGrid.Columns></DataGrid>
+ <TextBlock Text="İsteğe bağlı alanları kullanmıyorsanız boş bırakın; XML’e eklenmez. Giriş/çıkış yalnız bu döneme aitse GGAA olarak yazılır. PEK, kayıtlı SGK’ya esas brüt ücrettir; ikramiye girerseniz PEK içindeki tutarı belirtir, PEK toplamını artırmaz." Foreground="#ACBED0" TextWrapping="Wrap" Margin="0,10,0,12"/>
+ </StackPanel></ScrollViewer>
+ <StackPanel Grid.Row="2" Margin="0,12,0,0"><CheckBox x:Name="ReviewCheck" Content="İşyeri bilgilerini, ad/soyad ayrımını ve SGK neden kodlarını kontrol ettim." Foreground="White" IsChecked="{Binding Confirmed}" Margin="0,0,0,10"/>
+ <TextBlock x:Name="ErrorText" Foreground="#FFD17A" TextWrapping="Wrap" Margin="0,0,0,8"/>
+ <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="ExportXmlButton" Content="XML oluştur" Style="{StaticResource GoldAction}" Width="130" Click="Export_Click"/><Button Content="Vazgeç" IsCancel="True" Style="{StaticResource SecondaryAction}" Width="130"/></StackPanel>
+ </StackPanel></Grid>
+</Window>

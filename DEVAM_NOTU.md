@@ -1,3 +1,17 @@
+# Son değişiklik — 24 Ekim 2026: tek hakediş, altın kartlar, SGK XML
+
+- Aynı modül/yıl/ay için ikinci hakediş oluşturulamaz. Dönem dosyası kilidi kontrolün başından kayıt bitene kadar tutulur. Eski kayıt ve aylık dosya ikinci denemede değişmez; kullanıcı Çıktı / Düzenle'ye yönlendiren hata alır. İki eşzamanlı pencere yarış testi geçti. Mevcut kayıtlar otomatik silinmez.
+- Kayıtlı hakediş satırlarında PDF oluştur, Yazdır, Düzenle, XML oluştur aynı 100×32 ölçüdedir. 1366 ekranda dördü de görünür; dar ekranda yatay kaydırma korunur. Kayıt zamanı yerel saatle gösterilir.
+- Altı kartın boyutları korunarak lacivert geçiş, altın tonlu kenarlar, ince ışık çizgisi ve vektör para/transfer/kalkan/kurum/saat/kesinti simgeleri eklendi. İki ölçüde WPF görüntüleri kontrol edildi.
+- XML oluştur seçili kaydın SGK ekranını açar. İşyeri, ad/soyad ayrımı, eksik gün ve çıkış nedenleri kontrol edilir. Kontrol onayı olmadan çıktı yazılmaz. Ad ve soyad en fazla 18 karakter; hiçbir alan otomatik kısaltılmaz. Kayıt açık ekran sırasında değişirse eski sürümle XML alınması engellenir.
+- Kullanıcının verdiği XSD 2.1 byte düzeyinde aynı gömülü kaynak olarak kullanılır (SHA-256 pin testi var). Şema doğrulaması olmadan dosya yazılmaz. UTF-8, BOM yok; PEK kaynak kaydın Gross toplamıdır. Tarihler SGK resmî Excel'indeki GGAA biçiminde yalnız ilgili ay/yıldaysa yazılır. Eksik gün 07 kodunun iki hanesi korunur. İsteğe bağlı boş alanlar eklenmez.
+- SGK profilleri Veriler/SgkXml-Ogretmenler.json ve SgkXml-UstaOgreticiler.json dosyalarındadır. Kullanıcı öğretmenler ve gelecekteki usta öğreticiler için ayrı 26 haneli numaralar verdi, 21+2+3 ayrımını onayladı. Öğretmen profiline kullanıcı onaylı işyeri unvan/adres, belge türü 13, kanun 00000, eksik gün 07 kaydedildi. Usta öğretici profilinde yalnız verilen sicil şimdilik var; hesaplama çekirdeği açılmadı. Gerçek işyeri numaraları kaynak/Git içinde yok. Dağıtımda özel Veriler klasörü temizlenmeli.
+- 128 birim testi, WPF akış testi ve gerçek kayıt üzerinden XML üretim testi geçti. Gerçek 10 sigortalının XML'i hem .NET hem bağımsız lxml ile kullanıcının özgün XSD'sine göre doğrulandı; PEK toplamı kaynakla eşit. Başlangıç yedeğindeki bütün veri dosyaları byte düzeyinde aynı. SGK'ya yükleme yapılmadı; şema doğrulaması kurumun son iş kuralı kontrolünün yerine geçmez.
+
+Yedek: artifacts/private-backups/before-sgk-xml-*; testler artifacts/ui-sgk-final ve artifacts/private-sgk-final altında, Git dışında. Teknik eşlemeler docs/SGK_XML.md içinde. Güncel Debug sürümü Visual Studio içinde F5 ile açıldı ve açık bırakıldı. Canlı pencere yanıt veriyor. Yeni dağıtım paketi üretilmedi.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: referans PDF'ler ve Çıktı akışı
 
 - Hakediş oluştur başarılı olunca Tamam ile kapanan başarı bildirimi görünür; kullanıcı Çıktı paneline yönlendirilir ve son kayıt seçilir. Hatalı kayıt başarı bildirimi üretmez.

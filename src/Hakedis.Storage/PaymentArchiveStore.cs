@@ -17,6 +17,22 @@ public sealed record ArchivedPayment(string Path,string Version,DraftDocument<Pa
 
 public sealed class PaymentArchiveStore(string root)
 {
+    public IDisposable BeginNewPeriod(ModuleId module,int year,int month)
+    {
+        if(!Enum.IsDefined(module))throw new ArgumentException("Hakediş modülü geçersiz.");
+        var folder=new MonthlyPayrollStore(root).Folder(module);
+        _=new DateTime(year,month,1);Directory.CreateDirectory(folder);
+        FileStream guard;
+        try{guard=new FileStream(System.IO.Path.Combine(folder,$"hakediş-{year:D4}-{month:D2}.guard"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);}
+        catch(IOException ex){throw new InvalidOperationException("Bu dönem başka bir pencerede kaydediliyor. Çıktı listesini yenileyin.",ex);}
+        try
+        {
+            if(ReadAll().Any(r=>r.Document.ModuleId==module && r.Document.Data.Year==year && r.Document.Data.Month==month))
+                throw new InvalidOperationException("Bu modül ve dönem için kayıtlı hakediş var. İkinci kayıt oluşturulamaz; Çıktı panelindeki Düzenle düğmesini kullanın.");
+            return guard;
+        }
+        catch{guard.Dispose();throw;}
+    }
     public IReadOnlyList<ArchivedPayment> ReadAll()
     {
         var folder=System.IO.Path.Combine(root,"AylikKayitlar");if(!Directory.Exists(folder))return [];

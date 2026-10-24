@@ -241,8 +241,10 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     public void CreatePayment()
     {
-        new PayrollEditStore(teacherPath).Recover();
         RequireNormal();if(!IsAvailable)throw new NotSupportedException("Seçilen modülün hesaplama çekirdeği henüz eklenmedi.");
+        var archiveStore=new PaymentArchiveStore(System.IO.Path.GetDirectoryName(teacherPath)!);
+        using var newPeriod=archiveStore.BeginNewPeriod(SelectedModule.Id,year,month);
+        new PayrollEditStore(teacherPath).Recover();
         if(Rows.Any(r=>r.Teacher!=r.SourceTeacher))throw new InvalidOperationException("Öğretmen değişiklikleri için önce Değişiklikleri kaydet düğmesini kullanın.");
         var rows=Rows.Where(r=>r.HasInput).ToArray();
         if(rows.Length==0)throw new ArgumentException("Önce aylık ders bilgilerini girin.");
@@ -260,7 +262,6 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         var warningCount=rows.Count(r=>r.SgkError!="");
         var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!,r.SgkInformation,r.SgkError)).ToArray(),
             "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),TeacherCalendar.RuleVersion);
-        var archiveStore=new PaymentArchiveStore(System.IO.Path.GetDirectoryName(teacherPath)!);
         snapshot=snapshot with {Details=new ReportDetailsStore(System.IO.Path.GetDirectoryName(teacherPath)!).Read(),Movement=archiveStore.Movement(SelectedModule.Id,year,month,snapshot.Rows)};
         var path=System.IO.Path.Combine(store.Folder(SelectedModule.Id),$"hakediş-{year:D4}-{month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
         new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,new TeacherPayrollModule().RuleVersion,DateTimeOffset.UtcNow,snapshot));

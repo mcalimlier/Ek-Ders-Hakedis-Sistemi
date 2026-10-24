@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Oehs.xaml"/>
                 <ResourceDictionary Source="Themes/Workspace.xaml"/>
+                <ResourceDictionary Source="Themes/PaymentCards.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

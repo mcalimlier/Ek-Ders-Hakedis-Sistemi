@@ -21,6 +21,7 @@ public sealed class ReportDetailsEditor
 
 public sealed class OutputsViewModel : INotifyPropertyChanged
 {
+    public string DataRoot {get;}
     private readonly PaymentArchiveStore store;
     private readonly ReportDetailsStore detailsStore;
     private ArchivedPayment? selected;
@@ -32,7 +33,7 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     public string DetailsStatus {get;private set;}="";
     public event PropertyChangedEventHandler? PropertyChanged;
     public OutputsViewModel(string root)
-    {store=new(root);detailsStore=new(root);Details=ReportDetailsEditor.From(detailsStore.Read());Reload();}
+    {DataRoot=System.IO.Path.GetFullPath(root);store=new(root);detailsStore=new(root);Details=ReportDetailsEditor.From(detailsStore.Read());Reload();}
     public void SaveDetails(){detailsStore.Save(Details.Read());DetailsStatus="Belge bilgileri kaydedildi. Bundan sonra oluşturulacak hakedişlere bu bilgiler eklenir.";Notify();}
     public void Reload()
     {
