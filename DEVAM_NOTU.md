@@ -69,3 +69,11 @@ Gerçek veriler yalnız dist/Hakedis-win-x64-20261024-004600/Veriler altında ye
 Aktarım önce geçici alanda uygulamanın TeacherDirectory ve MonthlyPayrollStore sınıflarıyla doğrulandı. Ardından hedefte mevcut Veriler bulunmadığı kontrol edilip doğrulanmış dosyalar tek dizin yeniden adlandırmasıyla yerleştirildi. Hedefte önceden kayıt bulunsaydı üzerine yazılmayacaktı. Kaynakla her öğretmenin brüt/net sonucu ve toplamlar karşılaştırıldı: brüt 214.395,70 TL, net 184.380,34 TL. Meslek kodlarının 10'u da gömülü PDF kataloğunda doğrulandı.
 
 Gerçek verileri okuyan Hakedis.App.exe görünür olarak açıldı; Ücretli Ek Ders Hakediş Sistemi başlıklı pencere ve çalışan süreç doğrulandı. Program bilerek açık bırakıldı. Kullanıcı Hakediş Hesapla / Temel Eğitim / Eylül-2026 üzerinden deneyebilir. Gelecek yayına gerçek Veriler veya artifacts içeriklerini dahil etmeyin; kullanıcı denemesi devam ederken bu verileri silmeyin.
+
+## Visual Studio ile çalışma — 24 Ekim
+
+Kullanıcının isteğiyle Visual Studio Community 2026 içinde UcretliEkDers.slnx açıldı. Başlangıç projesi Hakedis.App; IDE başlığı UcretliEkDers (Çalışıyor) olarak doğrulandı ve Debug modundaki Hakedis.App.exe IDE tarafından başlatıldı. Uygulama penceresi öne getirildi; erişilebilirlik ağacında 10 öğretmen / 10 aylık giriş ve Eylül-2026 bilgisi doğrulandı. Visual Studio ve uygulama bilerek açık bırakıldı.
+
+Debug derlemesi 0 uyarı / 0 hata ile tamamlandı. Mevcut yayın klasöründeki gerçek Veriler, daha önce bulunmayan src/Hakedis.App/bin/Debug/net10.0-windows/Veriler klasörüne kopyalandı ve tüm dosyaların hash eşleşmesi kontrol edildi. Yayındaki asıl kayıtlar değiştirilmedi. Bundan sonra Visual Studio'dan çalıştırılan uygulamanın kaydetmeleri bu DEBUG Veriler kopyasına gider; yayımlanmış EXE'nin Veriler klasörüyle otomatik eşitlenmez. Kullanıcının yeni denemeleri için Debug Veriler klasörünü kontrol edin; derleme çıktısı temizliği yaparken bu gerçek kayıtları silmeyin. Dağıtım paketine gerçek Veriler eklenmez.
+
+Kullanıcı yeniden açmak isterse yeni proje kökündeki UcretliEkDers.slnx çözüm dosyasını seçmeli; Hakedis.App başlangıç projesiyle F5 çalıştırır, Shift+F5 hata ayıklamayı durdurur.
