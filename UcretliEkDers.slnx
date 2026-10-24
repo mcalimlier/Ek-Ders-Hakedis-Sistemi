@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Hakedis.App/Hakedis.App.csproj" />
     <Project Path="src/Hakedis.Contracts/Hakedis.Contracts.csproj" />
+    <Project Path="src/Hakedis.DinOgretimi.Core/Hakedis.DinOgretimi.Core.csproj" />
     <Project Path="src/Hakedis.Storage/Hakedis.Storage.csproj" />
     <Project Path="src/Hakedis.TemelEgitim.Core/Hakedis.TemelEgitim.Core.csproj" />
   </Folder>

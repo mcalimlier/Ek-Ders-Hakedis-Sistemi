@@ -61,7 +61,7 @@ public sealed class SgkXmlEditor
                 string.Join(" ",(known.GivenName+" "+known.FamilyName).Split(' ',StringSplitOptions.RemoveEmptyEntries)),
                 string.Join(" ",parts),CompareOptions.IgnoreCase)!=0)known=null;
             CalendarResult? days=null;
-            try{days=TeacherCalendar.CalculateMonth(data.Year,data.Month,t.StartDate,t.EndDate,row.Input.DayHours,row.Input.DykHours);}catch(ArgumentException){}
+            try{days=PayrollCores.Calendar(record.Document.ModuleId,data.Year,data.Month,t.StartDate,t.EndDate,row.Input.DayHours,row.Input.DykHours);}catch(ArgumentException){}
             string Date(DateTime? date)=>date is DateTime d && d.Year==data.Year && d.Month==data.Month?d.ToString("dd.MM.yyyy",CultureInfo.InvariantCulture):"";
             People.Add(new(){TeacherId=t.Id,FullName=t.FullName,IdentityNumber=t.IdentityNumber,
                 GivenName=known?.GivenName??string.Join(" ",parts.SkipLast(1)),FamilyName=known?.FamilyName??parts.LastOrDefault()??"",
@@ -73,7 +73,7 @@ public sealed class SgkXmlEditor
     public byte[] Build()
     {
         if(!Confirmed)throw new ArgumentException("Ad/soyad ayrımını, işyeri bilgilerini ve SGK neden kodlarını kontrol edip onay kutusunu işaretleyin.");
-        return SgkXmlBuilder.Build(Record.Document.Data,Workplace(),ReadPeople());
+        return SgkXmlStore.Build(Record.Document.ModuleId,Record.Document.Data,Workplace(),ReadPeople());
     }
     public SgkXmlSettings Settings()=>new(Workplace(),initial.Names.Where(n=>People.All(p=>p.TeacherId!=n.TeacherId))
         .Concat(People.Select(p=>new SgkName(p.TeacherId,p.GivenName.Trim(),p.FamilyName.Trim()))).ToArray());

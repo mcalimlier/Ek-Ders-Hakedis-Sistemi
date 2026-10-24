@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hakedis.Contracts\Hakedis.Contracts.csproj" />
+    <ProjectReference Include="../Hakedis.DinOgretimi.Core/Hakedis.DinOgretimi.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

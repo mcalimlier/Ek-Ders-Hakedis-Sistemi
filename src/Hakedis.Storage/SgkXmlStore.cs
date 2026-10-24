@@ -26,11 +26,17 @@ public sealed class SgkXmlStore(string root)
     public static string Export(string outputRoot,ModuleId module,PaymentSnapshot snapshot,SgkWorkplace workplace,IReadOnlyList<SgkPerson> people)
     {
         PaymentArchiveStore.Validate(snapshot,module);
-        var bytes=SgkXmlBuilder.Build(snapshot,workplace,people);
+        var bytes=Build(module,snapshot,workplace,people);
         var folder=Path.Combine(outputRoot,module.ToString(),$"{snapshot.Year:D4}-{snapshot.Month:D2}");Directory.CreateDirectory(folder);
         var path=Path.Combine(folder,$"SGK-{snapshot.Year:D4}-{snapshot.Month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.xml");
         var temporary=path+".tmp";
         try{using(var file=new FileStream(temporary,FileMode.CreateNew,FileAccess.Write,FileShare.None)){file.Write(bytes);file.Flush(true);}File.Move(temporary,path);return path;}
         finally{if(File.Exists(temporary))File.Delete(temporary);}
+    }
+    public static byte[] Build(ModuleId module,PaymentSnapshot snapshot,SgkWorkplace workplace,IReadOnlyList<SgkPerson> people)
+    {
+        PaymentArchiveStore.Validate(snapshot,module);
+        return SgkXmlBuilder.Build(snapshot,workplace,people,row=>PayrollCores.Calendar(module,snapshot.Year,snapshot.Month,
+            row.Teacher.StartDate,row.Teacher.EndDate,row.Input.DayHours,row.Input.DykHours),PayrollCores.CalendarRuleVersion(module));
     }
 }

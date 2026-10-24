@@ -10,7 +10,7 @@ public sealed partial class PaymentReportService
     public LaidOutReport PreparePersonal(ArchivedPayment record,Guid teacherId,ReportDetails fallback)
     {
         PaymentArchiveStore.Validate(record.Document.Data,record.Document.ModuleId);
-        if(record.Document.ModuleId!=ModuleId.TemelEgitim)throw new NotSupportedException("Bu modülün kişisel bordro eşlemesi henüz eklenmedi.");
+        if(!PayrollCores.IsAvailable(record.Document.ModuleId))throw new NotSupportedException("Bu modülün kişisel bordro eşlemesi henüz eklenmedi.");
         var item=record.Document.Data.Rows.SingleOrDefault(r=>r.Teacher.Id==teacherId)
             ??throw new ArgumentException("Seçilen öğretmen kayıtlı hakedişte bulunmuyor.");
         var details=ResolveDetails(record,fallback);var data=record.Document.Data;
@@ -80,7 +80,7 @@ public sealed partial class PaymentReportService
         var sgk=item.SgkInformation;var sgkError=item.SgkError;
         if(sgk is null && string.IsNullOrWhiteSpace(sgkError))
         {
-            try{sgk=TeacherCalendar.CalculateMonth(data.Year,data.Month,teacher.StartDate,teacher.EndDate,item.Input.DayHours,item.Input.DykHours);}
+            try{sgk=PayrollCores.Calendar(record.Document.ModuleId,data.Year,data.Month,teacher.StartDate,teacher.EndDate,item.Input.DayHours,item.Input.DykHours);}
             catch(ArgumentException ex){sgkError=ex.Message;}
         }
         var information=sgk is null?"SGK yan bilgisi: "+sgkError:

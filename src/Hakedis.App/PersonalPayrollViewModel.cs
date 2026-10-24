@@ -16,7 +16,7 @@ public sealed class PersonalPayrollViewModel : INotifyPropertyChanged
     private ModuleDescriptor module;
     private int year=DateTime.Today.Year,month=DateTime.Today.Month;
     private string lastOutput="";
-    public IReadOnlyList<ModuleDescriptor> Modules {get;}=new ModuleRegistry([new TeacherPayrollModule()]).Catalog;
+    public IReadOnlyList<ModuleDescriptor> Modules {get;}=PayrollCores.Catalog;
     public IReadOnlyList<MonthOption> Months {get;}=Enumerable.Range(1,12).Select(i=>new MonthOption(i,CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetMonthName(i))).ToArray();
     public IReadOnlyList<int> Years {get;}=Enumerable.Range(1900,201).ToArray();
     public bool CanChangePeriod=>true;

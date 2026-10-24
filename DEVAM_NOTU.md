@@ -1,4 +1,18 @@
-# Son değişiklik — 24 Ekim 2026: kişisel bordro ve menü grupları
+# Son değişiklik — 24 Ekim 2026: Din Öğretimi bağımsız çekirdeği
+
+- Din Öğretimi kullanıcının yeni Excel'inden ayrı `Hakedis.DinOgretimi.Core` projesiyle eklendi. Yalnız Contracts'a başvurur; kendi girdi/parametre/sonuç/takvim tipleri vardır. Temel Eğitim hesaplayıcısı çağrılmaz. Yeni enum `DinOgretimi` sona eklendi; eski enum/dosya/kural anahtarları değişmedi. İmam Hatip Lisesi eski bekleyen modül anahtarı yeniden kullanılmadı.
+- Storage/PayrollCores tek uygulama yönlendirme noktasıdır. Din sonucunu mevcut ortak bordro/arşiv sözleşmesine açık alanlarla eşler. Arayüzdeki tüm modül seçimleri aynı katalogdan gelir. Aylık/hakediş/SGK/kişisel PDF doğru modülün çekirdeğini kullanır. Ortak sabitler ve ücretli öğretmen SGK işyeri profili korunur.
+- Öğretmenler, aylık kayıtlar ve arşivler modülle ayrıdır; aynı TC iki modülde tutulamaz. Aynı ay iki ayrı modül kaydedilebilir; aynı modülde ikinci hakediş engellenir. Önceki ay personel sayısı modüle göre hesaplanır. Geçmiş düzenleme onayla aynı kaydı değiştirir; arşivde kullanılan sabitler güncel sabitlerden etkilenmez.
+- Excel'deki `Bordro!Z8` silinmiş kesinti formülü, `F9` elle yazılmış saat, Personel Bildirimi `#REF!`, kullanılmayan AGİ `#NAME?` ve kişisel sayfadaki ana bordrodan farklı vergi formülleri tespit edildi. Bunlar hesap kuralı olarak taşınmadı. Sağlam I7:AA7 formülleri esas alındı; detaylar docs/DIN_OGRETIMI.md. Kaynak değiştirilmedi, gerçek öğretmenler otomatik içe aktarılmadı.
+- Kaynak salt okunur Microsoft Excel'de CalculateFullRebuild ile 50 senaryo/14 sonuç için hesaplandı. Anonim karşılaştırma fixture'ı tests/Hakedis.Tests/Fixtures/din-excel-recalculated.json; özel isim/TC/IBAN içermez. Örnek 117 gündüz saati için net 22.193,93 TL.
+- Son 178 birim testi geçti (14 yeni Din Öğretimi test vakası). Bağımsız derleme bağımlılığı, Excel karşılaştırması, canlı/aylık/modül ayrımı, kayıt/düzenleme, takvim hatasının parayı etkilememesi, bozuk tutar/kural sürümü, taslak modül kontrolü ve A/E/İ XML vakaları kapsandı.
+- WPF akış testi önceki bütün kontrolleri ve Din modül seçimi → aylık giriş → canlı hakediş → başarılı bildirim/Çıktı → üç PDF → kişisel PDF/Klasör → İ mahiyetli XML akışını geçti; binding hatası yok. Günlük artifacts/din-ui-flow.log, görüntüler artifacts/ui-din-verified. Testler yalnız yapay kişiler kullanır; SGK'ya yükleme veya fiziksel baskı yapılmadı.
+- pypdf/lxml bağımsız kontrolünde dört Din PDF'si tek sayfa, kişi/TC/net değerleri doğru; ana bordro yatay A4, kişisel bordro dikey A4. Özgün XSD XML'i doğruladı. Dört PDF'nin Poppler görüntüleri ve iki yeni ekran görsel olarak incelendi.
+- Debug ve Release WPF derlemeleri sıfır uyarı/hata ile geçti. Günlükler artifacts/din-debug-build.log ve artifacts/din-ui-build.log. Son test günlüğü artifacts/din-tests-final.log.
+- Gerçek veri yedeği artifacts/private-backups/before-din-ogretimi-* altında; manifest yolu artifacts/din-backup-path.txt. 19 gerçek veri dosyasının içerikleri ve dosya listesi ile kaynak Excel SHA-256 değişmedi. Yeni paket/ZIP hazırlanmadı. Program otomatik açılmadı; Visual Studio F5 güncel Debug sürümünü çalıştırır.
+- İmza kullanıcının son düzeltmesine göre artık tam olarak `Created by Murat ÇALIMLIER`; WPF kontrolü de bu metni bekler.
+
+# Önceki değişiklik — 24 Ekim 2026: kişisel bordro ve menü grupları
 
 - Kullanıcının beş maddesi uygulandı: üst menüde Veri Girişi / Kurum ve İmza Bilgileri / Hakediş Hesapla / Öğretmen Listesi / Çıktı; ayrı alt grupta Kişisel Bordro ve onun altında Dönem Sabitleri. Sol altta program adı, altın çizgi ve tam olarak created by Murat ÇALIMLIER imzası var. Referans OEHS arayüzünün mevcut renk/kart dili kullanıldı.
 - Eski Ücretli Öğretmen Listesi adı güncel arayüz başlığı, sol düğme ve kullanım belgesinde Öğretmen Listesi yapıldı. İç Teachers anahtarı ve JSON veri şemaları değiştirilmedi.

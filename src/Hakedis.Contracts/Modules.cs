@@ -1,6 +1,6 @@
 namespace Hakedis.Contracts;
 
-public enum ModuleId { TemelEgitim, ImamHatipLisesi, Ortaogretim, MeslekiEgitim, HalkEgitimUstaOgretici }
+public enum ModuleId { TemelEgitim, ImamHatipLisesi, Ortaogretim, MeslekiEgitim, HalkEgitimUstaOgretici, DinOgretimi }
 
 // Ortak sözleşme hesaplama alanlarını dayatmaz. Her çekirdek kendi girdi ve sonucuna sahiptir.
 public interface ICalculationModule
@@ -31,6 +31,7 @@ public sealed class ModuleRegistry
         new ModuleDescriptor(id, id switch
         {
             ModuleId.TemelEgitim => "Temel Eğitim",
+            ModuleId.DinOgretimi => "Din Öğretimi",
             ModuleId.ImamHatipLisesi => "İmam Hatip Lisesi",
             ModuleId.Ortaogretim => "Ortaöğretim",
             ModuleId.MeslekiEgitim => "Mesleki Eğitim",

@@ -64,7 +64,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     private void RequireNormal(){if(IsArchiveEditing)throw new InvalidOperationException("Geçmiş kayıt için Değiştir/Kaydet veya Vazgeç kullanın.");}
     private Action? constantsHandler;
-    public IReadOnlyList<ModuleDescriptor> Modules { get; } = new ModuleRegistry([new TeacherPayrollModule()]).Catalog;
+    public IReadOnlyList<ModuleDescriptor> Modules { get; } = PayrollCores.Catalog;
     public IReadOnlyList<MonthOption> Months { get; } = Enumerable.Range(1,12).Select(i=>new MonthOption(i,CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetMonthName(i))).ToArray();
     public IReadOnlyList<int> Years { get; } = Enumerable.Range(1900,201).ToArray();
     public ObservableCollection<TeacherRecord> Teachers { get; }=[];
@@ -196,7 +196,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         var teachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
         if(!teachers.Any(t=>t.Id==input.TeacherId))throw new InvalidOperationException("Öğretmen kaydı artık bulunmuyor.");
         var constants=ValidatedConstants();
-        try {if(IsAvailable)_=new TeacherPayrollModule().Calculate(new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());}
+        try {if(IsAvailable)_=PayrollCores.Calculate(SelectedModule.Id,new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());}
         catch(OverflowException ex){throw new ArgumentException("Girilen değer hesaplama sınırlarını aşıyor; kayıt yapılmadı.",ex);}
         store.Update(SelectedModule.Id,year,month,existing=>
         {
@@ -210,7 +210,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     {
         var values=Constants.Read();
         // Only the matching core validates its parameters; never run another module through Temel Eğitim.
-        if(SelectedModule.Id==ModuleId.TemelEgitim) _=new TeacherPayrollModule().Calculate(new(0,0,0),Constants.Parameters());
+        if(IsAvailable) _=PayrollCores.Calculate(SelectedModule.Id,new(0,0,0),Constants.Parameters());
         return values;
     }
     public void SaveConstants()
@@ -280,7 +280,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         var values=ValidatedConstants();var inputs=rows.Select(r=>r.Read()).ToArray();
         var warningCount=rows.Count(r=>r.SgkError!="");
         var snapshot=new PaymentSnapshot(year,month,values,rows.Select(r=>new PaymentRow(r.Teacher,r.Read(),r.Result!,r.SgkInformation,r.SgkError)).ToArray(),
-            "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),TeacherCalendar.RuleVersion);
+            "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),PayrollCores.CalendarRuleVersion(SelectedModule.Id));
         snapshot=snapshot with {Details=new ReportDetailsStore(System.IO.Path.GetDirectoryName(teacherPath)!).Read(),Movement=archiveStore.Movement(SelectedModule.Id,year,month,snapshot.Rows)};
         PaymentArchiveStore.Validate(snapshot,SelectedModule.Id);
         // Read first so a corrupted monthly file cannot be replaced by a new calculation.
@@ -292,7 +292,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             return new(year,month,values,current.Entries.Where(e=>inputs.All(i=>i.TeacherId!=e.TeacherId)).Concat(inputs).ToArray());
         });
         var path=System.IO.Path.Combine(store.Folder(SelectedModule.Id),$"hakediş-{year:D4}-{month:D2}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
-        new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,new TeacherPayrollModule().RuleVersion,DateTimeOffset.UtcNow,snapshot));
+        new JsonDraftStore().Save(path,new DraftDocument<PaymentSnapshot>(1,SelectedModule.Id,PayrollCores.RuleVersion(SelectedModule.Id),DateTimeOffset.UtcNow,snapshot));
         Status=$"{PeriodText} · {rows.Length} öğretmen için hakediş kaydı oluşturuldu."+
             (warningCount>0?$" {warningCount} kayıtta SGK yan bilgisi kontrol edilmelidir; hakediş tutarı bu bilgiden etkilenmez.":" SGK yan bilgileri de kaydedildi.");
         foreach(var row in rows){row.AcceptChanges(row.Read());RowChanged?.Invoke(this,row);}

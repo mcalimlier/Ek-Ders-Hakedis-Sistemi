@@ -8,7 +8,7 @@ namespace Hakedis.Storage;
 public sealed record ArchivedPayment(string Path,string Version,DraftDocument<PaymentSnapshot> Document)
 {
     public string Period=>$"{CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetMonthName(Document.Data.Month)}-{Document.Data.Year}";
-    private static readonly IReadOnlyDictionary<ModuleId,string> ModuleNames=new ModuleRegistry([new TeacherPayrollModule()]).Catalog.ToDictionary(m=>m.Id,m=>m.Name);
+    private static readonly IReadOnlyDictionary<ModuleId,string> ModuleNames=PayrollCores.Catalog.ToDictionary(m=>m.Id,m=>m.Name);
     public string Module=>ModuleNames[Document.ModuleId];
     public int Count=>Document.Data.Rows.Length;
     public decimal Net=>Document.Data.Rows.Sum(r=>r.Result.Net);
@@ -64,7 +64,7 @@ public sealed class PaymentArchiveStore(string root)
         if(!Enum.TryParse<ModuleId>(moduleName,out var module) || !Enum.IsDefined(module))throw new InvalidDataException("Hakediş modülü geçersiz.");
         // Hash ve içerik aynı dosya sürümünden okunur; başka süreç arada değiştiremez.
         using var held=new FileStream(full,FileMode.Open,FileAccess.Read,FileShare.Read);
-        var doc=new JsonDraftStore().Load<PaymentSnapshot>(full,module,new TeacherPayrollModule().RuleVersion);
+        var doc=new JsonDraftStore().Load<PaymentSnapshot>(full,module,PayrollCores.RuleVersion(module));
         Validate(doc.Data,module);
         return new(full,Convert.ToHexString(SHA256.HashData(held)),doc);
     }
@@ -79,12 +79,12 @@ public sealed class PaymentArchiveStore(string root)
             _=TeacherDirectory.Normalize(row.Teacher);
             if(row.Input.DayHours<0 || row.Input.DykHours<0 || row.Input.Garnishment<0 || row.Result.Net!=row.Result.Accrual-row.Result.Deductions)
                 throw new InvalidDataException("Hakediş satırının tutarları tutarsız.");
-            if(module==ModuleId.TemelEgitim)
+            if(PayrollCores.IsAvailable(module))
             {
                 try
                 {
                     var p=data.Constants;
-                    var calculated=new TeacherPayrollModule().Calculate(new(row.Input.DayHours,row.Input.DykHours,row.Input.Garnishment),
+                    var calculated=PayrollCores.Calculate(module,new(row.Input.DayHours,row.Input.DykHours,row.Input.Garnishment),
                         new(p.Coefficient,p.Indicator,p.DykMultiplier,p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate,p.IncomeExemption,p.StampExemption));
                     if(calculated!=row.Result)throw new InvalidDataException("Hakediş tutarları kayıtlı girdiler ve dönem sabitleriyle uyuşmuyor; kaynak dosya korunuyor.");
                 }

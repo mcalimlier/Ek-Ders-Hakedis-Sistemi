@@ -17,6 +17,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <None Update="Fixtures/excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/din-excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/Hakedis.App/CommonConstantsViewModel.cs" Link="CommonConstantsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/OutputsViewModel.cs" Link="OutputsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/PersonalPayrollViewModel.cs" Link="PersonalPayrollViewModel.cs"/>

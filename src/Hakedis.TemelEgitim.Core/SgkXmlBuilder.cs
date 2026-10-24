@@ -24,7 +24,8 @@ public static class SgkXmlBuilder
         if(w.DefaultMissingReason!="")_=Code(w.DefaultMissingReason,1,26,"Varsayılan eksik gün nedeni");
         if(w.TaxNumber!="" && !Regex.IsMatch(w.TaxNumber,"^[0-9]{10}$"))throw new ArgumentException("Vergi numarası boş veya 10 rakam olmalıdır.");
     }
-    public static byte[] Build(PaymentSnapshot snapshot,SgkWorkplace workplace,IReadOnlyList<SgkPerson> people)
+    public static byte[] Build(PaymentSnapshot snapshot,SgkWorkplace workplace,IReadOnlyList<SgkPerson> people,
+        Func<PaymentRow,CalendarResult>? calculateDays=null,string? calendarRule=null)
     {
         ValidateWorkplace(workplace);
         if(snapshot.Year is <2003 or >2050 || snapshot.Month is <1 or >12 || snapshot.Rows.Length is 0 or >99999)
@@ -43,9 +44,11 @@ public static class SgkXmlBuilder
             if(!Regex.IsMatch(t.IdentityNumber,"^[1-9][0-9]{10}$"))throw new ArgumentException(t.FullName+": TCKNO için 11 rakamlı T.C. kimlik numarası gerekli.");
             Text(person.GivenName,18,t.FullName+" / AD");Text(person.FamilyName,18,t.FullName+" / SOYAD");
             if(row.SgkError!="")throw new ArgumentException(t.FullName+": SGK gün bilgisi hatalı. "+row.SgkError);
-            if(t.ModuleId!=ModuleId.TemelEgitim)throw new ArgumentException("Seçilen modülün SGK gün çekirdeği henüz eklenmedi.");
-            var days=TeacherCalendar.CalculateMonth(snapshot.Year,snapshot.Month,t.StartDate,t.EndDate,row.Input.DayHours,row.Input.DykHours);
-            if(row.SgkInformation is not null && snapshot.SgkRuleVersion==TeacherCalendar.RuleVersion && row.SgkInformation!=days)
+            if(calculateDays is null && t.ModuleId!=ModuleId.TemelEgitim)throw new ArgumentException("Seçilen modülün SGK gün çekirdeği henüz eklenmedi.");
+            var days=calculateDays is null
+                ? TeacherCalendar.CalculateMonth(snapshot.Year,snapshot.Month,t.StartDate,t.EndDate,row.Input.DayHours,row.Input.DykHours)
+                : calculateDays(row);
+            if(row.SgkInformation is not null && snapshot.SgkRuleVersion==(calendarRule??TeacherCalendar.RuleVersion) && row.SgkInformation!=days)
                 throw new ArgumentException(t.FullName+": kayıtlı SGK gün bilgisi tarihlerle uyuşmuyor; hakedişi düzenleyin.");
             var element=new XElement("SIGORTALI",new XAttribute("SIRA",i+1),new XAttribute("TCKNO",t.IdentityNumber),new XAttribute("AD",person.GivenName),new XAttribute("SOYAD",person.FamilyName));
             if(person.FirstSurname!=""){Text(person.FirstSurname,18,"ILKSOYAD");element.Add(new XAttribute("ILKSOYAD",person.FirstSurname));}

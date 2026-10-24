@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Hakedis.Contracts;
+using Hakedis.Storage;
 using Hakedis.TemelEgitim.Core;
 
 namespace Hakedis.App;
@@ -89,18 +90,18 @@ Recalculate();
         try
         {
             if(!HasInput) Error="Aylık ders bilgileri girilmedi.";
-            else if(Teacher.ModuleId != ModuleId.TemelEgitim) Error="Bu modülün hesaplama çekirdeği henüz eklenmedi.";
-            else { var i=Read();Result=new TeacherPayrollModule().Calculate(new(i.DayHours,i.DykHours,i.Garnishment),parameters()); }
+            else if(!PayrollCores.IsAvailable(Teacher.ModuleId)) Error="Bu modülün hesaplama çekirdeği henüz eklenmedi.";
+            else { var i=Read();Result=PayrollCores.Calculate(Teacher.ModuleId,new(i.DayHours,i.DykHours,i.Garnishment),parameters()); }
         }
         catch(Exception ex) when(ex is ArgumentException or OverflowException) { Error=ex.Message; }
         // A calendar error must never erase a valid monetary result.
-        if(HasInput && Teacher.ModuleId==ModuleId.TemelEgitim)
+        if(HasInput && PayrollCores.IsAvailable(Teacher.ModuleId))
         {
             try
             {
                 var i=Read();validate?.Invoke(i);
                 var selected=period?.Invoke() ?? throw new ArgumentException("SGK bilgisi için dönem seçin.");
-                SgkInformation=TeacherCalendar.CalculateMonth(selected.Year,selected.Month,
+                SgkInformation=PayrollCores.Calendar(Teacher.ModuleId,selected.Year,selected.Month,
                     Teacher.StartDate,Teacher.EndDate,i.DayHours,i.DykHours);
             }
             catch(Exception ex) when(ex is ArgumentException or OverflowException) { SgkError=ex.Message; }

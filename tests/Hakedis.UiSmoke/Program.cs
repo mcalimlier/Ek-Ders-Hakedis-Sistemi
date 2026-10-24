@@ -279,6 +279,7 @@ internal static class Program
             if(pendingWindow.IsVisible || closeAsked!=2)throw new InvalidOperationException("Kapanış onayı çalışmadı.");
         }
         window.Close();
+        DinOgretimiChecks.Run(output,Capture);
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
         Console.WriteLine($"12 WPF panel görüntüsü, eşit beş çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }

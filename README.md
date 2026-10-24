@@ -1,4 +1,4 @@
-# Temel Eğitim Ücretli Öğretmen Hakediş Sistemi
+# Ücretli Ek Ders Hakediş Sistemi
 
 C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde yapılır. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu JSON'a kaydedilir. Aylık kayıtlar ve hakedişler modül/yıl/ay kapsamında ayrılır; sabitler ortaktır. SQL, son kullanıcıda Excel veya ayrıca .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Eksik Gün Sayısı SGK yan bilgisidir; parasal hakedişi etkilemez. Kayıtlı hakedişten üç PDF, doğrudan yazdırma ve özgün XSD ile doğrulanan SGK XML çıktısı alınır.
 
@@ -8,7 +8,7 @@ Her öğretmen yalnızca kendi modülüne aittir. Listeler ve değişiklik işle
 
 - Windows için kendi .NET çalışma ortamını içeren EXE/ZIP yayınlanır. Mevcut yayın betiği taşınabilir paket üretir; kurulum sihirbazı henüz üretilmez.
 - SQL/SQLite ve veri tabanı sunucusu kullanılmaz.
-- İlk modül temel eğitim ücretli öğretmen ödemeleri; usta öğretici daha sonra ayrı hesaplama modülü olarak eklenir.
+- Temel Eğitim ve Din Öğretimi ayrı hesaplama çekirdekleriyle kullanılabilir; usta öğretici ve diğer eğitim modülleri daha sonra kendi çekirdekleriyle eklenir.
 - OEHS projesinin `feature/official-payment-document-templates` dalındaki renk ve kart düzeni referans alınır.
 - Bordro, Banka Listesi ve Personel Bildirimi çıktı akışındadır. Bordro tek yatay A4'e okunaklı sığmıyorsa açık hata verilir; satırlar düşürülmez.
 - Kişisel bordro talep üzerine; diğer bilgi amaçlı Excel çıktıları isteğe bağlıdır.
@@ -29,5 +29,7 @@ Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları
 [Excel denetimi, 50 senaryo karşılaştırması ve yeni ekran akışı](docs/EXCEL_DENETIMI.md).
 
 [Yeni çekirdekler öncesi uygulama denetimi](docs/CEKIRDEK_ONCESI_DENETIM_2026-10-24.md).
+
+[Din Öğretimi çekirdeği, Excel formülleri ve kaynakta tespit edilen sapmalar](docs/DIN_OGRETIMI.md).
 
 Kişisel Bordro ekranında modül ve ay/yıl seçilerek kayıtlı hakedişten tek öğretmen için A4 PDF alınır; Klasör düğmesi kaydedilen konumu açar. Sol menüde temel işlemler ve Kişisel Bordro/Dönem Sabitleri grupları ayrıdır. Öğretmen Listesi adı, sabitlerin hizaları ve simgelerden ayrı tutar alanları günceldir; sol altta kullanıcı imzası bulunur.
