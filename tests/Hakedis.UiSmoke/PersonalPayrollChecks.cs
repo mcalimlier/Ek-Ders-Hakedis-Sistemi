@@ -25,7 +25,7 @@ internal static class PersonalPayrollChecks
     {
         var primary=(StackPanel?)window.FindName("PrimaryNavigation");var secondary=(StackPanel?)window.FindName("SecondaryNavigation");
         if(primary is null || secondary is null)throw new InvalidOperationException("Sol menü iki gruba ayrılmadı.");
-        if(!secondary.Children.OfType<Button>().Select(b=>b.Tag as string).SequenceEqual(new[]{"Personal","Constants"}))throw new InvalidOperationException("Alt grup Kişisel Bordro / Dönem Sabitleri değil.");
+        if(!secondary.Children.OfType<Button>().Select(b=>b.Tag as string).SequenceEqual(new[]{"Personal","Constants","Settings"}))throw new InvalidOperationException("Alt grup Kişisel Bordro / Dönem Sabitleri / Ayarlar değil.");
         if(primary.Children.OfType<Button>().Any(b=>b.Tag as string is "Personal" or "Constants"))throw new InvalidOperationException("Alt grup düğmeleri üstte kaldı.");
         if(((TextBlock)window.FindName("SignatureAuthor")).Text!="Created by Murat ÇALIMLIER")throw new InvalidOperationException("İmza eklenmedi.");
         foreach(var width in new[]{1366,1040})

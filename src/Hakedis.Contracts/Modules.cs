@@ -27,7 +27,8 @@ public sealed class ModuleRegistry
             throw new NotSupportedException("Seçilen modülün hesaplama çekirdeği henüz eklenmedi.");
         return module as T ?? throw new InvalidOperationException("Modül ile hesaplama sözleşmesi uyuşmuyor.");
     }
-    public IReadOnlyList<ModuleDescriptor> Catalog => Enum.GetValues<ModuleId>().Select(id =>
+    // Eski enum değeri dosya uyumluluğu için ayrılmıştır; Din Öğretimi bu kapsamı karşılar.
+    public IReadOnlyList<ModuleDescriptor> Catalog => Enum.GetValues<ModuleId>().Where(id=>id!=ModuleId.ImamHatipLisesi).Select(id =>
         new ModuleDescriptor(id, id switch
         {
             ModuleId.TemelEgitim => "Temel Eğitim",

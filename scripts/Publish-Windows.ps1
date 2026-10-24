@@ -6,7 +6,7 @@ Push-Location $projectRoot
 try {
     dotnet test tests/Hakedis.Tests -c Release
     if ($LASTEXITCODE -ne 0) { throw 'Testler başarısız; paket hazırlanmadı.' }
-    $packagePath = Join-Path $projectRoot ('dist/Hakedis-' + $Runtime + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    $packagePath = Join-Path $projectRoot ('dist/EDHS-' + $Runtime + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
     dotnet publish src/Hakedis.App -c Release -r $Runtime --self-contained true -o $packagePath /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false
     if ($LASTEXITCODE -ne 0) { throw 'EXE yayını başarısız.' }
     Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/KULLANIM.txt') -Destination (Join-Path $packagePath 'KULLANIM.txt')

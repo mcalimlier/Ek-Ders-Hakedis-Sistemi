@@ -12,6 +12,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <AssemblyName>EDHS</AssemblyName>
+    <RootNamespace>Hakedis.App</RootNamespace>
+    <Title>Ek Ders Hakediş Sistemi</Title>
+    <Product>Ek Ders Hakediş Sistemi (EDHS)</Product>
+    <Description>Modüllerle ek ders hakedişi, bordro ve SGK çıktıları.</Description>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

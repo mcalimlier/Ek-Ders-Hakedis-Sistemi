@@ -283,6 +283,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             "Eksik Gün Sayısı SGK girişi için yan bilgidir; parasal hakedişe etki etmez."+(warningCount>0?$" {warningCount} kayıtta SGK bilgisi kontrol edilmelidir.":""),PayrollCores.CalendarRuleVersion(SelectedModule.Id));
         snapshot=snapshot with {Details=new ReportDetailsStore(System.IO.Path.GetDirectoryName(teacherPath)!).Read(),Movement=archiveStore.Movement(SelectedModule.Id,year,month,snapshot.Rows)};
         PaymentArchiveStore.Validate(snapshot,SelectedModule.Id);
+        using var identityWrite=archiveStore.BeginIdentityWrite(snapshot);
         // Read first so a corrupted monthly file cannot be replaced by a new calculation.
         store.Update(SelectedModule.Id,year,month,current=>
         {

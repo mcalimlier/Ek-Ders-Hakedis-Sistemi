@@ -17,6 +17,28 @@ public sealed record ArchivedPayment(string Path,string Version,DraftDocument<Pa
 
 public sealed class PaymentArchiveStore(string root)
 {
+    // Tüm modüller için kişi/yıl/ay tek bordro kontrolü aynı yazma kilidi altında yapılır.
+    public IDisposable BeginIdentityWrite(PaymentSnapshot data,string? excludingPath=null)
+    {
+        _=new DateTime(data.Year,data.Month,1);
+        var folder=System.IO.Path.Combine(root,"AylikKayitlar");Directory.CreateDirectory(folder);
+        FileStream guard;
+        try{guard=new FileStream(System.IO.Path.Combine(folder,$"bordro-kisiler-{data.Year:D4}-{data.Month:D2}.guard"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);}
+        catch(IOException ex){throw new InvalidOperationException("Bu dönemin bordro kişi kontrolü başka bir pencerede yapılıyor. Tekrar deneyin.",ex);}
+        try
+        {
+            var identities=data.Rows.Where(r=>!string.IsNullOrWhiteSpace(r.Teacher.IdentityNumber)).Select(r=>r.Teacher.IdentityNumber).ToHashSet();
+            var ids=data.Rows.Select(r=>r.Teacher.Id).ToHashSet();
+            var duplicate=ReadAll().Where(r=>r.Document.Data.Year==data.Year && r.Document.Data.Month==data.Month &&
+                !string.Equals(r.Path,excludingPath,StringComparison.OrdinalIgnoreCase))
+                .SelectMany(record=>record.Document.Data.Rows.Select(row=>(record,row)))
+                .FirstOrDefault(item=>ids.Contains(item.row.Teacher.Id) || identities.Contains(item.row.Teacher.IdentityNumber));
+            if(duplicate.record is not null)
+                throw new InvalidOperationException($"{duplicate.row.Teacher.FullName} aynı dönemde {duplicate.record.Module} bordrosunda kayıtlı. Bir kişi için ayda yalnız bir bordro oluşturulabilir. Önce kayıtlı bordroyu kontrol edin.");
+            return guard;
+        }
+        catch{guard.Dispose();throw;}
+    }
     private FileStream LockPeriod(ModuleId module,int year,int month)
     {
         if(!Enum.IsDefined(module))throw new ArgumentException("Hakediş modülü geçersiz.");
@@ -99,6 +121,7 @@ public sealed class PaymentArchiveStore(string root)
     {
         if(!confirmed)return false;Validate(data,original.Document.ModuleId);
         if(data.Year!=original.Document.Data.Year || data.Month!=original.Document.Data.Month)throw new InvalidOperationException("Geçmiş kaydın dönemi değiştirilemez.");
+        using var identity=BeginIdentityWrite(data,original.Path);
         new JsonDraftStore().SaveChecked(original.Path,original.Document with {Data=data,SavedAt=DateTimeOffset.UtcNow},original.Version);return true;
     }
     public PersonnelMovement Movement(ModuleId module,int year,int month,IReadOnlyList<PaymentRow> rows)

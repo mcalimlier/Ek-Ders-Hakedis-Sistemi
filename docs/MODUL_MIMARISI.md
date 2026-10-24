@@ -6,12 +6,13 @@ Kullanıcının 23 Ekim 2026 talebi uygulanmıştır: her eğitim türü kendi a
 |---|---|---|
 | Temel Eğitim | Hakedis.TemelEgitim.Core | Kaynak Excel kuralı uygulandı |
 | Din Öğretimi | Hakedis.DinOgretimi.Core | Ayrı çekirdek ve Excel karşılaştırması uygulandı |
-| İmam Hatip Lisesi | Hakedis.ImamHatip.Core (gelecek) | Excel bekleniyor |
 | Ortaöğretim | Hakedis.Ortaogretim.Core (gelecek) | Excel bekleniyor |
 | Mesleki Eğitim | Hakedis.MeslekiEgitim.Core (gelecek) | Excel bekleniyor |
 | Halk Eğitim Usta Öğreticileri | Hakedis.HalkEgitim.Core (gelecek) | Excel bekleniyor |
 
 Contracts modül kimliği ve kayıt/çözümleme sözleşmesini barındırır. Öğretmene özgü girdiler, oranlar, yuvarlama ve sonuçlar her modülün kendi Core projesindedir; diğer çekirdeklere taşınmaz. Çekirdekler birbirine referans vermez. Benzer formüller olması aynı kuralları kullanmaları anlamına gelmez.
+
+İmam Hatip kapsamı Din Öğretimi'ne dahildir; seçim listesinde ikinci bir İmam Hatip Lisesi seçeneği yoktur. Eski enum değeri dosya uyumluluğu için ayrılmıştır ve yeni kayıt seçimlerinde gösterilmez.
 
 Öğretmenler modüller arasında paylaşılmaz. Ortak TeacherRecord tipi ModuleId ile tek modüle aittir; liste, düzenleme, silme ve hesap seçimi bu sahipliği denetler. Aynı ID/TCKN başka modüle tekrar kaydedilemez. Kalıcı dosya ve eski kayıt geçişi ayrıntıları: MODUL_OGRETMEN_KAYITLARI.md.
 

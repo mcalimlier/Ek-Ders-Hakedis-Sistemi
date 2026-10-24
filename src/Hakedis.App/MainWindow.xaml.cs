@@ -17,17 +17,26 @@ public partial class MainWindow : Window
     {
         shell=viewModel;notify=notification;this.confirmation=confirmation;this.personalOutputRoot=personalOutputRoot;
         openFolder=folderOpener??(folder=>{_=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder){UseShellExecute=true});});
-        InitializeComponent();DataContext=shell;
+        InitializeComponent();DataContext=shell;shell.Settings.Applied+=ApplyWindowPreference;
     }
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
-        // WPF ölçüleri DPI ölçeğine bağlıdır; görev çubuğu için ayrılan alanı da koru.
+        ApplyWindowPreference();
+    }
+    private void ApplyWindowPreference()
+    {
         var workArea=SystemParameters.WorkArea;
-        MinWidth=Math.Min(MinWidth,workArea.Width);MinHeight=Math.Min(MinHeight,workArea.Height);
-        Width=Math.Min(1366,workArea.Width);Height=Math.Min(768,workArea.Height);
+        var size=Hakedis.Contracts.WindowSizing.Fit(shell.Settings.Preference,workArea.Width,workArea.Height);
+        WindowState=WindowState.Normal;
+        MinWidth=Math.Min(1040,workArea.Width);MinHeight=Math.Min(580,workArea.Height);
+        Width=size.Width;Height=size.Height;
         Left=workArea.Left+(workArea.Width-Width)/2;Top=workArea.Top+(workArea.Height-Height)/2;
     }
+    private void ApplySettings_Click(object sender,RoutedEventArgs e)
+    {try{shell.Settings.Save();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or UnauthorizedAccessException){shell.Settings.ShowError(ex.Message);}}
+    protected override void OnClosed(EventArgs e)
+    {shell.Settings.Applied-=ApplyWindowPreference;base.OnClosed(e);}
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
         if(shell.Monthly.HasHybridChanges || shell.Calculation.HasHybridChanges || shell.Calculation.IsArchiveEditing ||

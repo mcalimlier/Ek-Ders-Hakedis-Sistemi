@@ -64,7 +64,7 @@ public class PayrollTests
         => Assert.Throws<ArgumentOutOfRangeException>(() => module.Calculate(new(10, 0, 0), p with { EmployeeRate = 2 }));
 
     [Theory]
-    [InlineData(ModuleId.ImamHatipLisesi)] [InlineData(ModuleId.Ortaogretim)]
+    [InlineData(ModuleId.Ortaogretim)]
     [InlineData(ModuleId.MeslekiEgitim)] [InlineData(ModuleId.HalkEgitimUstaOgretici)]
     public void Future_modules_never_fall_back_to_basic_education(ModuleId id)
     {

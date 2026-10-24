@@ -24,7 +24,7 @@ public sealed record LaidOutReport(string FileName,ReportPage[] Pages);
 public sealed partial class PaymentReportService
 {
     private static readonly CultureInfo Tr=CultureInfo.GetCultureInfo("tr-TR");
-    public static string DefaultOutputRoot=>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"ÜcretliUsta Öğretici Hakediş Sistemi","Çıktılar");
+    public static string DefaultOutputRoot=>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),AppIdentity.FolderName,"Çıktılar");
     public LaidOutReport[] Prepare(ArchivedPayment record,ReportDetails fallback)
     {
         PaymentArchiveStore.Validate(record.Document.Data,record.Document.ModuleId);
@@ -70,7 +70,7 @@ public sealed partial class PaymentReportService
             var path=Path.Combine(stage,document.FileName);var tmp=path+".tmp";
             using(var pdf=new PdfDocument())
             {
-                pdf.Info.Title=Path.GetFileNameWithoutExtension(document.FileName);pdf.Info.Creator="Ücretli Ek Ders Hakediş Sistemi";
+                pdf.Info.Title=Path.GetFileNameWithoutExtension(document.FileName);pdf.Info.Creator=AppIdentity.Name+" ("+AppIdentity.ShortName+")";
                 foreach(var sheet in document.Pages)
                 {
                     var page=pdf.AddPage();page.Width=XUnit.FromPoint(sheet.Width);page.Height=XUnit.FromPoint(sheet.Height);

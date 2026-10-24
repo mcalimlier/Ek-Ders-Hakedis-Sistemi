@@ -14,6 +14,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     private string panel = "Entry";
     private TeacherRecord? teacher;
     public WorkspaceViewModel Workspace { get; } = new();
+    public UiSettingsViewModel Settings {get;}
     private ModuleId activeModule = ModuleId.TemelEgitim;
     public TeacherListViewModel Teachers { get; }
     public TeacherRegistrationViewModel Registration { get; }
@@ -35,7 +36,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     {
         new Hakedis.Storage.PayrollEditStore(teacherPath).Recover();
         var root=System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(teacherPath))!;
-        CommonConstants=new(root);Outputs=new(root);Personal=new(root);archiveStore=new(root);
+        Settings=new(root);CommonConstants=new(root);Outputs=new(root);Personal=new(root);archiveStore=new(root);
         Teachers = new(teacherPath, activeModule); Registration = new(teacherPath, activeModule);
         registrationModule = listModule = Workspace.Modules.Single(m=>m.Id==activeModule);
         Monthly = new(teacherPath); Calculation = new(teacherPath);
@@ -74,9 +75,11 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public bool TeachersVisible => panel == "Teachers";
     public bool ConstantsVisible => panel == "Constants";
     public bool PersonalVisible=>panel=="Personal";
-    public string Title => panel switch { "Personal"=>"Kişisel Bordro", "Details" => "Kurum ve İmza Bilgileri", "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Öğretmen Listesi", _ => "Veri Girişi" };
+    public bool SettingsVisible=>panel=="Settings";
+    public string Title => panel switch { "Settings"=>"Ayarlar", "Personal"=>"Kişisel Bordro", "Details" => "Kurum ve İmza Bilgileri", "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Öğretmen Listesi", _ => "Veri Girişi" };
     public string Subtitle => panel switch
     {
+        "Settings"=>"EDHS pencere boyutunu ekranınıza göre ayarlayın.",
         "Personal"=>"Modül ve dönemi seçin; kayıtlı hakedişten bir öğretmenin kişisel bordrosunu hazırlayın.",
         "Details" => "Çıktılarda kullanılacak kurum, banka ve imza bilgilerini düzenleyin.",
         "Outputs" => "Kayıtlı hakedişleri görüntüleyin, üç belgeyi PDF oluşturun veya yazdırın.",
@@ -124,13 +127,13 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void CancelTeacherEdit(){Registration.Reset();Navigate("Calculation");}
     public void Navigate(string destination)
     {
-        if (destination is not ("Entry" or "Calculation" or "Teachers" or "Constants" or "Outputs" or "Details" or "Personal")) throw new ArgumentException("Geçersiz panel.");
+        if (destination is not ("Settings" or "Entry" or "Calculation" or "Teachers" or "Constants" or "Outputs" or "Details" or "Personal")) throw new ArgumentException("Geçersiz panel.");
         if(Calculation.IsArchiveEditing && destination!="Calculation")throw new InvalidOperationException("Geçmiş düzenlemeyi Değiştir/Kaydet veya Vazgeç ile tamamlayın.");
         if(destination=="Outputs")Outputs.Reload();
         if(destination=="Personal")Personal.Reload();
         if(Registration.IsEditingRecord && destination!="Entry")Registration.Reset();
         panel = destination;
-        foreach (var name in new[] { nameof(PersonalVisible),nameof(DetailsVisible),nameof(OutputsVisible),nameof(CanUseEntry),nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
+        foreach (var name in new[] { nameof(SettingsVisible),nameof(PersonalVisible),nameof(DetailsVisible),nameof(OutputsVisible),nameof(CanUseEntry),nameof(EntryVisible), nameof(CalculationVisible), nameof(TeachersVisible), nameof(ConstantsVisible), nameof(Title), nameof(Subtitle) })
             PropertyChanged?.Invoke(this, new(name));
     }
     public void ClearCurrentWork()
