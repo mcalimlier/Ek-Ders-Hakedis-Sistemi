@@ -1,3 +1,13 @@
+# Güncel çalışma konumu — 24 Ekim 2026
+
+Proje artık C:\Users\MuratPC\Documents\GitHub\TemelEgitimUcretliOgretmenHakedis konumunda. Bundan sonraki tüm komutlarda bu klasörü çalışma dizini olarak kullanın; bu sohbetin eski Desktop çalışma kökü boş kaldı. Aşağıdaki eski yol kayıtları tarihçedir.
+
+Masaüstündeki inceleme kaynakları, Excel örnekleri ve referans proje de yeni projenin Git tarafından yok sayılan inceleme/ klasörüne alındı. Başlangıçtaki ayrı INCELEME_VE_YOL_HARITASI.md bu klasörde korundu. Yerel gerçek test kayıtları yeni konumda dist/Hakedis-win-x64-20261024-004600/Veriler altında aynı içerikle duruyor.
+
+Taşıma kontrolü: 1.606 dosya / 1.584.298.330 bayt eşleşti; veri/Git/Excel için 11 SHA256 kontrolü eşleşti. Git geçmişi ve temiz çalışma durumu korundu. GitHub Desktop, github open komutuyla yeni klasöre yönlendirildi. Yeni yolda 81 test geçti; yayımlanmış bağımsız EXE açılışı doğrulandı ve kontrol sonrası kapatıldı. 10 öğretmen ve 10 Eylül-2026 aylık kaydı mevcut. Taşıma makbuzu artifacts/tasima-kontrol.json içinde; bu dosya Git'e alınmaz.
+
+---
+
 # Devam notu — 24 Ekim 2026
 
 ## Son istek ve uygulanan akış
