@@ -17,7 +17,7 @@ public sealed record ArchivedPayment(string Path,string Version,DraftDocument<Pa
 
 public sealed class PaymentArchiveStore(string root)
 {
-    public IDisposable BeginNewPeriod(ModuleId module,int year,int month)
+    private FileStream LockPeriod(ModuleId module,int year,int month)
     {
         if(!Enum.IsDefined(module))throw new ArgumentException("Hakediş modülü geçersiz.");
         var folder=new MonthlyPayrollStore(root).Folder(module);
@@ -25,6 +25,11 @@ public sealed class PaymentArchiveStore(string root)
         FileStream guard;
         try{guard=new FileStream(System.IO.Path.Combine(folder,$"hakediş-{year:D4}-{month:D2}.guard"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);}
         catch(IOException ex){throw new InvalidOperationException("Bu dönem başka bir pencerede kaydediliyor. Çıktı listesini yenileyin.",ex);}
+        return guard;
+    }
+    public IDisposable BeginNewPeriod(ModuleId module,int year,int month)
+    {
+        var guard=LockPeriod(module,year,month);
         try
         {
             if(ReadAll().Any(r=>r.Document.ModuleId==module && r.Document.Data.Year==year && r.Document.Data.Month==month))
@@ -32,6 +37,19 @@ public sealed class PaymentArchiveStore(string root)
             return guard;
         }
         catch{guard.Dispose();throw;}
+    }
+    public bool Delete(ArchivedPayment original,bool confirmed)
+    {
+        if(!confirmed)return false;
+        var record=Read(original.Path);
+        using var period=LockPeriod(record.Document.ModuleId,record.Document.Data.Year,record.Document.Data.Month);
+        using var write=new FileStream(record.Path+".lock",FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);
+        record=Read(record.Path);
+        if(record.Version!=original.Version)throw new InvalidOperationException("Hakediş kaydı değişmiş. Silmeden önce Çıktı listesini yenileyin.");
+        // Aktif kayıttan tek hareketle çıkarılır. Kurtarma kopyaları Çıktı listesinde taranmaz.
+        var recovery=System.IO.Path.Combine(root,"SilinenHakedisler",record.Document.ModuleId.ToString());Directory.CreateDirectory(recovery);
+        File.Move(record.Path,System.IO.Path.Combine(recovery,$"{System.IO.Path.GetFileNameWithoutExtension(record.Path)}-{Guid.NewGuid():N}.json"));
+        return true;
     }
     public IReadOnlyList<ArchivedPayment> ReadAll()
     {

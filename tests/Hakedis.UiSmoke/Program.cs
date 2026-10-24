@@ -45,8 +45,8 @@ internal static class Program
         model.Registration.Editor.Iban="TR330006100519786457841326";
         model.Registration.Editor.OccupationCode="2341.04";model.Registration.Editor.IdentityNumber="10000000146";model.SaveNewTeacher();
         model.Monthly.DayHours = "117";
-        var notifications=new List<string>();
-        var window = new MainWindow(model,notifications.Add) { ShowActivated = false, ShowInTaskbar = false };
+        var notifications=new List<string>();var archiveConfirm=false;var archivePrompts=new List<string>();
+        var window = new MainWindow(model,notifications.Add,(message,title)=>{archivePrompts.Add(message);return archiveConfirm;}) { ShowActivated = false, ShowInTaskbar = false };
         if(window.Width!=1366 || window.Height!=768)throw new InvalidOperationException("Varsayılan laptop boyutu 1366×768 değil.");
         window.Show();
         if(window.ActualWidth>SystemParameters.WorkArea.Width+1 || window.ActualHeight>SystemParameters.WorkArea.Height+1)
@@ -178,9 +178,9 @@ internal static class Program
         model.Registration.Reset();model.ClearCurrentWork();model.Navigate("Outputs");model.Outputs.Selected=model.Outputs.Records.Single();
         var archived=model.Outputs.ReadSelected();var archiveBytes=File.ReadAllBytes(archived.Path);
         window.Width=1366;window.Height=768;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        var rowButtons=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Where(b=>b.Content is string text && new[]{"PDF oluştur","Yazdır","Düzenle","XML oluştur"}.Contains(text)).ToArray();
-        if(rowButtons.Length!=4 || rowButtons.Any(b=>Math.Abs(b.ActualWidth-100)>1 || Math.Abs(b.ActualHeight-32)>1))throw new InvalidOperationException("Çıktı düğmeleri eşit ölçüde değil.");
-        Capture(window,Path.Combine(output,"Outputs-four-actions.png"));
+        var rowButtons=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Where(b=>b.Content is string text && new[]{"PDF oluştur","Yazdır","Düzenle","Sil","XML oluştur"}.Contains(text)).ToArray();
+        if(rowButtons.Length!=5 || rowButtons.Any(b=>Math.Abs(b.ActualWidth-100)>1 || Math.Abs(b.ActualHeight-32)>1))throw new InvalidOperationException("Çıktı düğmeleri eşit ölçüde değil.");
+        Capture(window,Path.Combine(output,"Outputs-five-actions.png"));
         var sgkStore=new Hakedis.Storage.SgkXmlStore(model.Outputs.DataRoot);
         sgkStore.Save(Hakedis.Contracts.ModuleId.TemelEgitim,new(new("12345678901234567890120000","ÖRNEK KURUM","ÖRNEK ADRES","13","00000",DefaultMissingReason:"07"),[]));
         var xmlDialog=new SgkXmlWindow(archived,sgkStore,Path.Combine(output,"xml-test")){Owner=window};
@@ -231,9 +231,28 @@ internal static class Program
         window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(model.Calculation.PeriodText!="Kasım-2027" || model.Calculation.Rows[0].HasInput)throw new InvalidOperationException("Dönem seçiminde kayıtlar karıştı.");
         Capture(window,Path.Combine(output,"Calculation-Kasim-2027.png"));
+        model.ClearCurrentWork();model.Navigate("Outputs");model.Outputs.Selected=model.Outputs.Records.Single();
+        model.BeginArchiveEdit();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        model.Calculation.Rows[0].DayHours="80";archiveConfirm=false;
+        ((Button)window.FindName("SaveArchiveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if(!model.Calculation.IsArchiveEditing || !archiveBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("Onaysız düzenleme eski kaydı değiştirdi.");
+        archiveConfirm=true;((Button)window.FindName("SaveArchiveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(!model.OutputsVisible || model.Outputs.Records.Count!=1 || model.Outputs.Records[0].Path!=archived.Path || archiveBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("Onaylı düzenleme tek kaydın yerine yazmadı.");
+        Capture(window,Path.Combine(output,"Outputs-replaced-single-record.png"));
+        model.Outputs.Selected=model.Outputs.Records.Single();var updatedBytes=File.ReadAllBytes(archived.Path);
+        var deleteArchive=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Single(b=>b.Content as string=="Sil");
+        archiveConfirm=false;deleteArchive.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if(model.Outputs.Records.Count!=1 || !updatedBytes.SequenceEqual(File.ReadAllBytes(archived.Path)))throw new InvalidOperationException("Sil Hayır kaydı değiştirdi.");
+        archiveConfirm=true;deleteArchive.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+        if(model.Outputs.Records.Count!=0 || File.Exists(archived.Path))throw new InvalidOperationException("Sil Evet kaydı kaldırmadı.");
+        if(archivePrompts.Count!=4 || !archivePrompts[0].Contains("yalnızca bir hakediş"))throw new InvalidOperationException("Onay pencereleri eksik.");
+        Capture(window,Path.Combine(output,"Outputs-after-confirmed-delete.png"));
+
         window.Close();
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"12 WPF panel görüntüsü, eşit dört çıktı düğmesi, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"12 WPF panel görüntüsü, eşit beş çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }
     private static void VerifyReportPages(PaymentReportService service,Hakedis.Storage.ArchivedPayment record,Hakedis.Contracts.ReportDetails details,string output,string prefix)
     {

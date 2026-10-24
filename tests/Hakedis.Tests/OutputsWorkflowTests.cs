@@ -53,6 +53,35 @@ public sealed class OutputsWorkflowTests : IDisposable
         var names=typeof(MonthlyInput).GetProperties().Select(p=>p.Name);
         Assert.DoesNotContain("MonthStart",names);Assert.DoesNotContain("MonthEnd",names);
     }
+    [Fact] public void Archive_delete_requires_confirmation_and_preserves_inputs_and_other_periods()
+    {
+        var s=Setup();s.Calculation.CreatePayment();var first=s.Outputs.Records.Single();
+        var archivedBytes=File.ReadAllBytes(first.Path);
+        s.Calculation.Month=10;s.Calculation.Rows[0].DayHours="90";s.Calculation.CreatePayment();
+        s.Outputs.Selected=s.Outputs.Records.Single(r=>r.Path==first.Path);
+        var catalog=File.ReadAllBytes(PathName);var monthly=new MonthlyPayrollStore(root).FilePath(ModuleId.TemelEgitim,2026,9);var input=File.ReadAllBytes(monthly);
+        Assert.False(s.Outputs.DeleteSelected(false));Assert.Equal(2,s.Outputs.Records.Count);
+        Assert.True(s.Outputs.DeleteSelected(true));Assert.Single(s.Outputs.Records);Assert.False(File.Exists(first.Path));
+        Assert.Equal(catalog,File.ReadAllBytes(PathName));Assert.Equal(input,File.ReadAllBytes(monthly));
+        Assert.Null(s.Outputs.Selected);Assert.Contains("silindi",s.Outputs.Status);
+        Assert.Equal(archivedBytes,File.ReadAllBytes(Assert.Single(Directory.GetFiles(Path.Combine(root,"SilinenHakedisler"),"*.json",SearchOption.AllDirectories))));
+        s.Calculation.Month=9;s.Calculation.Rows[0].DayHours="90";s.Calculation.CreatePayment();
+        Assert.Equal(2,s.Outputs.Records.Count);
+    }
+    [Fact] public void Archive_delete_never_removes_a_changed_or_unrelated_record()
+    {
+        var s=Setup();s.Calculation.CreatePayment();var record=s.Outputs.Records.Single();
+        s.Outputs.Selected=record;File.AppendAllText(record.Path," ");var bytes=File.ReadAllBytes(record.Path);
+        Assert.Throws<InvalidOperationException>(()=>s.Outputs.DeleteSelected(true));Assert.Equal(bytes,File.ReadAllBytes(record.Path));
+        Assert.Throws<InvalidOperationException>(()=>new PaymentArchiveStore(root).Delete(record,true));Assert.Equal(bytes,File.ReadAllBytes(record.Path));
+    }
+    [Fact] public void Failed_archive_delete_leaves_the_original_record_in_place()
+    {
+        var s=Setup();s.Calculation.CreatePayment();var record=s.Outputs.Records.Single();var bytes=File.ReadAllBytes(record.Path);
+        File.WriteAllText(Path.Combine(root,"SilinenHakedisler"),"klasör oluşturmayı engelle");
+        Assert.Throws<IOException>(()=>new PaymentArchiveStore(root).Delete(record,true));
+        Assert.Equal(bytes,File.ReadAllBytes(record.Path));Assert.Single(new PaymentArchiveStore(root).ReadAll());
+    }
     [Fact] public void Common_constants_start_locked_and_do_not_rewrite_previous_records()
     {
         var s=Setup();s.Calculation.CreatePayment();s.Outputs.Reload();var archived=s.Outputs.Records.Single();
@@ -92,6 +121,7 @@ public sealed class OutputsWorkflowTests : IDisposable
         Assert.Equal(19851.45m,s.Calculation.Rows[0].Result!.Gross);Assert.True(s.SaveArchiveEdit(true));
         Assert.Equal(bytes,File.ReadAllBytes(path+".bak"));Assert.Equal(catalog,File.ReadAllBytes(PathName));Assert.Equal(inputBytes,File.ReadAllBytes(monthly));
         Assert.Equal("Geçmişteki ad",s.Outputs.Records.Single().Document.Data.Rows[0].Teacher.FullName);
+        Assert.Equal(path,Assert.Single(new PaymentArchiveStore(root).ReadAll()).Path);
     }
     [Fact] public void Changed_archive_is_never_overwritten_by_a_stale_editor()
     {

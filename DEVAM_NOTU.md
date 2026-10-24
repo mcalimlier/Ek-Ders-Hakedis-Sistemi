@@ -1,3 +1,14 @@
+# Son değişiklik — 24 Ekim 2026: hakediş silme ve düzenlemede tek kayıt
+
+- Çıktı listesinde düğme sırası PDF oluştur / Yazdır / Düzenle / Sil / XML oluştur. Beş düğme 100×32; Sil hafif kırmızı tonludur. 1366 ekranda beşi birlikte görülecek şekilde bilgi sütunları ayarlandı.
+- Sil varsayılan Hayır olan onay penceresinde modül, dönem ve kişi sayısını gösterir. Onay yoksa hiçbir kayıt değişmez. Onay varsa yalnız ilgili hakediş aktif listeden kaldırılır; öğretmenler, aylık girişler ve diğer dönemler korunur. Kaynak JSON, Veriler/SilinenHakedisler/modül altına atomik taşınarak kurtarma amacıyla tutulur. Bu klasör Çıktı listesinde taranmaz. Silinen dönem yeniden oluşturulabilir.
+- Silme dönem kilidi ve kayıt yazma kilidi altında SHA sürüm kontrolü yapar. Başka pencerede değişmiş kayıt silinmez. Kurtarma klasörüne taşımak başarısızsa özgün kayıt yerinde kalır.
+- Düzenle / Değiştir-Kaydet onayı açıklaştırıldı: eski hakediş yenisiyle değiştirilir, listede yalnızca bir kayıt kalır. Mevcut atomik aynı dosyaya yazma mantığı korundu; eski sürümün .bak kurtarma yedeği listede görünmez. Onaysız kaydetme veya Vazgeç eski kaydı değiştirmez.
+- 131 birim testi geçti. WPF testi beş eşit düğmeyi, silme Hayır/Evet, düzenleme Hayır/Evet ve düzenleme sonrası tek kayıt kaldığını gerçek olay işleyicileriyle doğruladı. Diğer PDF/XML ve panel testleri de geçti; binding hatası yok. Derleme sıfır hata/uyarıyla tamamlandı.
+- Gerçek verilerde silme/düzenleme testi yapılmadı; tüm denemeler sentetik verilerle yapıldı. Başlangıç yedeğindeki bütün gerçek veri dosyaları SHA-256 karşılaştırmasında değişmedi. Yedek artifacts/private-backups/before-archive-delete-*; ekranlar artifacts/ui-archive-delete-review altında.
+
+---
+
 # Son değişiklik — 24 Ekim 2026: tek hakediş, altın kartlar, SGK XML
 
 - Aynı modül/yıl/ay için ikinci hakediş oluşturulamaz. Dönem dosyası kilidi kontrolün başından kayıt bitene kadar tutulur. Eski kayıt ve aylık dosya ikinci denemede değişmez; kullanıcı Çıktı / Düzenle'ye yönlendiren hata alır. İki eşzamanlı pencere yarış testi geçti. Mevcut kayıtlar otomatik silinmez.

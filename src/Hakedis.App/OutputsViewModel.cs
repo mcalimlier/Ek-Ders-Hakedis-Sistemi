@@ -47,6 +47,12 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
         var current=store.Read(Selected?.Path??throw new InvalidOperationException("Önce kayıtlı hakediş seçin."));
         if(current.Version!=Selected!.Version)throw new InvalidOperationException("Kayıt değişmiş. Listeyi yenileyin.");return current;
     }
+    public bool DeleteSelected(bool confirmed)
+    {
+        if(!confirmed)return false;
+        var record=ReadSelected();if(!store.Delete(record,true))return false;
+        Reload();ShowStatus($"{record.Module} · {record.Period} hakedişi silindi.");return true;
+    }
     public void ShowStatus(string message){Status=message;Notify();}
     private void Notify(){foreach(var name in new[]{nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status)})PropertyChanged?.Invoke(this,new(name));}
 }

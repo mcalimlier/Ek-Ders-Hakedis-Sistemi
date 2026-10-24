@@ -7,9 +7,10 @@ public partial class MainWindow : Window
 {
     private readonly ShellViewModel shell;
     private readonly Action<string>? notify;
+    private readonly Func<string,string,bool>? confirmation;
     private WorkspaceViewModel model => shell.Workspace;
     public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
-    public MainWindow(ShellViewModel viewModel,Action<string>? notification=null) {shell=viewModel;notify=notification;InitializeComponent();DataContext=shell;}
+    public MainWindow(ShellViewModel viewModel,Action<string>? notification=null,Func<string,string,bool>? confirmation=null) {shell=viewModel;notify=notification;this.confirmation=confirmation;InitializeComponent();DataContext=shell;}
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
@@ -86,10 +87,20 @@ public partial class MainWindow : Window
     {if(((FrameworkElement)sender).DataContext is Hakedis.Storage.ArchivedPayment record)shell.Outputs.Selected=record;}
     private void EditArchive_Click(object sender,RoutedEventArgs e)
     {SelectOutput(sender);RunOutput(shell.BeginArchiveEdit);}
+    private bool ConfirmArchive(string message,string title)=>confirmation?.Invoke(message,title)??
+        MessageBox.Show(this,message,title,MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes;
+    private void DeleteArchive_Click(object sender,RoutedEventArgs e)
+    {
+        SelectOutput(sender);RunOutput(()=>{
+            var record=shell.Outputs.ReadSelected();
+            if(!ConfirmArchive($"{record.Module} · {record.Period}\n{record.Count} öğretmene ait kayıtlı hakediş silinsin mi?\nÖğretmen bilgileri ve aylık ders girişleri korunur. Hayır seçilirse işlem yapılmaz.","Hakedişi sil"))return;
+            shell.Outputs.DeleteSelected(true);
+        });
+    }
     private void SaveArchive_Click(object sender,RoutedEventArgs e)
     {
         if(!CommitHybrid())return;
-        if(MessageBox.Show(this,"Geçmiş hakediş bu değişikliklerle güncellensin mi? Önceki sürüm yedeklenir. Hayır seçilirse eski kayıt korunur.","Geçmiş hakedişi değiştir",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)!=MessageBoxResult.Yes)return;
+        if(!ConfirmArchive("Eski hakedişin yerine düzenlediğiniz hakediş kaydedilsin mi?\nOnaylarsanız eski kayıt yenisiyle değiştirilir; listede yalnızca bir hakediş kalır.\nKurtarma yedeği listede gösterilmez. Hayır seçilirse eski kayıt korunur.","Hakedişi değiştir"))return;
         RunPeriod(shell.Calculation,()=>{if(shell.SaveArchiveEdit(true))ShowSaved();});
     }
     private void CancelArchive_Click(object sender,RoutedEventArgs e)=>shell.CancelArchiveEdit();
