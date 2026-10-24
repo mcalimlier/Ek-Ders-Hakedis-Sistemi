@@ -14,6 +14,8 @@ Doğrulama: 112 birim testi geçti; 10 WPF panel görüntüsü, iki boyutta yerl
 
 GERÇEK VERİLER: Kullanıcı son denemesinde saatleri değiştirmiş: güncel Debug verilerinde 10 öğretmen / 10 aylık kayıt / **975 saat** var. Kaynak örnekteki 972 saati tekrar yüklemeyin! Değişiklik öncesi 8 dosya artifacts/private-backups/before-outputs-20261024-150510/Veriler içine kopyalandı; tüm hashler doğrulandı. Geçişte yalnız bir aylık dosyanın kaldırılmış tarih anahtarları çıkarıldı; diğer tüm aylık alanlar ve sabitler eşit kaldı. Ana öğretmen kataloğu byte düzeyinde aynı. Mevcut hakediş arşiv sayısı **0**; dolayısıyla Çıktı listesinin dolması için kullanıcının Hakediş oluştur düğmesini kullanması gerekir. Otomatik gerçek hakediş veya ödeme kaydı yaratılmadı.
 
+Güncel Debug uygulaması Visual Studio içinde F5 ile başlatıldı; Ücretli Ek Ders Hakediş Sistemi penceresi açık bırakıldı.
+
 Aktif yol: src/Hakedis.App/bin/Debug/net10.0-windows/Veriler. Önceki dist programı ve verileri ayrıdır; otomatik eşitlenmez. Yeni dağıtım ZIP'i bu turda hazırlanmadı. Sonraki ürün işi: isteğe bağlı Excel/banka aktarım dosyası ve diğer modül çekirdekleri.
 
 ---
