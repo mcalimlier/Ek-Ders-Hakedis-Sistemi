@@ -52,7 +52,7 @@ public sealed class ModuleTeacherTests : IDisposable
         Store(ModuleId.Ortaogretim).Save(Teacher(ModuleId.Ortaogretim));
         Assert.Equal(text, File.ReadAllText(FilePath + ".bak"));
         using var json = JsonDocument.Parse(File.ReadAllText(FilePath));
-        Assert.Equal(3, json.RootElement.GetProperty("SchemaVersion").GetInt32());
+        Assert.Equal(4, json.RootElement.GetProperty("SchemaVersion").GetInt32());
         Assert.Equal("TemelEgitim", json.RootElement.GetProperty("Teachers")[0].GetProperty("ModuleId").GetString());
         Assert.Equal(id, Assert.Single(Store(ModuleId.TemelEgitim).Read()).Id);
     }

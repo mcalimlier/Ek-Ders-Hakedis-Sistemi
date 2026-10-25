@@ -129,7 +129,7 @@ public sealed class PaymentArchiveStore(string root)
         var prior=new DateTime(year,month,1).AddMonths(-1);
         var previous=ReadAll().FirstOrDefault(x=>x.Document.ModuleId==module && x.Document.Data.Year==prior.Year && x.Document.Data.Month==prior.Month)?.Document.Data.Rows??[];
         // Listeye yeni eklenmek işe yeni başlamak anlamına gelmez. Tarih ve yıl birlikte eşleşir.
-        var teachers=previous.Select(r=>r.Teacher).Concat(new TeacherDirectory(System.IO.Path.Combine(root,"ogretmenler.json"),module).Read())
+        var teachers=previous.Select(r=>r.Teacher).Concat(new TeacherDirectory(System.IO.Path.Combine(root,"ogretmenler.json"),module).ReadForPeriod(year,month))
             .Concat(rows.Select(r=>r.Teacher))
             .GroupBy(t=>t.Id).Select(g=>g.Last()).Where(t=>t.ModuleId==module).ToArray();
         bool InMonth(DateTime? date)=>date is DateTime d && d.Year==year && d.Month==month;

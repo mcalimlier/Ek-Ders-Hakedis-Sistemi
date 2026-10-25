@@ -22,7 +22,33 @@ kendiliğinden aktarılmaz; kayıt yalnız Veri Girişi panelinden yapılır.
 SGK MESLEK KODU kutusunu açın; üstteki aramaya kod veya sözcükleri yazın.
 Listeden kod ve meslek adını seçin. PDF'deki 7.190 kayıt dahildir.
 Öğretmeni Kaydet ile yeni kayıt oluşur; liste ekranında yeni kayıt açılamaz.
-Her öğretmen tek modüle aittir; aynı TCKN başka modüle kaydedilemez.
+Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kayıt açılmaz.
+
+İSTEĞE BAĞLI OKUL/MODÜL DEĞİŞİKLİĞİ
+Normal kayıtta ek alanlar kapalıdır. Yalnız gerekli olduğunda
+"Okul/modül değişikliği bilgisi ekle" kutusunu işaretleyin.
+Geçiş yapılan okul, geçiş tarihi ve okulun bağlı olduğu modülü seçin.
+Öğretmeni normal Kaydet düğmesiyle kaydedin. Görev geçmişi kişi kartında
+tutulur; daha sonra Kayıtlı okul/modül geçmişi / Son geçişi düzenle ile
+düzeltilebilir veya yeni geçiş eklenebilir. SGK işe giriş/çıkış tarihleri
+okul değişikliği nedeniyle otomatik değiştirilmez.
+
+Geçiş ayının Hakediş oluştur işleminde bu kişi için tek ödeme modülü
+sorulur. Ayın tamamının gündüz/DYK saatleri ve icra tutarını kontrol edin.
+Farklı modüllerdeki girişler otomatik toplanmaz. Tercihi kaydet ve devam et
+ile tercih ve seçilen modülün aylık toplamı birlikte kaydedilir.
+Diğer modülde ikinci ödeme oluşamaz. Sonraki ayda kişinin görevi yalnız
+bir modüldeyse ayrıca tercih sorulmaz. Kayıtlı bordrosu varsa başka ödeme
+modülüne geçmeden önce mevcut bordroyu düzenleme/silme akışıyla ele alın.
+Vazgeç, o kişi için tercih yapmadan hakediş oluşturma işlemini durdurur;
+önceden onaylayıp kaydettiğiniz kişi tercihleri korunur.
+
+Kaydedilmiş tercihi değiştirmek için Hakediş Hesapla'da tercih edilen
+modülü ve geçiş ayını açın. İlgili öğretmen satırını seçince görünen
+"Ödeme tercihi" düğmesini kullanın. Ay toplamını yeniden kontrol edin.
+Başka modüle geçmek için önce mevcut kayıtlı hakedişi Çıktı panelinden
+onaylayarak silmeniz gerekir. Vazgeç seçimi mevcut tercihi değiştirmez.
+Bu düğme normal öğretmenlerde ve tek modüllü aylarda görünmez.
 
 Aylık Ders Bilgileri kartının en üstünden modül, DÖNEM (ay adı) ve YIL seçin.
 Listeden o modülün öğretmenini çağırın; saatleri ve kesintiyi girin.

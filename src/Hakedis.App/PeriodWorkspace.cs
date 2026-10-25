@@ -24,6 +24,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         set{hybridRow=value is not null && Rows.Contains(value)?value:null;Notify();}
     }
     public bool HasHybridSelection=>hybridRow is not null && !IsArchiveEditing;
+    public bool CanChooseBillingModule=>HasHybridSelection && hybridRow!.HasInput && TeacherRouting.Candidates(hybridRow.Teacher,year,month).Count>1;
     public bool HasHybridChanges=>Rows.Any(r=>r.HasChanges);
     public bool CanChangePeriod=>!IsArchiveEditing && !HasHybridChanges;
     public string HybridChangeText=>HasHybridChanges?$"{Rows.Count(r=>r.HasChanges)} satırda kaydedilmemiş değişiklik var.":"Tüm değişiklikler kaydedildi.";
@@ -73,6 +74,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public string Status { get; private set; }="";
     public string PeriodText => $"{Months[month-1].Name}-{year}";
     public bool IsAvailable => SelectedModule.IsAvailable;
+    public IReadOnlyList<PayrollRow> BillingChoicesNeeded=>Rows.Where(r=>r.HasInput && TeacherRouting.NeedsChoice(r.Teacher,year,month)).ToArray();
     public bool IsEditing => editing;
     public bool HasTeacher => selectedRow is not null;
     public string SgkSummary => selectedRow is null ? "SGK yan bilgisi için öğretmen seçin." :
@@ -117,12 +119,13 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         {
             var document=store.Read(SelectedModule.Id,year,month);
             SetConstants(document.Constants);
-            foreach(var record in new TeacherDirectory(teacherPath,SelectedModule.Id).Read())
+            foreach(var record in new TeacherDirectory(teacherPath,SelectedModule.Id).ReadForPeriod(year,month))
             {
-                Teachers.Add(record);var row=new PayrollRow(record,document.Entries.SingleOrDefault(e=>e.TeacherId==record.Id),()=>Constants.Parameters(),ValidateInput,()=> (year,month));
+                Teachers.Add(record);var row=MakeRow(record,document);
                 row.Sequence=Rows.Count+1;row.Changed+=RowEdited;Rows.Add(row);
             }
             Status=$"{PeriodText} · {SelectedModule.Name}. Kayıtlı aylık ders bilgileri yüklendi.";
+            if(BillingChoicesNeeded.Count>0)Status+=$" Görev geçişi olan {BillingChoicesNeeded.Count} kişi için hakediş oluştururken tek ödeme modülü seçilecektir; saatler otomatik toplanmaz.";
         }
         catch(Exception ex) when(ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or ArgumentException)
         { Status=ex.Message; }
@@ -132,7 +135,8 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     {
         if(IsArchiveEditing)return;
         var id=teacher?.Id;var hybridId=hybridRow?.Teacher.Id;
-        var records=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        var records=new TeacherDirectory(teacherPath,SelectedModule.Id).ReadForPeriod(year,month);
+        var document=store.Read(SelectedModule.Id,year,month);
         var old=Rows.ToDictionary(r=>r.Teacher.Id);Teachers.Clear();Rows.Clear();
         foreach(var t in records)
         {
@@ -140,10 +144,31 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             // Preserve even incomplete text while teacher catalog refreshes.
             PayrollRow r;
             if(old.TryGetValue(t.Id,out var existing)) {r=existing;r.RefreshTeacher(t);}
-            else { r=new(t,null,()=>Constants.Parameters(),ValidateInput,()=> (year,month));if(existing is not null)r.CopyPreview(existing);r.Changed+=RowEdited; }
+            else { r=MakeRow(t,document);r.Changed+=RowEdited; }
             r.Sequence=Rows.Count+1;Rows.Add(r);
         }
         hybridRow=Rows.SingleOrDefault(r=>r.Teacher.Id==hybridId);teacher=Teachers.SingleOrDefault(t=>t.Id==id);selectedRow=Rows.SingleOrDefault(r=>r.Teacher.Id==id);Notify();
+    }
+    private PayrollRow MakeRow(TeacherRecord record,MonthlyDocument document)
+    {
+        var persisted=document.Entries.SingleOrDefault(e=>e.TeacherId==record.Id);
+        var row=new PayrollRow(record,persisted,()=>Constants.Parameters(),ValidateInput,()=> (year,month));
+        if(persisted is null && record.Assignments is not null)
+        {
+            var prior=TeacherRouting.Modules(record).Where(m=>m!=SelectedModule.Id)
+                .SelectMany(m=>store.Read(m,year,month).Entries).FirstOrDefault(i=>i.TeacherId==record.Id);
+            if(prior is not null){row.Apply(prior);row.AcceptChanges(null);}
+        }
+        return row;
+    }
+    public void AcceptBillingChoice(TeacherRecord expected,ModuleId module,MonthlyInput total)
+    {
+        RequireNormal();new BillingChoiceStore(teacherPath).Save(expected,year,month,module,total,Constants.Read());
+        RefreshTeachers();
+        var current=Rows.SingleOrDefault(r=>r.Teacher.Id==expected.Id);
+        if(module==SelectedModule.Id && current is not null){current.Apply(total);current.AcceptChanges(total);}
+        Status=$"{expected.FullName} · {PeriodText}: ay toplamı {Modules.Single(m=>m.Id==module).Name} modülüne kaydedildi. Diğer modülden ikinci bordro oluşturulamaz.";
+        Notify();Saved?.Invoke(this);
     }
     private void RowEdited(PayrollRow row)
     {
@@ -193,7 +218,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
         new PayrollEditStore(teacherPath).Recover();
         RequireNormal();var row=selectedRow??throw new InvalidOperationException("Önce kayıtlı öğretmen seçin.");
         var input=row.Read();ValidateInput(input);
-        var teachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        var teachers=new TeacherDirectory(teacherPath,SelectedModule.Id).ReadForPeriod(year,month);
         if(!teachers.Any(t=>t.Id==input.TeacherId))throw new InvalidOperationException("Öğretmen kaydı artık bulunmuyor.");
         var constants=ValidatedConstants();
         try {if(IsAvailable)_=PayrollCores.Calculate(SelectedModule.Id,new(input.DayHours,input.DykHours,input.Garnishment),Constants.Parameters());}
@@ -263,13 +288,14 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public void CreatePayment()
     {
         RequireNormal();if(!IsAvailable)throw new NotSupportedException("Seçilen modülün hesaplama çekirdeği henüz eklenmedi.");
+        if(BillingChoicesNeeded.Count>0)throw new InvalidOperationException("Görev geçişi olan kişi için önce bu ayın tek ödeme modülünü seçin.");
         var archiveStore=new PaymentArchiveStore(System.IO.Path.GetDirectoryName(teacherPath)!);
         using var newPeriod=archiveStore.BeginNewPeriod(SelectedModule.Id,year,month);
         new PayrollEditStore(teacherPath).Recover();
         if(Rows.Any(r=>r.Teacher!=r.SourceTeacher))throw new InvalidOperationException("Öğretmen değişiklikleri için önce Değişiklikleri kaydet düğmesini kullanın.");
         var rows=Rows.Where(r=>r.HasInput).ToArray();
         if(rows.Length==0)throw new ArgumentException("Önce aylık ders bilgilerini girin.");
-        var validTeachers=new TeacherDirectory(teacherPath,SelectedModule.Id).Read();
+        var validTeachers=new TeacherDirectory(teacherPath,SelectedModule.Id).ReadForPeriod(year,month);
         foreach(var row in rows)
         {
             row.Recalculate();if(row.Result is null)throw new ArgumentException(row.Teacher.FullName+": "+row.Error);
@@ -314,7 +340,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public void ShowError(string text){Status=text;Notify();}
     private void Notify()
     {
-        foreach(var name in new[]{nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
+        foreach(var name in new[]{nameof(CanChooseBillingModule),nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }
 }

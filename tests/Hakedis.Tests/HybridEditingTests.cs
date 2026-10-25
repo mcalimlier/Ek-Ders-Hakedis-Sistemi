@@ -83,7 +83,7 @@ public sealed class HybridEditingTests : IDisposable
         File.WriteAllText(Catalog,node.ToJsonString());var original=File.ReadAllBytes(Catalog);
         var store=new TeacherDirectory(Catalog);var teacher=store.Read()[0];store.Update(teacher with {FullName="Yeni"});
         Assert.Equal(original,File.ReadAllBytes(Catalog+".bak"));
-        var saved=File.ReadAllText(Catalog);Assert.Contains("\"SchemaVersion\": 3",saved);
+        var saved=File.ReadAllText(Catalog);Assert.Contains("\"SchemaVersion\": 4",saved);
         foreach(var key in new[]{"InsuranceNumber","Branch","School2","Branch2"})Assert.DoesNotContain(key,saved);
         Assert.Equal(2,store.Read().Count);
     }

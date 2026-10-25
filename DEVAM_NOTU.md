@@ -1,4 +1,30 @@
-# Elektrik kesintisi sonrası kontrol — 24 Ekim 2026: EDHS
+# Tamamlanan iş — 25 Ekim 2026: isteğe bağlı görev geçmişi ve ödeme tercihi
+
+- Öğretmen formunda yalnız onay kutusu işaretlenince okul, geçiş tarihi ve hedef modül alanları açılır. Tek kişi kartı ve tarihli geçmiş tutulur; normal SGK işe giriş/çıkış tarihleri okul geçişinden etkilenmez. Geçmişteki son geçiş düzenlenebilir veya yeni geçiş eklenebilir.
+- Geçiş ayında Hakediş oluştur, ay toplamı için tek ödeme modülü sorar. Farklı modüllerdeki saatler otomatik toplanmaz. Tercih ve seçilen modülün aylık toplamı atomik kaydedilir; kişi aynı ay iki modül bordrosuna alınamaz. Eski arşivler korunur.
+- Son eksik tamamlandı: Hakediş Hesapla tablosunda ilgili geçiş öğretmeni seçilince **Ödeme tercihi** düğmesi görünür. Kaydedilmiş tercihi yeniden açar. Normal öğretmenlerde, tek modüllü aylarda ve arşiv düzenlemesinde görünmez. Başka modüle geçmek için önce mevcut bordro Çıktı panelinden onayla silinmelidir; onaysız silme hiçbir şeyi değiştirmez. Sonra ay toplamı tek yeni modüle kaydedilir.
+- Güncel doğrulama: 205/205 Release birim testi başarılı (artifacts/history-choice-final-tests.log). Gerçek WPF akışları başarılı (artifacts/history-choice-final-ui.log, artifacts/ui-history-choice-final); tercih iptali/onayı, silme sonrası yeniden tercih, tek bordro, PDF/XML, üç çözünürlük ve binding kontrolleri geçti. Yeni düğme eksikliği önce başarısız WPF/birim testiyle gösterildi, düzeltme ardından geçti.
+- Son Release WPF derlemesi ve Debug uygulama derlemesi sıfır hata/uyarı: artifacts/history-choice-final-ui-build.log ve artifacts/history-choice-final-debug.log. Güncel EXE src/Hakedis.App/bin/Debug/net10.0-windows/EDHS.exe; bu tur yeni dağıtım ZIP'i üretilmedi.
+- Bağımsız kontrol artifacts/verify-school-history.py: 12 kişi, eski kişisel alanlar ve aylık/SGK/kurum/sabit/arşiv dosyalarının hashleri korundu. Önceden onaylanan örnek kişi kartında yalnız 25.09.2026 görev geçmişi var; ödeme tercihi kullanıcıya bırakıldı. 4 PDF tek sayfa ve doğru net; XML özgün XSD ile doğrulandı. Gerçek kişi verileri ve özel yedekler Git dışında.
+- Kullanıcı için deneme: ilgili öğretmen kartında Kayıtlı okul/modül geçmişini açın. Eylül 2026 hakedişinde ödeme modülünü seçin ve ay toplamını kontrol edin. Sonraki tek modüllü aylarda yeniden tercih sorulmaz. Kullanım ayrıntıları docs/KULLANIM.txt, model docs/OGRETMEN_GOREV_GECMISI_TASARIMI.md. Yerel Git kaydı alınır; GitHub'a push yapılmaz.
+
+---
+
+# Önceki duraklama noktası — 25 Ekim 2026: görev geçmişi ve aylık ödeme tercihi
+
+Kullanıcı yorulduğu için çalışmayı burada durdurmamızı, yarın devam etmeyi istedi. Yeni geliştirmeye devam edilmedi. Aşağıdaki durum, eski notlardan daha günceldir.
+
+- İsteğe bağlı okul/modül geçişi uygulandı. Öğretmen formunda tik açıldığında okul, tarih ve hedef modül görünür. Mevcut geçiş düzenlenebilir; normal öğretmende ek alanlar kapalıdır. Tek kişi kartı korunur, SGK işe giriş/çıkış tarihleri değiştirilmez.
+- Geçiş ayındaki toplam saatler iki bordroya bölünmez. Hakediş oluştururken kullanıcıdan ödeme modülü ve ay toplamı için açık tercih alınır. Vazgeçildiğinde bordro oluşturulmaz. Kişi/ay bazında ikinci modül bordrosu engellenir. Tercih ve aylık veri mevcut işlem günlüğüyle birlikte güvenle kaydedilir; eski bordro görüntüleri değişmez.
+- Gerçek test verisindeki mevcut tek kişi kartına, onaylanan 25.09.2026 örnek geçişi eklendi. Ödeme tercihi kullanıcı adına seçilmedi. Toplam 12 kişi; Din Öğretimi görünümünde 3 kişi. Eski saatler, arşivler, SGK profili ve sabitler korunuyor. Özel yedek yolu artifacts/history-backup-path.txt içinde; bağımsız doğrulayıcı artifacts/verify-school-history.py. Kişisel veriler Git'e eklenmemeli.
+- Son doğrulama: 202/202 birim testi geçti (artifacts/history-final-tests.log). Son WPF ekran testleri de geçti (artifacts/history-final-ui.log, artifacts/ui-history-final); tercih iptali/onayı, tek modülde toplam saat, normal SGK tarihleri, PDF/XML ve binding kontrolleri başarılı.
+- YARIN İLK İŞ: Kaydedilmiş aylık ödeme tercihini yeniden açıp değiştirmek için yalnız özel geçiş durumlarında görünen bir arayüz eylemi ekle. Şu anda ilk tercih çalışıyor; tercih kaydedildikten sonra kullanıcı arayüzünden tekrar açma eylemi eksik. Başka modülde kayıtlı bordro varsa değişiklik engeli korunmalı; bordro onayla silindikten sonra yeni tercih mümkün olmalı. Mevcut BillingChoiceViewModel/Window ve Shell.SaveBillingChoice akışını kullan; normal öğretmenlere gereksiz alan gösterme.
+- Ardından tercih değiştirme regresyonunu ve WPF testini ekle; son testleri ve Debug derlemesini tekrar çalıştır. Son Debug derlemesi bu turun son iki küçük doğrulama değişikliğinden öncedir. Gerçek verileri yeniden içe aktarma veya kullanıcı adına tercih yapma. Açık uygulama varsa kaydedilmemiş işe müdahale etme.
+- Kaynak değişiklikleri diskte kayıtlı, henüz Git commit yapılmadı. Son mevcut commit e411811. Bu tur yeni dağıtım ZIP'i üretilmedi. Plan: docs/superpowers/plans/2026-10-24-optional-school-history.md. Son eylem tamamlanınca kullanım/tasarım notlarını güncelle, gerekli kontrollerden sonra kaynakları açık yollarla commit et; kişisel verileri dahil etme, push yapma.
+
+---
+
+# Önceki durum: Elektrik kesintisi sonrası kontrol — 24 Ekim 2026: EDHS
 
 - Program adı Ek Ders Hakediş Sistemi (EDHS) oldu. Ana başlık, imza üstü ad, EXE ürün bilgileri ve PDF üretici alanı güncellendi. Güncel EXE `src/Hakedis.App/bin/Debug/net10.0-windows/EDHS.exe`. Veri dizini taşınmadı. Yeni çıktı kökü Masaüstü/EDHS/Çıktılar, yayın paket adı EDHS-*; önceki çıktılar yerinde.
 - Büyük altın vektör simgeler kartlarda ayrı sağ sütunda. Kart ölçüleri aynı; büyük tutarlar simgelere binmiyor. Hibrit başlıklar kısaltılmadan sarılıyor; toplam sütun genişliği 2345'ten 1728 DIP'e indi. İmam Hatip Lisesi katalogdan kaldırıldı; eski enum yalnız dosya uyumluluğu için ayrılmıştır.

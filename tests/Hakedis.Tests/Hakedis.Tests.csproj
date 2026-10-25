@@ -20,6 +20,7 @@
     <None Update="Fixtures/din-excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/Hakedis.App/CommonConstantsViewModel.cs" Link="CommonConstantsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/UiSettingsViewModel.cs" Link="UiSettingsViewModel.cs"/>
+    <Compile Include="../../src/Hakedis.App/BillingChoiceViewModel.cs" Link="BillingChoiceViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/OutputsViewModel.cs" Link="OutputsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/PersonalPayrollViewModel.cs" Link="PersonalPayrollViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/SgkXmlEditor.cs" Link="SgkXmlEditor.cs"/>

@@ -14,7 +14,7 @@ Contracts modül kimliği ve kayıt/çözümleme sözleşmesini barındırır. �
 
 İmam Hatip kapsamı Din Öğretimi'ne dahildir; seçim listesinde ikinci bir İmam Hatip Lisesi seçeneği yoktur. Eski enum değeri dosya uyumluluğu için ayrılmıştır ve yeni kayıt seçimlerinde gösterilmez.
 
-Öğretmenler modüller arasında paylaşılmaz. Ortak TeacherRecord tipi ModuleId ile tek modüle aittir; liste, düzenleme, silme ve hesap seçimi bu sahipliği denetler. Aynı ID/TCKN başka modüle tekrar kaydedilemez. Kalıcı dosya ve eski kayıt geçişi ayrıntıları: MODUL_OGRETMEN_KAYITLARI.md.
+Öğretmenin kişi kartı tektir; tarihli görev geçmişi modül görünümlerini belirler. Aynı ID/TC ile ikinci kişi oluşturulmaz. Geçiş ayında kullanıcı tek ödeme modülünü seçer; o modülün çekirdeği kişinin ay toplamını hesaplar. Normal kişilerde tek modül akışı korunur. Kalıcı dosya ve eski kayıt geçişi ayrıntıları: MODUL_OGRETMEN_KAYITLARI.md.
 
 Arayüzün oluşturma noktasında uygulanan modüller ModuleRegistry'ye kaydedilir. Katalog seçilen modülün kayıtlı olup olmadığını gösterir. Resolve bilinmeyen/eklenmemiş modülde hata verir; Temel Eğitim'e geri dönüş yoktur. Yeni modül geldiğinde kendi girdi/parametre/sonuç tipleri, çekirdeği, görünüm modeli ve testleri eklenir. Kaydı yapılınca arayüzde etkinleştirilir.
 

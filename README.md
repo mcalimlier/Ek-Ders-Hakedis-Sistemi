@@ -2,7 +2,7 @@
 
 C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde yapılır. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu JSON'a kaydedilir. Aylık kayıtlar ve hakedişler modül/yıl/ay kapsamında ayrılır; sabitler ortaktır. SQL, son kullanıcıda Excel veya ayrıca .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Eksik Gün Sayısı SGK yan bilgisidir; parasal hakedişi etkilemez. Kayıtlı hakedişten üç PDF, doğrudan yazdırma ve özgün XSD ile doğrulanan SGK XML çıktısı alınır.
 
-Her öğretmen yalnızca kendi modülüne aittir. Listeler ve değişiklik işlemleri modüle göre ayrılır; aynı kayıt ID'si veya TCKN başka modüle tekrar kaydedilemez. Eski modülsüz veriler ilk sürümün Temel Eğitim kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
+Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. İsteğe bağlı okul/modül değişikliği alanında okul, tarih ve hedef modül kaydedilir. Geçiş ayında hakediş oluşturulurken tek ödeme modülü ve ay toplamı teyit edilir; kişi iki modül bordrosuna bölünmez. Görev geçmişi normal SGK işe giriş/çıkış tarihlerini veya kayıtlı bordroları değiştirmez. Eski modülsüz veriler ilk sürümün Temel Eğitim kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
 
 ## Kullanıcının belirlediği kapsam
 

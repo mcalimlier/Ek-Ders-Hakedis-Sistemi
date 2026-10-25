@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Hakedis.Contracts;
+using Hakedis.Storage;
 
 namespace Hakedis.App;
 
@@ -102,8 +103,8 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void SaveNewTeacher()
     {
         var saved = Registration.SaveNew(); Teachers.Reload();Monthly.RefreshTeachers();Calculation.RefreshTeachers();
-        if(saved.ModuleId==activeModule)CalculationTeacher = saved;
-        if(saved.ModuleId==Monthly.SelectedModule.Id)Monthly.SelectedTeacher=Monthly.Teachers.Single(t=>t.Id==saved.Id);
+        if(saved.ModuleId==activeModule && TeacherRouting.Included(saved,activeModule,Calculation.Year,Calculation.Month))CalculationTeacher = saved;
+        if(saved.ModuleId==Monthly.SelectedModule.Id && Monthly.Teachers.SingleOrDefault(t=>t.Id==saved.Id) is { } selected)Monthly.SelectedTeacher=selected;
     }
     public void BeginHybridTeacherEdit()
     {
@@ -118,11 +119,39 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     }
     public void SaveTeacherEdit()
     {
+        var preview=TeacherDirectory.Normalize(Registration.Editor.ToRecord(Registration.Module));
+        foreach(var workspace in new[]{Monthly,Calculation})
+            if(workspace.Rows.Any(r=>r.Teacher.Id==preview.Id && r.HasChanges) && !TeacherRouting.Included(preview,workspace.SelectedModule.Id,workspace.Year,workspace.Month))
+                throw new InvalidOperationException("Görev değişikliği bu öğretmeni mevcut dönem listesinden çıkarıyor. Önce aylık ders değişikliklerini kaydedin.");
         var saved=Registration.SaveEdit();Teachers.Reload();
         foreach(var workspace in new[]{Monthly,Calculation})
-        {workspace.Rows.FirstOrDefault(r=>r.Teacher.Id==saved.Id)?.RefreshTeacher(saved,true);workspace.RefreshTeachers();}
-        if(teacher is not null)CalculationTeacher=Calculation.Rows.FirstOrDefault(r=>r.Teacher.Id==teacher.Id)?.Teacher;
+        {
+            if(TeacherRouting.Modules(saved).Contains(workspace.SelectedModule.Id))
+                workspace.Rows.FirstOrDefault(r=>r.Teacher.Id==saved.Id)?.RefreshTeacher(TeacherRouting.Project(saved,workspace.SelectedModule.Id),true);
+            workspace.RefreshTeachers();
+        }
+        if(teacher is not null)
+        {
+            var updated=Calculation.Rows.FirstOrDefault(r=>r.Teacher.Id==teacher.Id)?.Teacher;
+            CalculationTeacher=updated?.ModuleId==activeModule?updated:null;
+        }
         Navigate("Calculation");
+    }
+    public void SaveBillingChoice(PayrollRow row,ModuleId module,MonthlyInput total)
+    {
+        if(!Calculation.Rows.Contains(row) || Calculation.IsArchiveEditing)throw new InvalidOperationException("Geçerli bir aktif bordro satırı seçin.");
+        if(row.Teacher!=row.SourceTeacher)throw new InvalidOperationException("Önce öğretmen bilgileri için Değişiklikleri kaydet düğmesini kullanın.");
+        var destinationVisible=Monthly.SelectedModule.Id==module && Monthly.Year==Calculation.Year && Monthly.Month==Calculation.Month;
+        if(destinationVisible && module!=Calculation.SelectedModule.Id && Monthly.Rows.Any(r=>r.Teacher.Id==row.Teacher.Id && r.HasChanges))
+            throw new InvalidOperationException("Aylık giriş ekranında bu kişinin kaydedilmemiş saatleri var. Önce o girişleri kaydedin.");
+        Calculation.AcceptBillingChoice(row.SourceTeacher,module,total);Teachers.Reload();
+        if(destinationVisible)
+        {
+            Monthly.RefreshTeachers();var target=Monthly.Rows.SingleOrDefault(r=>r.Teacher.Id==row.Teacher.Id);
+            if(target is not null){target.Apply(total);target.AcceptChanges(total);Monthly.AcceptSavedSelection();}
+        }
+        if(module!=Calculation.SelectedModule.Id && !Calculation.Rows.Any(r=>r.HasInput || r.HasChanges))
+            Calculation.SelectedModule=Calculation.Modules.Single(m=>m.Id==module);
     }
     public void CancelTeacherEdit(){Registration.Reset();Navigate("Calculation");}
     public void Navigate(string destination)

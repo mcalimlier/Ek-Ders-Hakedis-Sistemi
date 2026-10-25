@@ -19,7 +19,9 @@ public sealed class TeacherDirectory
         if (!Enum.IsDefined(module)) throw new ArgumentOutOfRangeException(nameof(module));
         this.path = Path.GetFullPath(path); this.module = module;
     }
-    public IReadOnlyList<TeacherRecord> Read() => ReadAll().Where(t => t.ModuleId == module).ToArray();
+    public IReadOnlyList<TeacherRecord> Read() => ReadAll().Where(t=>TeacherRouting.Modules(t).Contains(module)).Select(t=>TeacherRouting.Project(t,module)).ToArray();
+    public IReadOnlyList<TeacherRecord> ReadForPeriod(int year,int month)=>ReadAll().Where(t=>TeacherRouting.Included(t,module,year,month)).Select(t=>TeacherRouting.ProjectForPeriod(t,module,year,month)).ToArray();
+    public IReadOnlyList<TeacherRecord> ReadCanonical()=>ReadAll();
     private IReadOnlyList<TeacherRecord> ReadAll()
     {
         if (!File.Exists(path)) return [];
@@ -28,7 +30,7 @@ public sealed class TeacherDirectory
             using var stream = File.OpenRead(path); using var json = JsonDocument.Parse(stream);
             if(json.RootElement.ValueKind!=JsonValueKind.Object ||
                !json.RootElement.TryGetProperty("SchemaVersion",out var schema) || schema.ValueKind!=JsonValueKind.Number ||
-               !schema.TryGetInt32(out var version) || version is not (1 or 2 or 3))
+               !schema.TryGetInt32(out var version) || version is not (1 or 2 or 3 or 4))
                 throw new InvalidDataException("Öğretmen dosyasının sürümü veya içeriği geçersiz.");
             var node = JsonNode.Parse(json.RootElement.GetRawText())!;
             // Yalnız eski şemaların kaldırılmış alanları temizlenir; diğer bilinmeyen alanlar reddedilir.
@@ -36,12 +38,14 @@ public sealed class TeacherDirectory
                 foreach (var item in legacy.OfType<JsonObject>())
                     foreach (var key in new[]{"InsuranceNumber","Branch","School2","Branch2"}) item.Remove(key);
             var catalog = node.Deserialize<Catalog>(Options);
-            if (catalog is null || catalog.SchemaVersion is not (1 or 2 or 3) || catalog.Teachers is null)
+            if (catalog is null || catalog.SchemaVersion is not (1 or 2 or 3 or 4) || catalog.Teachers is null)
                 throw new InvalidDataException("Öğretmen dosyasının sürümü veya içeriği geçersiz.");
             if (catalog.SchemaVersion >= 2 && json.RootElement.GetProperty("Teachers").EnumerateArray().Any(t =>
                 t.ValueKind != JsonValueKind.Object || !t.TryGetProperty("ModuleId", out _)))
                 throw new InvalidDataException("Öğretmen kaydının ait olduğu modül belirtilmemiş.");
             var records = catalog.Teachers.Select(Normalize).ToArray();
+            if(records.Any(t=>t.Assignments is { } h && (h.HomeModuleId!=t.ModuleId || h.HomeSchool!=t.School)))
+                throw new InvalidDataException("Kişi kartının kayıt modülü ve görev geçmişi uyuşmuyor.");
             // İlk sürümün kapsamı Temel Eğitim idi; modülsüz şema 1 bu modüle ait kabul edilir.
             if (catalog.SchemaVersion == 1 && records.Any(t => t.ModuleId != ModuleId.TemelEgitim))
                 throw new InvalidDataException("Eski kayıt dosyasında beklenmeyen modül bilgisi var.");
@@ -64,13 +68,13 @@ public sealed class TeacherDirectory
             {
                 var original=expected[i];var next=Normalize(replacements[i]);
                 var index=rows.FindIndex(t=>t.Id==original.Id);
-                if(index<0 || rows[index]!=original)throw new InvalidOperationException("Öğretmen bilgileri değişmiş. Listeyi yenileyin.");
+                if(index<0 || !TeacherRouting.Matches(rows[index],original,module))throw new InvalidOperationException("Öğretmen bilgileri değişmiş. Listeyi yenileyin.");
                 if(original.ModuleId!=module || next.ModuleId!=module || next.Id!=original.Id)
                     throw new InvalidOperationException("Öğretmenin kimliği veya modülü değiştirilemez.");
-                rows[index]=next;
+                rows[index]=Normalize(TeacherRouting.Canonicalize(rows[index],next,original));
             }
             if(rows.Where(t=>t.IdentityNumber!="").GroupBy(t=>t.IdentityNumber).Any(g=>g.Count()>1))
-                throw new ArgumentException("Bu T.C. kimlik numarası zaten kayıtlı. Aynı öğretmen farklı bir modüle kaydedilemez.");
+                throw new ArgumentException("Bu T.C. kimlik numarası zaten kayıtlı. Yeni kişi açmak yerine mevcut kartın okul/modül değişikliği alanını kullanın.");
         });
     private IReadOnlyList<TeacherRecord> SaveCore(TeacherRecord teacher, bool requireExisting)
     {
@@ -79,17 +83,22 @@ public sealed class TeacherDirectory
         return Mutate(rows =>
         {
             var index = rows.FindIndex(t => t.Id == teacher.Id);
-            if (index >= 0 && rows[index].ModuleId != module)
+            if (index >= 0 && !TeacherRouting.Modules(rows[index]).Contains(module))
                 throw new InvalidOperationException("Öğretmen kaydı başka bir modüle taşınamaz.");
             if (teacher.IdentityNumber != "" && rows.Any(t => t.Id != teacher.Id && t.IdentityNumber == teacher.IdentityNumber))
-                throw new ArgumentException("Bu T.C. kimlik numarası zaten kayıtlı. Aynı öğretmen farklı bir modüle kaydedilemez.");
+                throw new ArgumentException("Bu T.C. kimlik numarası zaten kayıtlı. Yeni kişi açmak yerine mevcut kartın okul/modül değişikliği alanını kullanın.");
             if (requireExisting && index < 0) throw new InvalidOperationException("Düzenlenecek öğretmen kaydı bulunamadı. Listeyi yenileyin.");
-            if (index < 0) rows.Add(teacher); else rows[index] = teacher;
+            if (index < 0)
+            {
+                if(teacher.Assignments is { } h && h.HomeModuleId!=module)throw new ArgumentException("Yeni kişi kartının kayıt modülü geçersiz.");
+                rows.Add(teacher);
+            }
+            else rows[index] = Normalize(TeacherRouting.Canonicalize(rows[index],teacher));
         });
     }
     public IReadOnlyList<TeacherRecord> Delete(Guid id) => Mutate(rows =>
     {
-        if (rows.RemoveAll(t => t.Id == id && t.ModuleId == module) == 0) throw new InvalidOperationException("Öğretmen kaydı bu modülde bulunamadı.");
+        if (rows.RemoveAll(t => t.Id == id && TeacherRouting.Modules(t).Contains(module)) == 0) throw new InvalidOperationException("Öğretmen kaydı bu modülde bulunamadı.");
     });
     private IReadOnlyList<TeacherRecord> Mutate(Action<List<TeacherRecord>> action)
     {
@@ -102,10 +111,10 @@ public sealed class TeacherDirectory
         try
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            { JsonSerializer.Serialize(stream, new Catalog(3, rows.ToArray()), Options); stream.Flush(true); }
+            { JsonSerializer.Serialize(stream, new Catalog(4, rows.ToArray()), Options); stream.Flush(true); }
             _ = new TeacherDirectory(temporary, module).Read();
             if (File.Exists(path)) File.Replace(temporary, path, path + ".bak"); else File.Move(temporary, path);
-            return rows.Where(t => t.ModuleId == module).ToArray();
+            return rows.Where(t=>TeacherRouting.Modules(t).Contains(module)).Select(t=>TeacherRouting.Project(t,module)).ToArray();
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
@@ -127,6 +136,12 @@ public sealed class TeacherDirectory
         if (normalized.Iban != "" && !Regex.IsMatch(normalized.Iban, "^TR[0-9]{24}$"))
             throw new ArgumentException("IBAN, TR ile başlayan 26 karakter olmalıdır veya boş bırakılmalıdır.");
         if (normalized.EndDate < normalized.StartDate) throw new ArgumentException("Ayrılış tarihi başlangıç tarihinden önce olamaz.");
+        if(normalized.Assignments is { } history)
+        {
+            history=history.Normalize(normalized.StartDate,normalized.EndDate);
+            normalized=normalized with {Assignments=history};
+            if(!TeacherRouting.Modules(normalized).Contains(normalized.ModuleId))throw new ArgumentException("Öğretmenin bu modülde görev kaydı yok.");
+        }
         return normalized;
     }
 }

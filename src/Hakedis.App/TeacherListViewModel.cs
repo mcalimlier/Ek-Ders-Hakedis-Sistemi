@@ -5,8 +5,38 @@ using Hakedis.Storage;
 
 namespace Hakedis.App;
 
-public sealed class TeacherEditor
+public sealed class TeacherEditor : INotifyPropertyChanged
 {
+    private TeacherAssignmentHistory? savedHistory;
+    private string originalSchool="";
+    private ModuleId originalModule;
+    private bool special;
+    private int editTransfer=-1;
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public bool HasSchoolTransfer {get=>special;set{special=value;NotifyTransfer();}}
+    public string TransferSchool {get;set;}="";
+    public DateTime? TransferDate {get;set;}
+    public ModuleId? TransferModule {get;set;}
+    public IReadOnlyList<ModuleDescriptor> TransferModules=>PayrollCores.Catalog.Where(m=>m.IsAvailable).ToArray();
+    public bool HasAssignmentHistory=>savedHistory is not null;
+    public string HistoryText=>savedHistory is null?"":string.Join(Environment.NewLine,savedHistory.Transfers.Select(t=>
+        $"{t.Date:dd.MM.yyyy} · {Name(t.FromModule)} / {t.FromSchool} → {Name(t.ToModule)} / {t.ToSchool}"));
+    public string TransferModeText=>editTransfer<0?"Yeni okul/modül değişikliği":"Son okul/modül değişikliğini düzenle";
+    public System.Windows.Input.ICommand EditLastTransferCommand=>new EditorAction(EditLastTransfer);
+    public System.Windows.Input.ICommand NewTransferCommand=>new EditorAction(NewTransfer);
+    private static string Name(ModuleId id)=>PayrollCores.Catalog.FirstOrDefault(m=>m.Id==id)?.Name??"Eski görev";
+    public TeacherEditor(ModuleId module=ModuleId.TemelEgitim){originalModule=module;}
+    public void EditLastTransfer()
+    {
+        if(savedHistory is null)return;editTransfer=savedHistory.Transfers.Length-1;var t=savedHistory.Transfers[editTransfer];
+        special=true;TransferSchool=t.ToSchool;TransferDate=t.Date;TransferModule=t.ToModule;NotifyTransfer();
+    }
+    public void NewTransfer()
+    {
+        editTransfer=-1;special=true;TransferSchool="";TransferDate=null;
+        TransferModule=null;NotifyTransfer();
+    }
+    private void NotifyTransfer(){foreach(var name in new[]{nameof(HasSchoolTransfer),nameof(TransferSchool),nameof(TransferDate),nameof(TransferModule),nameof(TransferModeText),nameof(HasAssignmentHistory),nameof(HistoryText)})PropertyChanged?.Invoke(this,new(name));}
     public Guid Id { get; set; } = Guid.NewGuid();
     public string FullName { get; set; } = "";
     public string IdentityNumber { get; set; } = "";
@@ -15,10 +45,27 @@ public sealed class TeacherEditor
     public string OccupationCode { get; set; } = "";
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public TeacherRecord ToRecord(ModuleId module = ModuleId.TemelEgitim) => new(Id, FullName, IdentityNumber, Iban, School, OccupationCode, StartDate, EndDate, module);
-    public static TeacherEditor From(TeacherRecord r) => new() { Id = r.Id, FullName = r.FullName,
+    public TeacherRecord ToRecord(ModuleId module = ModuleId.TemelEgitim)
+    {
+        var history=savedHistory;
+        if(history is not null && School!=originalSchool)history=history.WithSchool(originalModule,originalSchool,School);
+        if(special)
+        {
+            var changes=history?.Transfers.ToList()??[];
+            var from=editTransfer>=0?changes[editTransfer].FromModule:changes.LastOrDefault()?.ToModule??module;
+            var fromSchool=editTransfer>=0?changes[editTransfer].FromSchool:changes.LastOrDefault()?.ToSchool??School;
+            var item=new SchoolTransfer(TransferDate,from,fromSchool,TransferModule??(ModuleId)(-1),TransferSchool);
+            if(editTransfer>=0)changes[editTransfer]=item;else changes.Add(item);
+            history=new(history?.HomeModuleId??module,history?.HomeSchool??School,changes.ToArray(),history?.Choices??[]);
+        }
+        return new(Id,FullName,IdentityNumber,Iban,School,OccupationCode,StartDate,EndDate,module,history);
+    }
+    public static TeacherEditor From(TeacherRecord r) => new(r.ModuleId) { Id = r.Id, FullName = r.FullName,
         IdentityNumber = r.IdentityNumber, Iban = r.Iban,
-        School = r.School, OccupationCode = r.OccupationCode, StartDate = r.StartDate, EndDate = r.EndDate };
+        School = r.School, OccupationCode = r.OccupationCode, StartDate = r.StartDate, EndDate = r.EndDate,
+        savedHistory=r.Assignments,originalSchool=r.School,originalModule=r.ModuleId };
+    private sealed class EditorAction(Action action) : System.Windows.Input.ICommand
+    {public event EventHandler? CanExecuteChanged {add{}remove{}} public bool CanExecute(object? parameter)=>true;public void Execute(object? parameter)=>action();}
 }
 
 public sealed class TeacherListViewModel : INotifyPropertyChanged

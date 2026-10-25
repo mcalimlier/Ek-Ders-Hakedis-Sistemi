@@ -10,12 +10,13 @@ public partial class MainWindow : Window
     private readonly Func<string,string,bool>? confirmation;
     private readonly Action<string> openFolder;
     private readonly string? personalOutputRoot;
+    private readonly Func<BillingChoiceViewModel,bool>? billingChoicePrompt;
     private WorkspaceViewModel model => shell.Workspace;
     public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
     public MainWindow(ShellViewModel viewModel,Action<string>? notification=null,Func<string,string,bool>? confirmation=null,
-        Action<string>? folderOpener=null,string? personalOutputRoot=null)
+        Action<string>? folderOpener=null,string? personalOutputRoot=null,Func<BillingChoiceViewModel,bool>? billingChoicePrompt=null)
     {
-        shell=viewModel;notify=notification;this.confirmation=confirmation;this.personalOutputRoot=personalOutputRoot;
+        shell=viewModel;notify=notification;this.confirmation=confirmation;this.personalOutputRoot=personalOutputRoot;this.billingChoicePrompt=billingChoicePrompt;
         openFolder=folderOpener??(folder=>{_=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder){UseShellExecute=true});});
         InitializeComponent();DataContext=shell;shell.Settings.Applied+=ApplyWindowPreference;
     }
@@ -75,7 +76,8 @@ public partial class MainWindow : Window
     {
         var teacher = shell.Teachers.Selected;
         if (teacher is null) return;
-        if (MessageBox.Show(this, $"{teacher.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\nGeçmiş hesap taslakları korunur.",
+        var note=teacher.Assignments is null?"Geçmiş hesap taslakları korunur.":"Tek kişi kartı ve görev geçmişi tüm modül listelerinden kaldırılır. Kayıtlı hakedişler korunur.";
+        if (MessageBox.Show(this, $"{teacher.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\n{note}",
             "Öğretmen kaydını sil", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
             RunTeacher(()=>{shell.Teachers.DeleteSelected();shell.Monthly.RefreshTeachers();shell.Calculation.RefreshTeachers();});
     }
@@ -94,7 +96,8 @@ public partial class MainWindow : Window
     private void DeleteHybrid_Click(object sender,RoutedEventArgs e)
     {
         if(!CommitHybrid())return;var row=shell.Calculation.SelectedHybridRow;if(row is null)return;
-        if(MessageBox.Show(this,$"{row.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\nGeçmiş hakedişler korunur.","Öğretmen kaydını sil",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes)
+        var note=row.Teacher.Assignments is null?"Geçmiş hakedişler korunur.":"Tek kişi kartı ve görev geçmişi tüm modül listelerinden kaldırılır. Kayıtlı hakedişler korunur.";
+        if(MessageBox.Show(this,$"{row.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\n{note}","Öğretmen kaydını sil",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes)
             RunPeriod(shell.Calculation,shell.Calculation.DeleteHybridTeacher);
     }
     private void SaveMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,()=>shell.Monthly.Save(true));
@@ -167,12 +170,33 @@ public partial class MainWindow : Window
         if(MessageBox.Show(this,"Kaydedilmemiş tablo değişiklikleri yerine son kayıtlar yüklensin mi?","Kayıtları yenile",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)
             RunPeriod(shell.Calculation,shell.Calculation.Reload);
     }
+    private bool ChooseBilling(PayrollRow row)
+    {
+        var editor=new BillingChoiceViewModel(row.Teacher,shell.Calculation.Year,shell.Calculation.Month,row.Read(),shell.Outputs.DataRoot);
+        var accepted=billingChoicePrompt?.Invoke(editor)??new BillingChoiceWindow(editor){Owner=this}.ShowDialog()==true;
+        if(!accepted)return false;
+        shell.SaveBillingChoice(row,editor.SelectedModule?.Id??throw new ArgumentException("Ödeme modülünü seçin."),editor.ReadInput());
+        return true;
+    }
+    private void ChangeBillingChoice_Click(object sender,RoutedEventArgs e)
+    {
+        if(!CommitHybrid() || !shell.Calculation.CanChooseBillingModule)return;
+        RunPeriod(shell.Calculation,()=>{
+            if(shell.Calculation.Rows.Any(r=>r.Teacher!=r.SourceTeacher))throw new InvalidOperationException("Önce öğretmen bilgileri için Değişiklikleri kaydet düğmesini kullanın.");
+            if(ChooseBilling(shell.Calculation.SelectedHybridRow!))ShowSaved();
+        });
+    }
     private void CreatePayment_Click(object sender,RoutedEventArgs e)
     {
         if(!HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell,true) ||
            !HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row,true) || HasValidationError(HybridGrid))
         {shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");return;}
         RunPeriod(shell.Calculation,()=>{
+            if(shell.Calculation.Rows.Any(r=>r.Teacher!=r.SourceTeacher))throw new InvalidOperationException("Önce öğretmen bilgileri için Değişiklikleri kaydet düğmesini kullanın.");
+            while(shell.Calculation.BillingChoicesNeeded.FirstOrDefault() is { } row)
+            {
+                if(!ChooseBilling(row)){shell.Calculation.ShowError("Ödeme tercihi yapılmadı; hakediş oluşturulmadı.");return;}
+            }
             shell.Calculation.CreatePayment();
             const string message="İşlem başarılı. Hakediş oluşturuldu ve kaydedildi.";
             if(notify is not null)notify(message);else MessageBox.Show(this,message,"Hakediş",MessageBoxButton.OK,MessageBoxImage.Information);
