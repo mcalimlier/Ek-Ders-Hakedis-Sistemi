@@ -2,6 +2,7 @@ using Hakedis.Contracts;
 using Hakedis.DinOgretimi.Core;
 using Hakedis.HalkEgitim.Core;
 using Hakedis.EmekliHalkEgitim.Core;
+using Hakedis.MeslekiEgitim.Core;
 using Hakedis.TemelEgitim.Core;
 
 namespace Hakedis.Storage;
@@ -10,7 +11,7 @@ namespace Hakedis.Storage;
 // Formüller burada bulunmaz. Her modül yalnız kendi hesaplama çekirdeğine yönlendirilir.
 public static class PayrollCores
 {
-    public static ModuleRegistry Registry {get;}=new([new TeacherPayrollModule(),new DinOgretimiPayrollModule(),new HalkEgitimPayrollModule(),new EmekliHalkEgitimPayrollModule()]);
+    public static ModuleRegistry Registry {get;}=new([new TeacherPayrollModule(),new DinOgretimiPayrollModule(),new HalkEgitimPayrollModule(),new EmekliHalkEgitimPayrollModule(),new MeslekiEgitimPayrollModule()]);
     public static IReadOnlyList<ModuleDescriptor> Catalog=>Registry.Catalog;
     public static bool IsAvailable(ModuleId id)=>Catalog.Any(m=>m.Id==id && m.IsAvailable);
     public static string RuleVersion(ModuleId id)=>id switch
@@ -19,6 +20,7 @@ public static class PayrollCores
         ModuleId.DinOgretimi=>Registry.Resolve<DinOgretimiPayrollModule>(id).RuleVersion,
         ModuleId.HalkEgitimUstaOgretici=>Registry.Resolve<HalkEgitimPayrollModule>(id).RuleVersion,
         ModuleId.HalkEgitimEmekliUstaOgretici=>Registry.Resolve<EmekliHalkEgitimPayrollModule>(id).RuleVersion,
+        ModuleId.MeslekiEgitim=>Registry.Resolve<MeslekiEgitimPayrollModule>(id).RuleVersion,
         _=>throw new NotSupportedException("Seçilen modülün hesaplama çekirdeği henüz eklenmedi.")
     };
     public static string CalendarRuleVersion(ModuleId id)=>id switch
@@ -27,11 +29,19 @@ public static class PayrollCores
         ModuleId.DinOgretimi=>DinOgretimiCalendar.RuleVersion,
         ModuleId.HalkEgitimUstaOgretici=>HalkEgitimCalendar.RuleVersion,
         ModuleId.HalkEgitimEmekliUstaOgretici=>EmekliHalkEgitimCalendar.RuleVersion,
+        ModuleId.MeslekiEgitim=>MeslekiEgitimCalendar.RuleVersion,
         _=>throw new NotSupportedException("Seçilen modülün SGK gün çekirdeği henüz eklenmedi.")
     };
     public static TeacherResult Calculate(ModuleId id,TeacherInput input,TeacherParameters p)
     {
         if(id==ModuleId.TemelEgitim)return Registry.Resolve<TeacherPayrollModule>(id).Calculate(input,p);
+        if(id==ModuleId.MeslekiEgitim)
+        {
+            var m=Registry.Resolve<MeslekiEgitimPayrollModule>(id).Calculate(new(input.DayHours,input.DykHours,input.Garnishment),
+                new(p.Coefficient,p.Indicator,p.DykMultiplier,p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate,p.IncomeExemptBase,p.StampExemptBase));
+            return new(m.DayRate,m.DykRate,m.DayGross,m.DykGross,m.Gross,m.PremiumDays,m.EmployeePremium,m.EmployerPremium,
+                m.Accrual,m.IncomeBase,m.IncomeTax,m.StampTax,m.Garnishment,m.Deductions,m.Net);
+        }
         if(id==ModuleId.HalkEgitimEmekliUstaOgretici)
         {
             var e=Registry.Resolve<EmekliHalkEgitimPayrollModule>(id).Calculate(new(input.DayHours,input.DykHours,input.Garnishment),
@@ -55,6 +65,11 @@ public static class PayrollCores
     public static CalendarResult Calendar(ModuleId id,int year,int month,DateTime? start,DateTime? end,decimal day,decimal dyk)
     {
         if(id==ModuleId.TemelEgitim)return TeacherCalendar.CalculateMonth(year,month,start,end,day,dyk);
+        if(id==ModuleId.MeslekiEgitim)
+        {
+            var m=MeslekiEgitimCalendar.CalculateMonth(year,month,start,end,day,dyk);
+            return new(m.CalendarDays,m.PremiumDays,m.MissingDays);
+        }
         if(id==ModuleId.HalkEgitimEmekliUstaOgretici)
         {
             var e=EmekliHalkEgitimCalendar.CalculateMonth(year,month,start,end,day,dyk);

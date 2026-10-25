@@ -5,6 +5,7 @@
     <ProjectReference Include="../Hakedis.DinOgretimi.Core/Hakedis.DinOgretimi.Core.csproj" />
     <ProjectReference Include="../Hakedis.HalkEgitim.Core/Hakedis.HalkEgitim.Core.csproj" />
     <ProjectReference Include="../Hakedis.EmekliHalkEgitim.Core/Hakedis.EmekliHalkEgitim.Core.csproj" />
+    <ProjectReference Include="../Hakedis.MeslekiEgitim.Core/Hakedis.MeslekiEgitim.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

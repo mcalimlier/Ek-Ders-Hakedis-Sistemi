@@ -5,6 +5,7 @@
     <Project Path="src/Hakedis.DinOgretimi.Core/Hakedis.DinOgretimi.Core.csproj" />
     <Project Path="src/Hakedis.HalkEgitim.Core/Hakedis.HalkEgitim.Core.csproj" />
     <Project Path="src/Hakedis.EmekliHalkEgitim.Core/Hakedis.EmekliHalkEgitim.Core.csproj" />
+    <Project Path="src/Hakedis.MeslekiEgitim.Core/Hakedis.MeslekiEgitim.Core.csproj" />
     <Project Path="src/Hakedis.Storage/Hakedis.Storage.csproj" />
     <Project Path="src/Hakedis.TemelEgitim.Core/Hakedis.TemelEgitim.Core.csproj" />
   </Folder>

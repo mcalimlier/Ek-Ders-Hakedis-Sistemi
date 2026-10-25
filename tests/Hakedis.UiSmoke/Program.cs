@@ -282,6 +282,7 @@ internal static class Program
         DinOgretimiChecks.Run(output,Capture);
         HalkEgitimChecks.Run(output,Capture);
         RetiredHalkChecks.Run(output,Capture);
+        MeslekiEgitimChecks.Run(output,Capture);
         LayoutSettingsChecks.Run(output,Capture);
         SchoolHistoryChecks.Run(output,Capture);
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }

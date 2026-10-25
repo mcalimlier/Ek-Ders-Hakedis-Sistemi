@@ -51,6 +51,10 @@ onaylayarak silmeniz gerekir. Vazgeç seçimi mevcut tercihi değiştirmez.
 Bu düğme normal öğretmenlerde ve tek modüllü aylarda görünmez.
 
 Aylık Ders Bilgileri kartının en üstünden modül, DÖNEM (ay adı) ve YIL seçin.
+Mesleki Eğitim Merkezi Ücretli Öğretmen modülü ayrı çekirdekle hazırdır.
+Yeni öğretmen olduğunda Veri Girişi'nden bu modüle kaydedebilirsiniz.
+Normal ücretli öğretmenlerin ortak sabitleri kullanılır; eski Excel'deki
+katsayı veya kişiler güncel kayıtlarınıza aktarılmamıştır.
 Halk Eğitim Merkezi Usta Öğretici modülü emekli olmayan usta öğreticiler
 için ayrı hesaplama çekirdeğiyle kullanılabilir. Kişi, aylık ders ve hakediş
 panellerinde bu modülü seçin. SGK işyeri profili öğretmenlerden ayrıdır;

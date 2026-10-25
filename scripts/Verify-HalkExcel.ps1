@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$Workbook,[Parameter(Mandatory=$true)][string]$Output,[double]$BaselineHours=60,[string]$ReferencePeriod='')
+param([Parameter(Mandatory=$true)][string]$Workbook,[Parameter(Mandatory=$true)][string]$Output,[double]$BaselineHours=60,[string]$ReferencePeriod='',[string]$PeriodMonthCell='E38',[string]$PeriodYearCell='F38')
 $ErrorActionPreference='Stop'
 $excel=$null;$book=$null
 $sourcePath=(Resolve-Path -LiteralPath $Workbook).Path
@@ -22,12 +22,13 @@ try {
         $result+=$row
     }
     $months=@('OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN','TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK')
-    $sourceMonth=[Array]::IndexOf($months,[string]$inputSheet.Range('E38').Value2)+1
+    $sourceMonth=[Array]::IndexOf($months,[string]$inputSheet.Range($PeriodMonthCell).Value2)+1
     if($sourceMonth -lt 1){throw 'Source period month is unknown.'}
-    $sourcePeriod='{0:D4}-{1:D2}' -f [int]$inputSheet.Range('F38').Value2,$sourceMonth
+    $sourcePeriod='{0:D4}-{1:D2}' -f [int]$inputSheet.Range($PeriodYearCell).Value2,$sourceMonth
     if($ReferencePeriod -ne '' -and $ReferencePeriod -notmatch '^\d{4}-(0[1-9]|1[0-2])$'){throw 'Reference period format must be YYYY-MM.'}
     $effectivePeriod=if($ReferencePeriod -eq ''){$sourcePeriod}else{$ReferencePeriod}
-    @{Method='Microsoft Excel CalculateFullRebuild; read-only source; no save';SourcePeriod=$sourcePeriod;SourcePeriodCell=$sourcePeriod;Period=$effectivePeriod;Cases=$result} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $Output -Encoding utf8
+    $parameters=@{Coefficient=[double]$payroll.Range('P3').Value2;Indicator=[double]$payroll.Range('R4').Value2;IncomeExemption=[double]$payroll.Range('M3').Value2;StampExemption=[double]$payroll.Range('M2').Value2}
+    @{Method='Microsoft Excel CalculateFullRebuild; read-only source; no save';SourcePeriod=$sourcePeriod;SourcePeriodCell=$sourcePeriod;Period=$effectivePeriod;Parameters=$parameters;Cases=$result} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $Output -Encoding utf8
     Write-Output "$($result.Count) anonymous Excel scenarios recalculated."
 } finally {
     if($book){$book.Close($false)}

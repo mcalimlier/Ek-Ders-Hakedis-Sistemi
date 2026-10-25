@@ -1,4 +1,16 @@
-# Modül adları güncellendi — 25 Ekim 2026
+# Tamamlanan iş — 25 Ekim 2026: Mesleki Eğitim Merkezi Ücretli Öğretmen
+
+- Eski dosyadan bağımsız Hakedis.MeslekiEgitim.Core eklendi; yalnız Contracts'a başvurur. Kendi mali/gün sözleşmeleri vardır. Mevcut MeslekiEgitim kimliği korunarak tam adla açıldı; katalog/PayrollCores/proje/çözüm bağlantıları tamamlandı. Mali sürüm mesleki-egitim.excel-2026-01.v1, SGK gün sürümü mesleki-egitim.sgk-yan-bilgi.v1.
+- Dosya adında Ocak 2025, içeride E37:F37 Ocak 2026 ve katsayı 1,387871 var. Kaynak mali satırları I7:AA35 aynı formüldedir. Kaynak salt okunur Excel CalculateFullRebuild ile 50 senaryoda karşılaştırıldı; fixture kendi Parameters alanında eski katsayıyı/istisnaları taşır. Eski katsayı programın ortak sabitlerine aktarılmaz; yeni modül mevcut normal ücretli öğretmen ortak sabitlerini kullanır.
+- Kullanıcı burada güncel öğretmen olmadığını söyledi; eski kişi veya aylık giriş içe aktarılmadı, gerçek bordro oluşturulmadı. Yeni öğretmen olduğunda ilgili modülden kaydedilip hesaplanabilir. Ortak ücretli öğretmen SGK profili ve belge 13 kullanılır; emekli profili/sabitleri ayrıdır. Kişi/ay tek bordro denetimi devam eder. Eski bildirge yardımcı takvimi yerine kullanıcı talimatındaki kapsayıcı giriş/çıkış gün kuralı uygulanır.
+- 227/227 Release birim testi başarılı: artifacts/mesleki-all-tests-final.log. Kaynak parametreleriyle 50 senaryo ve güncel ortak katsayıyla 51 saat/9.674,28 TL net ayrı doğrulandı. Kişisel bordro testinde dönem açıkça Eylül 2026 seçilerek güncel varsayılan aydan bağımsızlaştırıldı; ürün davranışı değiştirilmedi.
+- WPF bütün eski ve yeni akışlar başarılı: artifacts/mesleki-ui.log, artifacts/ui-mesleki-final; binding hatası yok. Modül/kayıt/aylık/hakediş, üç PDF, kişisel PDF/klasör, ortak SGK profili ve XML/XSD doğrulandı. Debug/Release WPF sıfır hata/uyarı: mesleki-debug-build.log ve mesleki-ui-build.log. Güncel EXE src/Hakedis.App/bin/Debug/net10.0-windows/EDHS.exe.
+- Bağımsız artifacts/verify-mesleki.py: işlem öncesindeki 30 gerçek veri dosyasının tüm hashleri/dosya listesi ve kaynak Excel aynı. 4 PDF tek sayfa, güncel katsayı ve net doğru; XML belge 13, Eylül 2026 için 7 prim/23 eksik gün ve özgün XSD doğru. Gerçek SGK yüklemesi/baskı yapılmadı. Kaynak kişiler, özel inceleme/veri manifesti Git dışında.
+- Doküman docs/MESLEKI_EGITIMI.md; plan docs/superpowers/plans/2026-10-25-mesleki-egitim-core.md. Yeni ZIP üretilmedi. Kaynaklar yerel Git kaydına alınır; push yapılmaz.
+
+---
+
+# Önceki güncelleme — 25 Ekim 2026: Modül adları
 
 - Kullanıcı isteğiyle Din Öğretimi adı **Din Öğretimi Ücretli Öğretmen**, Temel Eğitim adı **Temel Eğitim Ücretli Öğretmen** oldu. Merkezi katalog güncellendi; seçimler, üst başlık, öğretmen listesi, kayıtlı hakedişler, görev geçmişi/ödeme tercihi ve yeni kişisel PDF'ler aynı adları alır. Kullanım/README metinleri de güncellendi.
 - Teknik ModuleId değerleri, kural sürümleri ve veri/çıktı klasör anahtarları değişmedi; veri taşıma veya arşiv yeniden yazımı yapılmadı. Uzun modül adları için Çıktı listesinin modül sütunu 150 DIP ve ortalı/satır kaydırmalı hale getirildi; tam ad araç ipucunda da görülebilir.

@@ -35,7 +35,7 @@ public sealed class ModuleRegistry
             ModuleId.DinOgretimi => "Din Öğretimi Ücretli Öğretmen",
             ModuleId.ImamHatipLisesi => "İmam Hatip Lisesi",
             ModuleId.Ortaogretim => "Ortaöğretim",
-            ModuleId.MeslekiEgitim => "Mesleki Eğitim",
+            ModuleId.MeslekiEgitim => "Mesleki Eğitim Merkezi Ücretli Öğretmen",
             ModuleId.HalkEgitimEmekliUstaOgretici => "Halk Eğitim Merkezi Emekli Usta Öğretici",
             _ => "Halk Eğitim Merkezi Usta Öğretici"
         }, modules.ContainsKey(id))).ToArray();

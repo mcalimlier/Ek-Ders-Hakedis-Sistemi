@@ -8,7 +8,7 @@ Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. 
 
 - Windows için kendi .NET çalışma ortamını içeren EXE/ZIP yayınlanır. Mevcut yayın betiği taşınabilir paket üretir; kurulum sihirbazı henüz üretilmez.
 - SQL/SQLite ve veri tabanı sunucusu kullanılmaz.
-- Temel Eğitim Ücretli Öğretmen, Din Öğretimi Ücretli Öğretmen, Halk Eğitim Merkezi Usta Öğretici ve Halk Eğitim Merkezi Emekli Usta Öğretici ayrı hesaplama çekirdekleriyle kullanılabilir. Diğer eğitim modülleri daha sonra kendi kurallarıyla eklenir.
+- Temel Eğitim Ücretli Öğretmen, Din Öğretimi Ücretli Öğretmen, Mesleki Eğitim Merkezi Ücretli Öğretmen, Halk Eğitim Merkezi Usta Öğretici ve Halk Eğitim Merkezi Emekli Usta Öğretici ayrı hesaplama çekirdekleriyle kullanılabilir. Diğer eğitim modülleri daha sonra kendi kurallarıyla eklenir.
 - OEHS projesinin `feature/official-payment-document-templates` dalındaki renk ve kart düzeni referans alınır.
 - Bordro, Banka Listesi ve Personel Bildirimi çıktı akışındadır. Bordro tek yatay A4'e okunaklı sığmıyorsa açık hata verilir; satırlar düşürülmez.
 - Kişisel bordro talep üzerine; diğer bilgi amaçlı Excel çıktıları isteğe bağlıdır.
@@ -35,6 +35,8 @@ Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları
 [Halk Eğitim Merkezi Usta Öğretici çekirdeği ve Excel doğrulaması](docs/HALK_EGITIMI.md).
 
 [Emekli Usta Öğretici çekirdeği, ayrı dönem sabitleri ve SGK belge 02](docs/EMEKLI_HALK_EGITIMI.md).
+
+[Mesleki Eğitim Merkezi Ücretli Öğretmen çekirdeği ve eski/güncel sabit ayrımı](docs/MESLEKI_EGITIMI.md).
 
 Kişisel Bordro ekranında modül ve ay/yıl seçilerek kayıtlı hakedişten tek öğretmen için A4 PDF alınır; Klasör düğmesi kaydedilen konumu açar. Sol menüde temel işlemler ve Kişisel Bordro/Dönem Sabitleri grupları ayrıdır. Öğretmen Listesi adı, sabitlerin hizaları ve simgelerden ayrı tutar alanları günceldir; sol altta kullanıcı imzası bulunur.
 
