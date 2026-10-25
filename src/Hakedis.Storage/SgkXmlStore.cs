@@ -5,10 +5,12 @@ namespace Hakedis.Storage;
 
 public sealed class SgkXmlStore(string root)
 {
-    private static ModuleId Group(ModuleId module)=>module==ModuleId.HalkEgitimUstaOgretici?module:ModuleId.TemelEgitim;
-    private string PathName(ModuleId module)=>Path.Combine(root,Group(module)==ModuleId.TemelEgitim?"SgkXml-Ogretmenler.json":"SgkXml-UstaOgreticiler.json");
+    private static ModuleId Group(ModuleId module)=>module is ModuleId.HalkEgitimUstaOgretici or ModuleId.HalkEgitimEmekliUstaOgretici?module:ModuleId.TemelEgitim;
+    private string PathName(ModuleId module)=>Path.Combine(root,Group(module) switch {ModuleId.HalkEgitimUstaOgretici=>"SgkXml-UstaOgreticiler.json",ModuleId.HalkEgitimEmekliUstaOgretici=>"SgkXml-EmekliUstaOgreticiler.json",_=>"SgkXml-Ogretmenler.json"});
     public SgkXmlSettings Read(ModuleId module)
     {
+        if(module==ModuleId.HalkEgitimEmekliUstaOgretici && !File.Exists(PathName(module)))
+            return new(Read(ModuleId.HalkEgitimUstaOgretici).Workplace with {DocumentType="02"},[]);
         var data=File.Exists(PathName(module))?new JsonDraftStore().Load<SgkXmlSettings>(PathName(module),Group(module),"sgk-xml.v1").Data:new(new(),[]);
         if(data.Workplace is null || data.Names is null || data.Names.Any(n=>n is null))throw new InvalidDataException("SGK işyeri bilgi dosyası eksik veya tutarsız.");
         var w=data.Workplace;

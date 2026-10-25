@@ -3,20 +3,21 @@ using Hakedis.TemelEgitim.Core;
 
 namespace Hakedis.Storage;
 
-public sealed class CommonConstantsStore(string root)
+public sealed class CommonConstantsStore(string root,ModuleId module=ModuleId.TemelEgitim)
 {
-    private string PathName=>Path.Combine(root,"OrtakSabitler.json");
+    private ModuleId Group=>module==ModuleId.HalkEgitimEmekliUstaOgretici?module:ModuleId.TemelEgitim;
+    private string PathName=>Path.Combine(root,Group==ModuleId.TemelEgitim?"OrtakSabitler.json":"EmekliUstaSabitleri.json");
     private const string Rule="ortak-sabitler.v1";
-    public PeriodValues Read()=>File.Exists(PathName)?new JsonDraftStore().Load<PeriodValues>(PathName,ModuleId.TemelEgitim,Rule).Data:PeriodValues.Source;
+    public PeriodValues Read()=>File.Exists(PathName)?new JsonDraftStore().Load<PeriodValues>(PathName,Group,Rule).Data:PeriodValues.ForModule(Group);
     public void Save(PeriodValues values)
     {
         try
         {
-            _=new TeacherPayrollModule().Calculate(new(0,0,0),new(values.Coefficient,values.Indicator,values.DykMultiplier,
+            _=PayrollCores.Calculate(Group,new(0,0,0),new(values.Coefficient,values.Indicator,values.DykMultiplier,
                 values.EmployeeRate,values.EmployerRate,values.IncomeRate,values.StampRate,values.IncomeExemption,values.StampExemption));
         }
         catch(OverflowException ex){throw new ArgumentException("Dönem sabitleri hesaplama sınırlarını aşıyor; kayıtlı sabitler değiştirilmedi.",ex);}
-        new JsonDraftStore().Save(PathName,new DraftDocument<PeriodValues>(1,ModuleId.TemelEgitim,Rule,DateTimeOffset.UtcNow,values));
+        new JsonDraftStore().Save(PathName,new DraftDocument<PeriodValues>(1,Group,Rule,DateTimeOffset.UtcNow,values));
     }
 }
 

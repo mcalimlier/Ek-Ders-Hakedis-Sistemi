@@ -55,6 +55,11 @@ Halk Eğitim Merkezi Usta Öğretici modülü emekli olmayan usta öğreticiler
 için ayrı hesaplama çekirdeğiyle kullanılabilir. Kişi, aylık ders ve hakediş
 panellerinde bu modülü seçin. SGK işyeri profili öğretmenlerden ayrıdır;
 emekli usta öğreticilerin farklı belge türü ve hesabı bu modülde kullanılmaz.
+Emekliler için Halk Eğitim Merkezi Emekli Usta Öğretici modülünü seçin.
+Bu modül Dönem Sabitleri panelindeki ayrı Emekli Usta Öğretici kartını
+kullanır; ilk prim oranları 0,075 ve 0,2475'tir. SGK belge türü 02 ve
+profil dosyası ayrıdır. Ortak sabitler normal personel içindir; eski
+hakedişler kendi kayıtlı sabitleriyle korunur.
 Listeden o modülün öğretmenini çağırın; saatleri ve kesintiyi girin.
 Kaydet kalıcı kayıt yapar. Mevcut aylık
 kayıt seçildiğinde Düzenle ile alanları açın, sonra Kaydet'e basın.

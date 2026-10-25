@@ -29,5 +29,6 @@ Yeni modül entegrasyonu yalnız katalogda etkinleştirme değildir. Mevcut Payr
 25 Ekim 2026: Halk Eğitim Merkezi Usta Öğretici için Hakedis.HalkEgitim.Core eklendi. Kendi mali/gün sözleşmeleri ve sürümleriyle çalışır; diğer çekirdeklere başvurmaz. PayrollCores alanları mevcut arşiv/PDF/XML biçimine eşler. Bordro başlığı ve ünvan modüle göre seçilir; usta öğretici işyeri profili öğretmenlerden ayrı kalır. Kaynak Excel ile 50 anonim senaryo karşılaştırılır. Ayrıntılar: [Halk Eğitim](HALK_EGITIMI.md).
 
 Doğrulama: `dotnet test tests/Hakedis.Tests -c Release`.
+Emekli Halk Eğitim entegrasyonu: Hakedis.EmekliHalkEgitim.Core bağımsızdır; sabit deposu/kartı ve SGK profili ayrıdır. Shell seçilen modüle göre doğru sabit düzenleyicisini bağlar; arşiv düzenlemesinde kayıtlı sabitler korunur. Ayrıntılar: [Emekli Usta Öğretici](EMEKLI_HALK_EGITIMI.md).
 Derleme: `dotnet build UcretliEkDers.slnx -c Release`.
 EXE/ZIP: `powershell -File scripts/Publish-Windows.ps1`.

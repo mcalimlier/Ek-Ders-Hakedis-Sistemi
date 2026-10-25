@@ -9,6 +9,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     private Hakedis.Storage.ArchivedPayment? archiveEdit;
     private readonly Hakedis.Storage.PaymentArchiveStore archiveStore;
     public CommonConstantsViewModel CommonConstants {get;}
+    public CommonConstantsViewModel RetiredConstants {get;}
     public OutputsViewModel Outputs {get;}
     public PersonalPayrollViewModel Personal {get;}
     public bool CanUseEntry=>!Calculation.IsArchiveEditing;
@@ -37,7 +38,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     {
         new Hakedis.Storage.PayrollEditStore(teacherPath).Recover();
         var root=System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(teacherPath))!;
-        Settings=new(root);CommonConstants=new(root);Outputs=new(root);Personal=new(root);archiveStore=new(root);
+        Settings=new(root);CommonConstants=new(root);RetiredConstants=new(root,ModuleId.HalkEgitimEmekliUstaOgretici);Outputs=new(root);Personal=new(root);archiveStore=new(root);
         Teachers = new(teacherPath, activeModule); Registration = new(teacherPath, activeModule);
         registrationModule = listModule = Workspace.Modules.Single(m=>m.Id==activeModule);
         Monthly = new(teacherPath); Calculation = new(teacherPath);
@@ -47,7 +48,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         Monthly.PropertyChanged += PeriodChanged; Calculation.PropertyChanged += PeriodChanged;
         Monthly.AdoptConstants(CommonConstants.Editor);Calculation.AdoptConstants(CommonConstants.Editor);
         Calculation.PaymentCreated+=Outputs.Reload;
-        CommonConstants.Saved+=()=>{if(!Calculation.IsArchiveEditing)Calculation.AdoptConstants(CommonConstants.Editor);Monthly.AdoptConstants(CommonConstants.Editor);};
+        CommonConstants.Saved+=ApplyConstantEditors;RetiredConstants.Saved+=ApplyConstantEditors;
         Workspace.PropertyChanged += WorkspaceChanged;
     }
     private static bool SamePeriod(PeriodWorkspace a,PeriodWorkspace b)=>a.SelectedModule.Id==b.SelectedModule.Id && a.Year==b.Year && a.Month==b.Month;
@@ -56,8 +57,10 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     private void PeriodChanged(object? sender,PropertyChangedEventArgs e)
     {
         if(e.PropertyName==nameof(PeriodWorkspace.Constants) && sender is PeriodWorkspace source && !source.IsArchiveEditing)
-            source.AdoptConstants(CommonConstants.Editor);
+            source.AdoptConstants(EditorFor(source));
     }
+    private PeriodConstantsEditor EditorFor(PeriodWorkspace workspace)=>workspace.SelectedModule.Id==ModuleId.HalkEgitimEmekliUstaOgretici?RetiredConstants.Editor:CommonConstants.Editor;
+    private void ApplyConstantEditors(){foreach(var w in new[]{Monthly,Calculation})if(!w.IsArchiveEditing)w.AdoptConstants(EditorFor(w));}
     private void RefreshOther(PeriodWorkspace source)
     {Teachers.Reload();var other=Other(source);other.RefreshTeachers();if(SamePeriod(source,other))other.AcceptSavedSelection();}
     private void WorkspaceChanged(object? sender, PropertyChangedEventArgs e)
@@ -172,7 +175,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     }
     public void BeginArchiveEdit()
     {
-        if(Calculation.HasActiveWork || Monthly.HasHybridChanges || Registration.IsEditingRecord || CommonConstants.IsEditing ||
+        if(Calculation.HasActiveWork || Monthly.HasHybridChanges || Registration.IsEditingRecord || CommonConstants.IsEditing || RetiredConstants.IsEditing ||
            Registration.HasDraft)
             throw new InvalidOperationException("Aktif bir çalışma veya veri girişi var. Önce hakedişi oluşturun ya da Çalışmayı temizle düğmesini kullanın.");
         var record=Outputs.ReadSelected();archiveEdit=record;Calculation.LoadArchive(record);Navigate("Calculation");
@@ -186,7 +189,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     }
     public void CancelArchiveEdit(){if(archiveEdit is null)return;EndArchiveEdit();Outputs.ShowStatus("Vazgeçildi. Eski hakediş kaydı değiştirilmedi.");}
     private void EndArchiveEdit()
-    {archiveEdit=null;Calculation.ClearWork();Calculation.AdoptConstants(CommonConstants.Editor);Outputs.Reload();Navigate("Outputs");}
+    {archiveEdit=null;Calculation.ClearWork();Calculation.AdoptConstants(EditorFor(Calculation));Outputs.Reload();Navigate("Outputs");}
     public void UseSelectedTeacher()
     {
         var record = Teachers.Selected ?? throw new InvalidOperationException("Önce öğretmen seçin.");

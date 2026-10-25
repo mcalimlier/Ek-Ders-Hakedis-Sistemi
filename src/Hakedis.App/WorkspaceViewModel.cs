@@ -85,8 +85,10 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         if (!int.TryParse(Year, out var year) || year < 1900 || year > 9999 || !int.TryParse(Month, out var month) || month < 1 || month > 12)
             throw new ArgumentException("Geçerli yıl ve 1–12 arasında ay girin.");
         if (string.IsNullOrWhiteSpace(Person)) throw new ArgumentException("Personel adı veya kayıt etiketi girin.");
+        var defaults=PeriodValues.ForModule(CurrentModule());
         var parameters = TeacherParameters.SourceSeptember2026 with
         {
+            EmployeeRate=defaults.EmployeeRate,EmployerRate=defaults.EmployerRate,
             Coefficient = Number(Coefficient, "Katsayı"), Indicator = Number(Indicator, "Gösterge"),
             IncomeExemptBase = Number(IncomeExemption, "GV istisnası"), StampExemptBase = Number(StampExemption, "DV istisnası")
         };

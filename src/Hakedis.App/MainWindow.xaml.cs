@@ -41,7 +41,7 @@ public partial class MainWindow : Window
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
         if(shell.Monthly.HasHybridChanges || shell.Calculation.HasHybridChanges || shell.Calculation.IsArchiveEditing ||
-           shell.Registration.HasDraft || shell.Registration.IsEditingRecord || shell.CommonConstants.IsEditing ||
+           shell.Registration.HasDraft || shell.Registration.IsEditingRecord || shell.CommonConstants.IsEditing || shell.RetiredConstants.IsEditing ||
            shell.Teachers.HasChanges || shell.Outputs.HasDetailsChanges)
             e.Cancel=!ConfirmArchive("Kaydedilmemiş giriş veya tamamlanmamış düzenleme var.\nProgram kapatılırsa bu değişiklikler kaybolur; kayıtlı dosyalar korunur.\nYine de kapatılsın mı?","Kaydedilmemiş değişiklikler");
         base.OnClosing(e);
@@ -104,6 +104,8 @@ public partial class MainWindow : Window
     private void EditMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,shell.Monthly.BeginEdit);
     private void SaveConstants_Click(object sender,RoutedEventArgs e)
     {try{shell.CommonConstants.ToggleSave();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.CommonConstants.ShowError(ex.Message);}}
+    private void SaveRetiredConstants_Click(object sender,RoutedEventArgs e)
+    {try{shell.RetiredConstants.ToggleSave();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.RetiredConstants.ShowError(ex.Message);}}
     private void ClearWork_Click(object sender,RoutedEventArgs e)
     {
         if(MessageBox.Show(this,"Ekrandaki çalışma temizlensin mi? Kaydedilmemiş girişler bırakılır; kayıtlı hakedişler ve aylık dosyalar silinmez.","Çalışmayı temizle",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)

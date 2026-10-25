@@ -243,7 +243,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     {
         new PayrollEditStore(teacherPath).Recover();
         var constants=ValidatedConstants();
-        new CommonConstantsStore(System.IO.Path.GetDirectoryName(teacherPath)!).Save(constants);Status="Ortak dönem sabitleri kaydedildi.";Notify();
+        new CommonConstantsStore(System.IO.Path.GetDirectoryName(teacherPath)!,SelectedModule.Id).Save(constants);Status="Dönem sabitleri kaydedildi.";Notify();
     }
     private static void ValidateInput(MonthlyInput input)
     {

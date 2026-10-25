@@ -15,7 +15,7 @@ public sealed class MonthlyPayrollStore(string root)
     public MonthlyDocument Read(ModuleId module, int year, int month)
     {
         var path = FilePath(module,year,month);
-        if (!File.Exists(path)) return new(year,month,PeriodValues.Source,[]);
+        if (!File.Exists(path)) return new(year,month,PeriodValues.ForModule(module),[]);
         var doc = store.Load<MonthlyDocument>(path,module,Rule).Data;
         Validate(doc,year,month); return doc;
     }

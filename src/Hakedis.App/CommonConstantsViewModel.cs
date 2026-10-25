@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Hakedis.Storage;
+using Hakedis.Contracts;
 
 namespace Hakedis.App;
 
@@ -10,10 +11,10 @@ public sealed class CommonConstantsViewModel : INotifyPropertyChanged
     public bool IsEditing {get;private set;}
     public bool IsReadOnly=>!IsEditing;
     public string ButtonText=>IsEditing?"Dönem sabitlerini değiştir":"Güncelle";
-    public string Status {get;private set;}="Bu sabitler tüm modüllerin yeni ve aktif hesaplarında kullanılır. Kayıtlı hakedişler kendi sabitlerini korur.";
+    public string Status {get;private set;}="Bu ortak sabitler normal öğretmen ve usta öğreticilerin aktif ve sonraki hesaplarında kullanılır. Emekli usta öğreticilerin kartı ayrıdır. Kayıtlı hakedişler değişmez.";
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action? Saved;
-    public CommonConstantsViewModel(string root){store=new(root);Editor=new(store.Read());}
+    public CommonConstantsViewModel(string root,ModuleId module=ModuleId.TemelEgitim){store=new(root,module);Editor=new(store.Read());if(module==ModuleId.HalkEgitimEmekliUstaOgretici)Status="Bu sabitler yalnız emekli usta öğreticilerin aktif ve sonraki hesaplarında kullanılır. Kayıtlı hakedişler değişmez.";}
     public void ToggleSave()
     {
         if(!IsEditing){IsEditing=true;Status="Ortak sabitleri düzenleyin, sonra Dönem sabitlerini değiştir düğmesiyle kaydedin.";}

@@ -1,4 +1,17 @@
-# Test verisi eklendi — 25 Ekim 2026: Halk Eğitim personeli
+# Tamamlanan iş — 25 Ekim 2026: Emekli Usta Öğretici
+
+- Halk Eğitim Merkezi Emekli Usta Öğretici modülü ayrı Hakedis.EmekliHalkEgitim.Core projesiyle eklendi. Yalnız Contracts'a başvurur; diğer çekirdekleri çağırmaz. Enum sona eklendi, önceki değerler değişmedi. Mali sürüm emekli-halk-egitim.excel-2026-09.v1, SGK gün sürümü emekli-halk-egitim.sgk-yan-bilgi.v1.
+- Kullanıcı başlıktaki Eylül 2026'nın geçerli olduğunu açıkça teyit etti. Kaynakta VERİ GİRİŞİ!E38 eski Ağustos değerinde; uygulama ve test girişinin dönemi Eylül 2026'dır. Fixture bunu Period=2026-09 ve SourcePeriodCell=2026-08 olarak ayırır. Kaynak Excel değiştirilmedi.
+- Emekli iştirakçi %7,5, işveren %24,75. Dönem Sabitleri panelinin altına ayrı dokuz alanlı Emekli Usta Öğretici kartı eklendi; EmekliUstaSabitleri.json normal OrtakSabitler.json'dan ayrıdır. Gri/beyaz kilit, Güncelle/kaydet, aktif modüle göre yönlendirme, arşiv sabitlerini dondurma ve taslak/kapanış koruması var. Normal parametre değişiklikleri emekli hesaba karışmaz.
+- Kaynak başlığı ( EMEKLİ USTA ÖĞRETİCİ) ve ünvan kullanılır. PDF prim başlıkları kullanılan oranlardan gelir; emekli bordrosunda eski %14/%21,75 yazıları kalmaz. Kullanıcı SGK belge türünü 02 olarak teyit etti. Emekli profil dosyası ayrıdır; dosya yoksa normal usta profilinin ortak işyeri bilgileri belge türü 02 ile başlangıç alınır, kişi isim tercihleri kopyalanmaz. Eski profiller değişmez.
+- 221/221 Release birim testi başarılı (artifacts/retired-all-tests.log); ayrı çekirdek 50 anonim Excel senaryosuyla eşleşti. Gerçek WPF bütün önceki akışlar ve yeni emekli akışı başarılı (artifacts/retired-ui.log, artifacts/ui-retired-final), binding hatası yok. Ayrı kartta düzenleme/kilitleme, normal/emekli oran ayrımı, eski arşiv, üç PDF/kişisel PDF ve belge 02/XML/XSD doğrulandı. Debug ve Release WPF derlemeleri sıfır hata/uyarı (artifacts/retired-debug-build.log, retired-ui-build.log).
+- Test için kaynakta tek kişi, Eylül 2026'ya 12 saatle eklendi. Mevcut kayıtlarda TC eşleşmesi yoktu; toplam kişi 17 oldu. Kaynak IBAN'da TR sonrası harf vardı, ilk içe aktarma doğrulamada kayıt yapmadan durdu. Kullanıcı düzeltmeyi denedi, sonrasında açıkça "Şimdilik boş kalsın" dedi. Kişi IBAN boş kaydedildi; ödeme öncesi doğru IBAN tamamlanmalı. Hiçbir hane tahmin edilmedi, gerçek bordro oluşturulmadı. Kaynak değişmedi.
+- Gerçek veri yedeği artifacts/retired-backup-path.txt (işlem öncesi 27 dosya). Bağımsız artifacts/verify-retired.py: önceki 16 kişinin bütün alanları, eski aylık/arşiv/sabit/SGK dosyaları ve kaynak hashleri aynı; yeni kişi/12 saat/aylık prim oranları doğru. 4 tek sayfa PDF, 2.448,35 TL net, %7,5/%24,75 başlıkları; XML özgün XSD, Eylül 2026, belge 02, sentetik örnekte 2 prim/28 eksik gün doğrulandı. Gerçek kişiyi ve özel içe aktarma/yedek dosyalarını Git'e ekleme.
+- Güncel EXE src/Hakedis.App/bin/Debug/net10.0-windows/EDHS.exe. Yeni dağıtım ZIP'i üretilmedi. Belgeler docs/EMEKLI_HALK_EGITIMI.md ve docs/superpowers/plans/2026-10-25-retired-halk-core.md. Kaynaklar yerel Git'e kaydedilir, push yapılmaz.
+
+---
+
+# Önceki test verisi — 25 Ekim 2026: Halk Eğitim personeli
 
 - Kullanıcının açık isteğiyle kaynak Excel'deki 4 kişi mevcut Halk Eğitim Merkezi Usta Öğretici modülüne eklendi. Kaynağın kendi dönemi Eylül 2026 olduğu için 60 / 27 / 18 / 0 saat, toplam 105 saat o aya kaydedildi. Dosya adındaki Ekim dikkate alınarak dönem tahmini yapılmadı.
 - Önceden kayıtlı kişiyle TC eşleşmesi yoktu. Toplam tekil kişi sayısı 12'den 16'ya çıktı. Kaynağın iki boş IBAN'ı boş bırakıldı; hakediş oluşturabilmek için kullanıcı bu bilgileri tamamlamalıdır. İsim, TC, IBAN, okul, meslek kodu ve normal giriş/çıkış tarihleri kaynaktaki gibi alındı; kaldırılmış alanlar geri getirilmedi.

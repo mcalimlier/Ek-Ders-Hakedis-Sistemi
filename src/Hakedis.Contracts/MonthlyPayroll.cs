@@ -6,5 +6,6 @@ public sealed record PeriodValues(decimal Coefficient, decimal Indicator, decima
     decimal StampRate = .00759m, decimal DykMultiplier = 2m)
 {
     public static PeriodValues Source => new(1.575512m,140m,28075.5m,33030m);
+    public static PeriodValues ForModule(ModuleId module)=>module==ModuleId.HalkEgitimEmekliUstaOgretici?Source with {EmployeeRate=.075m,EmployerRate=.2475m}:Source;
 }
 public sealed record MonthlyDocument(int Year, int Month, PeriodValues Constants, MonthlyInput[] Entries);

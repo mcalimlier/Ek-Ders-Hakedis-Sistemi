@@ -22,14 +22,14 @@ public static class PaymentReports
             $"Uygulanan oranlar · SGK iştirakçi: {Number(p.EmployeeRate*100)}% · İşveren: {Number(p.EmployerRate*100)}% · Gelir: {Number(p.IncomeRate*100)}% · Damga: {Number(p.StampRate*100)}%"};
         var h1=new[]{ExcelHeadings.Sequence,ExcelHeadings.BordroB6,ExcelHeadings.BordroC6,ExcelHeadings.BordroE6,
             ExcelHeadings.BordroF5,ExcelHeadings.BordroG5,ExcelHeadings.BordroH5,ExcelHeadings.BordroM5,ExcelHeadings.BordroL5,
-            ExcelHeadings.BordroJ5,ExcelHeadings.BordroI5,ExcelHeadings.BordroK5,ExcelHeadings.BordroN6,ExcelHeadings.BordroO6,ExcelHeadings.BordroP6};
+            ExcelHeadings.BordroJ5,ExcelHeadings.BordroI5,ExcelHeadings.BordroK5,ExcelHeadings.BordroN6,ModuleLabels.EmployerContributionHeader(p.EmployerRate),ExcelHeadings.BordroP6};
         var a=rows.Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,ModuleLabels.Role(selectedModule),r.Teacher.IdentityNumber,
             Number(r.Input.DayHours),Number(r.Input.DykHours),Number(r.Input.DayHours+r.Input.DykHours),Number(r.Result.DayRate),Number(r.Result.DykRate),
             Money(r.Result.DayGross),Money(r.Result.DykGross),r.Result.PremiumDays.ToString(),Money(r.Result.Gross),Money(r.Result.EmployerPremium),Money(r.Result.Accrual)}).ToArray();
         var total1=new[]{"TOPLAM","","","",Number(rows.Sum(r=>r.Input.DayHours)),Number(rows.Sum(r=>r.Input.DykHours)),Number(rows.Sum(r=>r.Input.DayHours+r.Input.DykHours)),"","",
             Money(rows.Sum(r=>r.Result.DayGross)),Money(rows.Sum(r=>r.Result.DykGross)),rows.Sum(r=>r.Result.PremiumDays).ToString(),Money(rows.Sum(r=>r.Result.Gross)),Money(rows.Sum(r=>r.Result.EmployerPremium)),Money(rows.Sum(r=>r.Result.Accrual))};
         var h2=new[]{ExcelHeadings.Sequence,ExcelHeadings.BordroB6,ExcelHeadings.BordroE6,ExcelHeadings.BordroQ5,ExcelHeadings.BordroR5,
-            ExcelHeadings.BordroS6,ExcelHeadings.BordroT6,ExcelHeadings.BordroU6,ExcelHeadings.BordroV6,ExcelHeadings.BordroW6,ExcelHeadings.BordroX6,ExcelHeadings.BordroY6,ExcelHeadings.BordroZ6,ExcelHeadings.BordroAA5};
+            ExcelHeadings.BordroS6,ExcelHeadings.BordroT6,ExcelHeadings.BordroU6,ExcelHeadings.BordroV6,ModuleLabels.EmployeeHeader(p.EmployeeRate),ModuleLabels.EmployerHeader(p.EmployerRate),ExcelHeadings.BordroY6,ExcelHeadings.BordroZ6,ExcelHeadings.BordroAA5};
         var b=rows.Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,r.Teacher.IdentityNumber,Money(r.Result.IncomeBase),"0,00",Money(p.IncomeExemption),Money(r.Result.IncomeTax),Money(p.StampExemption),
             Money(r.Result.StampTax),Money(r.Result.EmployeePremium),Money(r.Result.EmployerPremium),Money(r.Input.Garnishment),Money(r.Result.Deductions),Money(r.Result.Net)}).ToArray();
         var total2=new[]{"TOPLAM","","",Money(rows.Sum(r=>r.Result.IncomeBase)),"0,00","",Money(rows.Sum(r=>r.Result.IncomeTax)),"",Money(rows.Sum(r=>r.Result.StampTax)),Money(rows.Sum(r=>r.Result.EmployeePremium)),
