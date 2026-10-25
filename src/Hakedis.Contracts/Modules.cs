@@ -31,8 +31,8 @@ public sealed class ModuleRegistry
     public IReadOnlyList<ModuleDescriptor> Catalog => Enum.GetValues<ModuleId>().Where(id=>id!=ModuleId.ImamHatipLisesi).Select(id =>
         new ModuleDescriptor(id, id switch
         {
-            ModuleId.TemelEgitim => "Temel Eğitim",
-            ModuleId.DinOgretimi => "Din Öğretimi",
+            ModuleId.TemelEgitim => "Temel Eğitim Ücretli Öğretmen",
+            ModuleId.DinOgretimi => "Din Öğretimi Ücretli Öğretmen",
             ModuleId.ImamHatipLisesi => "İmam Hatip Lisesi",
             ModuleId.Ortaogretim => "Ortaöğretim",
             ModuleId.MeslekiEgitim => "Mesleki Eğitim",

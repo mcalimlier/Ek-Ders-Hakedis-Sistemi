@@ -13,8 +13,8 @@ Seçim kaydedilir; bir sonraki açılışta da kullanılır. Pencere, ekran öl�
 ve görev çubuğu için ayrılan alan dikkate alınarak ekranınıza sığdırılır.
 
 VERİ GİRİŞİ
-Temel Eğitim ve Din Öğretimi modülleri kendi hesaplama çekirdekleriyle açıktır.
-Din Öğretimi için ilgili modül seçimlerinden Din Öğretimi'ni seçin.
+Temel Eğitim Ücretli Öğretmen ve Din Öğretimi Ücretli Öğretmen modülleri kendi hesaplama çekirdekleriyle açıktır.
+Din Öğretimi Ücretli Öğretmen için ilgili modül seçimlerinden Din Öğretimi Ücretli Öğretmen'ni seçin.
 Öğretmenler ve aylık hakedişler modüller arasında karışmaz. Dönem sabitleri
 ile ücretli öğretmen SGK işyeri bilgileri ortaktır. Excel'deki gerçek öğretmenler
 kendiliğinden aktarılmaz; kayıt yalnız Veri Girişi panelinden yapılır.

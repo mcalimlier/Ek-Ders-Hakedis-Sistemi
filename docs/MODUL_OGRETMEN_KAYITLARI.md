@@ -10,12 +10,12 @@
 
 ## Geçiş ayının bordrosu
 
-Örnek 25.09.2026 geçişinde Eylül için Temel Eğitim ve Din Öğretimi adaydır. Kullanıcı ödeme modülünü seçer ve ayın toplam saatlerini teyit eder. 117 saat iki modülde kayıtlıysa otomatik 234 yapılmaz. `BillingChoiceStore`, tercih ve hedef aylık girişi aynı iki dosyalı kurtarılabilir işlemde kaydeder. Eski modüldeki aylık girdi silinmez; tercih sonrası o modülün hesap listesine alınmaz. Yalnız bir görev modülü olan sonraki aylarda ek tercih gerekmez.
+Örnek 25.09.2026 geçişinde Eylül için Temel Eğitim Ücretli Öğretmen ve Din Öğretimi Ücretli Öğretmen adaydır. Kullanıcı ödeme modülünü seçer ve ayın toplam saatlerini teyit eder. 117 saat iki modülde kayıtlıysa otomatik 234 yapılmaz. `BillingChoiceStore`, tercih ve hedef aylık girişi aynı iki dosyalı kurtarılabilir işlemde kaydeder. Eski modüldeki aylık girdi silinmez; tercih sonrası o modülün hesap listesine alınmaz. Yalnız bir görev modülü olan sonraki aylarda ek tercih gerekmez.
 
 Bir başka modülde aynı kişi/yıl/ay bordrosu varsa tercih değişikliği engellenir. Yeni bordro ve geçmiş düzenleme, tüm modüller arasında ID/TC + yıl/ay tekilliğini dosya kilidi altında denetler. Mevcut bordro gerektiğinde onaylı düzenleme/silme akışıyla ele alınır. XML seçilen tek bordronun kişilerini kullanır.
 
 ## Veri biçimi ve güvenlik
 
-Yeni yazımlar şema 4'tür; eski şema 1/2/3 okunur. Şema 1'in modülsüz kayıtları Temel Eğitim kabul edilir. Şema 2 ve sonrasında ModuleId zorunludur. Okuma dosyayı değiştirmez; ilk yazmada eski dosya .bak ile korunur. Şema 1/2'nin önceden kaldırılmış alanları yalnız okuma geçişinde temizlenir.
+Yeni yazımlar şema 4'tür; eski şema 1/2/3 okunur. Şema 1'in modülsüz kayıtları Temel Eğitim Ücretli Öğretmen kabul edilir. Şema 2 ve sonrasında ModuleId zorunludur. Okuma dosyayı değiştirmez; ilk yazmada eski dosya .bak ile korunur. Şema 1/2'nin önceden kaldırılmış alanları yalnız okuma geçişinde temizlenir.
 
 Geçmiş koleksiyonu yapısal eşitlik ve savunmalı kopyalar kullanır; tekrar JSON okuması, beklenen-sürüm ve hibrit düzenleme denetimini bozmaz. Yeni kişi/TC oluşturulmaz, görevler kronolojik ve geçerli tarihlerle doğrulanır. Tercih işlemi katalog + hedef aylık dosyayı kalıcı günlükle yazar; yarım kalan işlem açılışta tamamlanır. Başka ekranda değişen kişi veya aylık veriler eski görüntüyle ezilemez.

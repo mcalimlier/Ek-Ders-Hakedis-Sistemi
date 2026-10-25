@@ -1,4 +1,13 @@
-# Tamamlanan iş — 25 Ekim 2026: Emekli Usta Öğretici
+# Modül adları güncellendi — 25 Ekim 2026
+
+- Kullanıcı isteğiyle Din Öğretimi adı **Din Öğretimi Ücretli Öğretmen**, Temel Eğitim adı **Temel Eğitim Ücretli Öğretmen** oldu. Merkezi katalog güncellendi; seçimler, üst başlık, öğretmen listesi, kayıtlı hakedişler, görev geçmişi/ödeme tercihi ve yeni kişisel PDF'ler aynı adları alır. Kullanım/README metinleri de güncellendi.
+- Teknik ModuleId değerleri, kural sürümleri ve veri/çıktı klasör anahtarları değişmedi; veri taşıma veya arşiv yeniden yazımı yapılmadı. Uzun modül adları için Çıktı listesinin modül sütunu 150 DIP ve ortalı/satır kaydırmalı hale getirildi; tam ad araç ipucunda da görülebilir.
+- 221 birim testi ve bütün WPF akışları geçti (artifacts/module-label-tests.log, module-label-ui.log, ui-module-labels); binding hatası yok. Yeni Din kişisel PDF'sinde tam modül adı bağımsız olarak kontrol edildi. Debug ve Release WPF derlemeleri sıfır hata/uyarı: module-label-debug-build.log ve module-label-ui-build.log.
+- İşlem öncesi artifacts/module-label-manifest.json ile alınan **30 gerçek veri dosyasının bütün hashleri ve dosya listesi aynı**. Kullanıcı programı kaydedip kapattığını teyit etti; güncel Debug EDHS.exe derlendi. Gerçek kişi verileri Git dışında. Yerel commit alınır, push yapılmaz.
+
+---
+
+# Önceki tamamlanan iş — 25 Ekim 2026: Emekli Usta Öğretici
 
 - Halk Eğitim Merkezi Emekli Usta Öğretici modülü ayrı Hakedis.EmekliHalkEgitim.Core projesiyle eklendi. Yalnız Contracts'a başvurur; diğer çekirdekleri çağırmaz. Enum sona eklendi, önceki değerler değişmedi. Mali sürüm emekli-halk-egitim.excel-2026-09.v1, SGK gün sürümü emekli-halk-egitim.sgk-yan-bilgi.v1.
 - Kullanıcı başlıktaki Eylül 2026'nın geçerli olduğunu açıkça teyit etti. Kaynakta VERİ GİRİŞİ!E38 eski Ağustos değerinde; uygulama ve test girişinin dönemi Eylül 2026'dır. Fixture bunu Period=2026-09 ve SourcePeriodCell=2026-08 olarak ayırır. Kaynak Excel değiştirilmedi.

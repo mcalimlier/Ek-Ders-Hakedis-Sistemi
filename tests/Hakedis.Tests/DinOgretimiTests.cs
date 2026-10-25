@@ -31,7 +31,7 @@ public sealed class DinOgretimiTests : IDisposable
     [Fact] public void Catalog_routes_to_independent_rule_versions_and_rejects_unavailable_modules()
     {
         Assert.True(PayrollCores.Catalog.Single(m=>m.Id==ModuleId.DinOgretimi).IsAvailable);
-        Assert.Equal("Din Öğretimi",PayrollCores.Catalog.Single(m=>m.Id==ModuleId.DinOgretimi).Name);
+        Assert.Equal("Din Öğretimi Ücretli Öğretmen",PayrollCores.Catalog.Single(m=>m.Id==ModuleId.DinOgretimi).Name);
         Assert.NotEqual(PayrollCores.RuleVersion(ModuleId.TemelEgitim),PayrollCores.RuleVersion(ModuleId.DinOgretimi));
         Assert.Throws<NotSupportedException>(()=>PayrollCores.RuleVersion(ModuleId.Ortaogretim));
     }
@@ -62,7 +62,7 @@ public sealed class DinOgretimiTests : IDisposable
         Assert.Equal(22193.93m,w.Rows[0].Result!.Net);Assert.Equal("1",w.Rows[0].MissingDays);
         w.CreatePayment();var all=new PaymentArchiveStore(root).ReadAll();Assert.Equal(2,all.Count);
         var din=all.Single(a=>a.Document.ModuleId==ModuleId.DinOgretimi);
-        Assert.Equal("Din Öğretimi",din.Module);Assert.Equal(PayrollCores.RuleVersion(ModuleId.DinOgretimi),din.Document.RuleVersion);
+        Assert.Equal("Din Öğretimi Ücretli Öğretmen",din.Module);Assert.Equal(PayrollCores.RuleVersion(ModuleId.DinOgretimi),din.Document.RuleVersion);
         Assert.Equal(PayrollCores.CalendarRuleVersion(ModuleId.DinOgretimi),din.Document.Data.SgkRuleVersion);
         Assert.Throws<InvalidOperationException>(()=>w.CreatePayment());
         var p=s.Personal;p.Year=2026;p.Month=9;p.SelectedModule=p.Modules.Single(m=>m.Id==ModuleId.DinOgretimi);
