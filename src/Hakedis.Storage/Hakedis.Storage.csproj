@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Hakedis.Contracts\Hakedis.Contracts.csproj" />
     <ProjectReference Include="../Hakedis.DinOgretimi.Core/Hakedis.DinOgretimi.Core.csproj" />
+    <ProjectReference Include="../Hakedis.HalkEgitim.Core/Hakedis.HalkEgitim.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

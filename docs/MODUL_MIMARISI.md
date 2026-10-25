@@ -26,6 +26,8 @@ Yeni modül entegrasyonu yalnız katalogda etkinleştirme değildir. Mevcut Payr
 
 24 Ekim 2026: Din Öğretimi için bu uyarlama tamamlandı. Storage/PayrollCores katalog, kural sürümü, parasal hesap ve takvim yönlendirmesinin tek bileşim noktasıdır. DinOgretimi.Core yalnız Contracts'a başvurur; kendi DinOgretimiInput/Parameters/Result/CalendarResult tiplerini üretir. Adaptör eski ortak arşiv/çıktı biçimine açık alan eşlemesi yapar. PDF ve XML biçimleyicileri paylaşılır; XML günleri seçilen çekirdeğin takvim adaptöründen gelir. Ücretli öğretmen işyeri profili kullanıcı talebine göre ortaktır. Ayrıntılar: [Din Öğretimi](DIN_OGRETIMI.md).
 
+25 Ekim 2026: Halk Eğitim Merkezi Usta Öğretici için Hakedis.HalkEgitim.Core eklendi. Kendi mali/gün sözleşmeleri ve sürümleriyle çalışır; diğer çekirdeklere başvurmaz. PayrollCores alanları mevcut arşiv/PDF/XML biçimine eşler. Bordro başlığı ve ünvan modüle göre seçilir; usta öğretici işyeri profili öğretmenlerden ayrı kalır. Kaynak Excel ile 50 anonim senaryo karşılaştırılır. Ayrıntılar: [Halk Eğitim](HALK_EGITIMI.md).
+
 Doğrulama: `dotnet test tests/Hakedis.Tests -c Release`.
 Derleme: `dotnet build UcretliEkDers.slnx -c Release`.
 EXE/ZIP: `powershell -File scripts/Publish-Windows.ps1`.

@@ -51,6 +51,10 @@ onaylayarak silmeniz gerekir. Vazgeç seçimi mevcut tercihi değiştirmez.
 Bu düğme normal öğretmenlerde ve tek modüllü aylarda görünmez.
 
 Aylık Ders Bilgileri kartının en üstünden modül, DÖNEM (ay adı) ve YIL seçin.
+Halk Eğitim Merkezi Usta Öğretici modülü emekli olmayan usta öğreticiler
+için ayrı hesaplama çekirdeğiyle kullanılabilir. Kişi, aylık ders ve hakediş
+panellerinde bu modülü seçin. SGK işyeri profili öğretmenlerden ayrıdır;
+emekli usta öğreticilerin farklı belge türü ve hesabı bu modülde kullanılmaz.
 Listeden o modülün öğretmenini çağırın; saatleri ve kesintiyi girin.
 Kaydet kalıcı kayıt yapar. Mevcut aylık
 kayıt seçildiğinde Düzenle ile alanları açın, sonra Kaydet'e basın.

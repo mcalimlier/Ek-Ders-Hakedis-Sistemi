@@ -18,6 +18,7 @@
     <Using Include="Xunit" />
     <None Update="Fixtures/excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/din-excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/halk-excel-recalculated.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/Hakedis.App/CommonConstantsViewModel.cs" Link="CommonConstantsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/UiSettingsViewModel.cs" Link="UiSettingsViewModel.cs"/>
     <Compile Include="../../src/Hakedis.App/BillingChoiceViewModel.cs" Link="BillingChoiceViewModel.cs"/>

@@ -73,6 +73,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public PeriodConstantsEditor Constants { get; private set; } = new(PeriodValues.Source);
     public string Status { get; private set; }="";
     public string PeriodText => $"{Months[month-1].Name}-{year}";
+    public string PayrollTitle=>ModuleLabels.PayrollTitle(SelectedModule.Id);
     public bool IsAvailable => SelectedModule.IsAvailable;
     public IReadOnlyList<PayrollRow> BillingChoicesNeeded=>Rows.Where(r=>r.HasInput && TeacherRouting.NeedsChoice(r.Teacher,year,month)).ToArray();
     public bool IsEditing => editing;
@@ -340,6 +341,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     public void ShowError(string text){Status=text;Notify();}
     private void Notify()
     {
+        PropertyChanged?.Invoke(this,new(nameof(PayrollTitle)));
         foreach(var name in new[]{nameof(CanChooseBillingModule),nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }

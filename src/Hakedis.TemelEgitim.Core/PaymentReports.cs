@@ -12,9 +12,10 @@ public static class PaymentReports
     private static readonly CultureInfo Tr=CultureInfo.GetCultureInfo("tr-TR");
     private static string Money(decimal v)=>v.ToString("N2",Tr);
     private static string Number(decimal v)=>v.ToString("0.#########",Tr);
-    public static PaymentReport[] Build(PaymentSnapshot data,ReportDetails details)
+    public static PaymentReport[] Build(PaymentSnapshot data,ReportDetails details,ModuleId? module=null)
     {
         var rows=data.Rows;var period=$"{Tr.DateTimeFormat.GetMonthName(data.Month)}-{data.Year}";
+        var selectedModule=module??rows.FirstOrDefault()?.Teacher.ModuleId??ModuleId.TemelEgitim;
         var p=data.Constants;
         var info=new[]{"DAİRESİ            : "+details.Institution,"İLGİLİ AY           : "+period,
             $"KATSAYI: {Number(p.Coefficient)}    GÜNDÜZ GÖSTERGE: {Number(p.Indicator)}    DYK çarpanı: {Number(p.DykMultiplier)}    GV İstinası: {Money(p.IncomeExemption)}    DV İstisnası: {Money(p.StampExemption)}",
@@ -22,7 +23,7 @@ public static class PaymentReports
         var h1=new[]{ExcelHeadings.Sequence,ExcelHeadings.BordroB6,ExcelHeadings.BordroC6,ExcelHeadings.BordroE6,
             ExcelHeadings.BordroF5,ExcelHeadings.BordroG5,ExcelHeadings.BordroH5,ExcelHeadings.BordroM5,ExcelHeadings.BordroL5,
             ExcelHeadings.BordroJ5,ExcelHeadings.BordroI5,ExcelHeadings.BordroK5,ExcelHeadings.BordroN6,ExcelHeadings.BordroO6,ExcelHeadings.BordroP6};
-        var a=rows.Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,"Ücretli Öğretmen",r.Teacher.IdentityNumber,
+        var a=rows.Select((r,i)=>new[]{(i+1).ToString(),r.Teacher.FullName,ModuleLabels.Role(selectedModule),r.Teacher.IdentityNumber,
             Number(r.Input.DayHours),Number(r.Input.DykHours),Number(r.Input.DayHours+r.Input.DykHours),Number(r.Result.DayRate),Number(r.Result.DykRate),
             Money(r.Result.DayGross),Money(r.Result.DykGross),r.Result.PremiumDays.ToString(),Money(r.Result.Gross),Money(r.Result.EmployerPremium),Money(r.Result.Accrual)}).ToArray();
         var total1=new[]{"TOPLAM","","","",Number(rows.Sum(r=>r.Input.DayHours)),Number(rows.Sum(r=>r.Input.DykHours)),Number(rows.Sum(r=>r.Input.DayHours+r.Input.DykHours)),"","",
@@ -33,7 +34,7 @@ public static class PaymentReports
             Money(r.Result.StampTax),Money(r.Result.EmployeePremium),Money(r.Result.EmployerPremium),Money(r.Input.Garnishment),Money(r.Result.Deductions),Money(r.Result.Net)}).ToArray();
         var total2=new[]{"TOPLAM","","",Money(rows.Sum(r=>r.Result.IncomeBase)),"0,00","",Money(rows.Sum(r=>r.Result.IncomeTax)),"",Money(rows.Sum(r=>r.Result.StampTax)),Money(rows.Sum(r=>r.Result.EmployeePremium)),
             Money(rows.Sum(r=>r.Result.EmployerPremium)),Money(rows.Sum(r=>r.Input.Garnishment)),Money(rows.Sum(r=>r.Result.Deductions)),Money(rows.Sum(r=>r.Result.Net))};
-        var payroll=new PaymentReport("Bordro.pdf","DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (ÜCRETLİ ÖĞRETMEN)",true,info,
+        var payroll=new PaymentReport("Bordro.pdf",ModuleLabels.PayrollTitle(selectedModule),true,info,
             [new("Ders, ücret ve tahakkuk",h1,[40,108,52,66,42,42,43,47,47,53,53,38,58,58,58],a,total1),
              new("Vergi, kesinti ve net ödeme",h2,[40,108,66,58,53,55,57,55,53,54,54,52,55,58],b,total2)],
             ["Bordroda yazılı alacaklar kayıtlara uygundur.","SÜRE GELEN VERGİ MATRAHI kaynak hesapta kullanılmadığından 0,00 gösterilir."]);

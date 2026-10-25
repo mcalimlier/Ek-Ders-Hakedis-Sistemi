@@ -36,6 +36,14 @@ public sealed class ModuleRegistry
             ModuleId.ImamHatipLisesi => "İmam Hatip Lisesi",
             ModuleId.Ortaogretim => "Ortaöğretim",
             ModuleId.MeslekiEgitim => "Mesleki Eğitim",
-            _ => "Halk Eğitim Usta Öğreticileri"
+            _ => "Halk Eğitim Merkezi Usta Öğretici"
         }, modules.ContainsKey(id))).ToArray();
+}
+
+public static class ModuleLabels
+{
+    public static string Role(ModuleId module)=>module==ModuleId.HalkEgitimUstaOgretici?"Usta Öğretici":"Ücretli Öğretmen";
+    public static string PayrollTitle(ModuleId module)=>module==ModuleId.HalkEgitimUstaOgretici
+        ?"DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (USTA ÖĞRETİCİ)"
+        :"DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (ÜCRETLİ ÖĞRETMEN)";
 }

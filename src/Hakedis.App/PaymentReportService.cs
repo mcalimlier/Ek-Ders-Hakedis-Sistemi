@@ -36,7 +36,7 @@ public sealed partial class PaymentReportService
             var root=moduleFolder.Parent!.Parent!.FullName;
             data=data with {Movement=new PaymentArchiveStore(root).Movement(record.Document.ModuleId,data.Year,data.Month,data.Rows)};
         }
-        return PaymentReports.Build(data,details).Select(report=>report.FileName switch
+        return PaymentReports.Build(data,details,record.Document.ModuleId).Select(report=>report.FileName switch
         {
             "Bordro.pdf"=>LayoutPayroll(report,details,record.SavedAt),
             "Personel Bildirimi.pdf"=>LayoutPersonnel(data,details,record.SavedAt),

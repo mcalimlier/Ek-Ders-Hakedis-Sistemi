@@ -1,4 +1,17 @@
-# Tamamlanan iş — 25 Ekim 2026: isteğe bağlı görev geçmişi ve ödeme tercihi
+# Tamamlanan iş — 25 Ekim 2026: Halk Eğitim Merkezi Usta Öğretici
+
+- Yeni modül ayrı Hakedis.HalkEgitim.Core projesiyle eklendi. Kendi mali girdi/parametre/sonuç ve SGK takvim sözleşmelerine sahiptir; başka çekirdeğe başvurmaz. PayrollCores alan eşlemesiyle mevcut kayıt/aylık/hibrit/arşiv/kişisel bordro/PDF/XML akışlarına bağlar.
+- Katalogda Halk Eğitim Merkezi Usta Öğretici kullanılabilir. Ekran ve PDF bordro başlığı USTA ÖĞRETİCİ, ünvan Usta Öğretici olur. Ortak sabitler ve tek kişi/ay bordro koruması devam eder. Bu modül emekli olmayan usta öğreticiler içindir; kullanıcı emeklilerde SGK belge türünün değiştiğini teyit etti.
+- Dosya adı Ekim 2026, içeride seçili dönem Eylül 2026'dır. Programda ay/yıl kullanıcı seçer. Kaynak Bordro!I7:AA36 mali formülleri ayrı çekirdekte aynı yuvarlama sırasıyla uygulanır; bozuk #REF! bağlantıları, sabit 2025 yılı ve eski Nisan yardımcı gün hesabı taşınmadı. Önceden kaldırılan alanlar geri eklenmedi.
+- Kaynak salt okunur Microsoft Excel CalculateFullRebuild ile 50 senaryoda yeniden hesaplandı. Anonim fixture tests/Hakedis.Tests/Fixtures/halk-excel-recalculated.json. Sıfır, 60/27/18, kesirli saat, DYK, icra ve vergi eşikleri karşılaştırıldı. Kaynak SHA-256 aynı. Gerçek personel otomatik içe aktarılmadı.
+- 213/213 Release testi başarılı: artifacts/halk-all-tests.log. WPF bütün mevcut akışlar ve yeni Halk Eğitim senaryosu başarılı: artifacts/halk-ui.log, artifacts/ui-halk-final; binding hatası yok. Yeni ekran ve PDF başlığı, tek yatay A4 bordro, kişisel PDF/klasör, ayrı SGK profili ve XML/XSD doğrulandı. Debug ve Release WPF derlemeleri sıfır hata/uyarı: artifacts/halk-debug-build.log, artifacts/halk-ui-build.log.
+- Bağımsız artifacts/verify-halk.py: 4 tek sayfa PDF, 60 saat için 11.381,50 TL net, Ekim 2026, 8 prim/23 eksik gün, ayrı SGK sicil kontrolü ve özgün XSD başarılı. SGK sistemine gerçek dosya yüklenmedi; fiziksel baskı denenmedi.
+- Kullanıcı usta öğretici SGK profilinin boş alanları için belge türü 13, kanun 00000, eksik gün nedeni 07 ve ortak işyeri unvanı/adresini teyit etti. Mevcut usta sicili korunarak yalnız bu alanlar kendi özel profilinde tamamlandı. Öğretmen profili, kişi/aylık/arşiv/sabit dosyalarının hashleri aynı. Yeni .bak eski profilin birebir kopyası, .lock boş standart işlem kilididir. Yedek yolu artifacts/halk-backup-path.txt. Gerçek bilgiler/özel yardımcılar Git dışında.
+- Güncel EXE src/Hakedis.App/bin/Debug/net10.0-windows/EDHS.exe. Bu tur dağıtım ZIP'i üretilmedi. Kullanım ve hesap ayrıntıları docs/HALK_EGITIMI.md; plan docs/superpowers/plans/2026-10-25-halk-egitim-core.md. Kaynaklar yerel Git kaydına alınır, push yapılmaz.
+
+---
+
+# Önceki tamamlanan iş — 25 Ekim 2026: isteğe bağlı görev geçmişi ve ödeme tercihi
 
 - Öğretmen formunda yalnız onay kutusu işaretlenince okul, geçiş tarihi ve hedef modül alanları açılır. Tek kişi kartı ve tarihli geçmiş tutulur; normal SGK işe giriş/çıkış tarihleri okul geçişinden etkilenmez. Geçmişteki son geçiş düzenlenebilir veya yeni geçiş eklenebilir.
 - Geçiş ayında Hakediş oluştur, ay toplamı için tek ödeme modülü sorar. Farklı modüllerdeki saatler otomatik toplanmaz. Tercih ve seçilen modülün aylık toplamı atomik kaydedilir; kişi aynı ay iki modül bordrosuna alınamaz. Eski arşivler korunur.
