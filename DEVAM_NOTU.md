@@ -1,4 +1,14 @@
-# Tamamlanan iş — 25 Ekim 2026: Halk Eğitim Merkezi Usta Öğretici
+# Test verisi eklendi — 25 Ekim 2026: Halk Eğitim personeli
+
+- Kullanıcının açık isteğiyle kaynak Excel'deki 4 kişi mevcut Halk Eğitim Merkezi Usta Öğretici modülüne eklendi. Kaynağın kendi dönemi Eylül 2026 olduğu için 60 / 27 / 18 / 0 saat, toplam 105 saat o aya kaydedildi. Dosya adındaki Ekim dikkate alınarak dönem tahmini yapılmadı.
+- Önceden kayıtlı kişiyle TC eşleşmesi yoktu. Toplam tekil kişi sayısı 12'den 16'ya çıktı. Kaynağın iki boş IBAN'ı boş bırakıldı; hakediş oluşturabilmek için kullanıcı bu bilgileri tamamlamalıdır. İsim, TC, IBAN, okul, meslek kodu ve normal giriş/çıkış tarihleri kaynaktaki gibi alındı; kaldırılmış alanlar geri getirilmedi.
+- Gerçek veriler işlem öncesi yedeklendi: artifacts/halk-import-backup-path.txt. Yardımcı artifacts/halk-import/HalkImport.csproj; kaynak dökümü artifacts/private-halk-import.json; bunlar kişisel veri içerdiği için Git dışında. Tekrar çalıştırma aynı kişiyi çoğaltmaz; farklı mevcut kişi/aylık veri varsa üzerine yazmak yerine durur. Yeni kişi kartları mevcut katalog API'si, aylık girdiler mevcut atomik işlem günlüğü üzerinden kaydedildi.
+- Bağımsız artifacts/verify-halk-import.py bütün alanları ve aylık girdileri karşılaştırdı: 4 yeni kişi/105 saat doğru; önceki 12 kişinin bütün alanları, önceki aylık/arşiv/sabit/SGK dosyalarının hashleri ve kaynak Excel aynı. Bordro oluşturulmadı; kaynak kişiler dağıtım paketine veya Git'e eklenmedi. Uygulama kaynak kodu/EXE değişmedi.
+- Kullanıcı denemesi: modül Halk Eğitim Merkezi Usta Öğretici; dönem Eylül 2026. Kişiler Öğretmen Listesi'nde, saatler Veri Girişi/Hakediş Hesapla'da görülebilir. Yeni açılışta veya modül/dönem yenilendiğinde kayıtlar yüklenir.
+
+---
+
+# Önceki tamamlanan iş — 25 Ekim 2026: Halk Eğitim Merkezi Usta Öğretici
 
 - Yeni modül ayrı Hakedis.HalkEgitim.Core projesiyle eklendi. Kendi mali girdi/parametre/sonuç ve SGK takvim sözleşmelerine sahiptir; başka çekirdeğe başvurmaz. PayrollCores alan eşlemesiyle mevcut kayıt/aylık/hibrit/arşiv/kişisel bordro/PDF/XML akışlarına bağlar.
 - Katalogda Halk Eğitim Merkezi Usta Öğretici kullanılabilir. Ekran ve PDF bordro başlığı USTA ÖĞRETİCİ, ünvan Usta Öğretici olur. Ortak sabitler ve tek kişi/ay bordro koruması devam eder. Bu modül emekli olmayan usta öğreticiler içindir; kullanıcı emeklilerde SGK belge türünün değiştiğini teyit etti.

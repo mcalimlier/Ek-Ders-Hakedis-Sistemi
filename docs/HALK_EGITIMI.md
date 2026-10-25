@@ -21,6 +21,8 @@ Kaynakta Bordro!D8 ve Personel Bildirimi!G7 gibi bozuk #REF! bağlantıları, sa
 
 Veri Girişi'ndeki kişi ve aylık ders modül seçimlerinden Halk Eğitim Merkezi Usta Öğretici seçilir. Hakediş Hesapla'da aynı modül ile ay/yıl seçilir. Kişi kaydı, aylık giriş, arşiv, kişisel bordro ve çıktı klasörleri mevcut modül ayrımını kullanır. Tek kişi kartı ve kişi/ay için tek bordro koruması devam eder. Excel'deki gerçek personel kayıtları bu entegrasyon sırasında otomatik içe aktarılmaz.
 
+Çekirdek entegrasyonundan sonra kullanıcının ayrı isteğiyle yalnız yerel test verilerine 4 kişi ve Eylül 2026 için toplam 105 saat eklendi. Kaynakta iki kişinin IBAN'ı boştur; ödeme öncesi tamamlanmalıdır. Gerçek kişi kayıtları ve içe aktarma yardımcıları Git'e veya dağıtıma dahil edilmez.
+
 Ekran ve bordro PDF başlığı kaynakla aynı **DERS ÜCRETİ KARŞILIĞINDA GÖREVLENDİRİLENLER BORDROSU (USTA ÖĞRETİCİ)** olur; ünvan Usta Öğretici'dir. Üç ana PDF, tek yatay A4 bordro, kişisel bordro, yazdırma, onaylı silme ve geçmiş düzenleme aynı akıştan kullanılabilir. Çıktılar arşivdeki dondurulmuş sonuçları kullanır.
 
 Usta öğretici SGK işyeri profili `SgkXml-UstaOgreticiler.json` içinde öğretmenlerin profilinden ayrı saklanır. Kullanıcı bu modül için belge türü 13, kanun 00000 ve eksik gün nedeni 07'yi teyit etti. İşyeri unvanı ve adresi ortak olarak kullanıcıdan alındı; sicil ve diğer kişisel/kurumsal ayarlar Git'e eklenmez. XML hazırlama ekranındaki son kontrol ve onay zorunluluğu sürer.
