@@ -14,7 +14,7 @@ ve görev çubuğu için ayrılan alan dikkate alınarak ekranınıza sığdır�
 
 VERİ GİRİŞİ
 Temel Eğitim Ücretli Öğretmen ve Din Öğretimi Ücretli Öğretmen modülleri kendi hesaplama çekirdekleriyle açıktır.
-Din Öğretimi Ücretli Öğretmen için ilgili modül seçimlerinden Din Öğretimi Ücretli Öğretmen'ni seçin.
+Din Öğretimi Ücretli Öğretmen için ilgili modül listesinden bu modülü seçin.
 Öğretmenler ve aylık hakedişler modüller arasında karışmaz. Dönem sabitleri
 ile ücretli öğretmen SGK işyeri bilgileri ortaktır. Excel'deki gerçek öğretmenler
 kendiliğinden aktarılmaz; kayıt yalnız Veri Girişi panelinden yapılır.

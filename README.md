@@ -20,6 +20,7 @@ Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. 
 - [Excel incelemesi ve güncellenmiş yol haritası](docs/INCELEME_VE_YOL_HARITASI.md)
 - [Ayrı hesaplama çekirdekleri ve geliştirme komutları](docs/MODUL_MIMARISI.md)
 - [İlk sürüm kullanım notu](docs/KULLANIM.txt)
+- [Taşınabilir EXE/ZIP hazırlama ve GitHub Releases](docs/TASINABILIR_YAYIN.md)
 - [Arayüz referansı ve yeni kayıt akışı](docs/ARAYUZ_REFERANSI.md)
 - [Modüle ait öğretmen kayıtları ve veri geçişi](docs/MODUL_OGRETMEN_KAYITLARI.md)
 

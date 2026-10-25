@@ -1,4 +1,15 @@
-# Tamamlanan iş — 25 Ekim 2026: Mesleki Eğitim Merkezi Ücretli Öğretmen
+# Taşınabilir paket hazır — 25 Ekim 2026
+
+- Kullanıcı taşınabilir EXE ve GitHub üzerinden dağıtımı sordu. Mevcut scripts/Publish-Windows.ps1 -Runtime win-x64 çalıştırıldı; 227 test başarılı, self-contained/single-file yayın tamamlandı. Paket dist/EDHS-win-x64-20261025-172859.zip. Aynı adlı klasörde EDHS.exe ve KULLANIM.txt var.
+- ZIP 61.829.743 bayt (yaklaşık 61,8 MB), EXE yaklaşık 142,6 MB. ZIP girdileri tam olarak EDHS.exe + KULLANIM.txt; gerçek/test kişi kayıtları, Veriler, SGK profilleri ve özel yedekler yok. ZIP CRC ve EXE hash eşliği kontrol edildi; metadata artifacts/portable-package-check.json.
+- Paket ayrı artifacts/portable-smoke-* klasörüne açıldı. Kurulu .NET arama yolları geçersiz bir dizine yönlendirilip çoklu runtime araması kapatılmış süreçte EXE penceresi açıldı, yanıt verdi ve normal kapandı (ExitCode=0). Kullanıcının çalışma verilerine dokunulmadı. Excel son kullanıcı bağımlılığı yoktur. Test yolu artifacts/portable-smoke-path.txt.
+- Bu paket kurulum sihirbazı içermez. ZIP tamamen klasöre çıkarılır ve EDHS.exe açılır. Güncellemede mevcut Veriler klasörü korunur. ARM64 gerekirse ayrı hedefle hazırlanıp test edilir.
+- GitHub'da yayın oluşturulmadı, dosya yüklenmedi, kaynak push edilmedi. origin mcalimlier/TemelEgitimUcretliOgretmenHakedis. Yayından önce GitHub Desktop Push origin ile güncel kaynak gönderilmeli; EXE/ZIP Releases varlığı olarak eklenmeli. Deneme sürümü için pre-release uygundur. Kılavuz docs/TASINABILIR_YAYIN.md; resmî GitHub Releases belgeleri kontrol edildi.
+- KULLANIM.txt içinde modül seçim cümlesindeki ek hatası düzeltildi. Kaynak değişikliği davranış değil dokümantasyondur; güncel EXE kodu c4ccb3f kaynak sürümüdür. Yerel belge kaydı alınır; gerçek veri/dist/artifacts Git dışında kalır.
+
+---
+
+# Önceki tamamlanan iş — 25 Ekim 2026: Mesleki Eğitim Merkezi Ücretli Öğretmen
 
 - Eski dosyadan bağımsız Hakedis.MeslekiEgitim.Core eklendi; yalnız Contracts'a başvurur. Kendi mali/gün sözleşmeleri vardır. Mevcut MeslekiEgitim kimliği korunarak tam adla açıldı; katalog/PayrollCores/proje/çözüm bağlantıları tamamlandı. Mali sürüm mesleki-egitim.excel-2026-01.v1, SGK gün sürümü mesleki-egitim.sgk-yan-bilgi.v1.
 - Dosya adında Ocak 2025, içeride E37:F37 Ocak 2026 ve katsayı 1,387871 var. Kaynak mali satırları I7:AA35 aynı formüldedir. Kaynak salt okunur Excel CalculateFullRebuild ile 50 senaryoda karşılaştırıldı; fixture kendi Parameters alanında eski katsayıyı/istisnaları taşır. Eski katsayı programın ortak sabitlerine aktarılmaz; yeni modül mevcut normal ücretli öğretmen ortak sabitlerini kullanır.
