@@ -19,7 +19,7 @@ internal static class LayoutSettingsChecks
         model.Calculation.Rows[0].DayHours="100000";
         var window=new MainWindow(model,_=>{},(_,_)=>true){ShowActivated=false,ShowInTaskbar=false};
         window.Show();
-        if(window.Title!=AppIdentity.Name || typeof(MainWindow).Assembly.GetName().Name!="EDHS")throw new Exception("EDHS adı güncellenmedi.");
+        if(window.Title!=AppIdentity.Name || typeof(MainWindow).Assembly.GetName().Name!="Ek Ders Hakediş Sistemi")throw new Exception("Ek Ders Hakediş Sistemi adı güncellenmedi.");
         if(model.Workspace.Modules.Any(m=>m.Id==ModuleId.ImamHatipLisesi))throw new Exception("İmam Hatip listede kaldı.");
         model.Navigate("Constants");Idle(window);
         var fields=Descendants<TextBox>((FrameworkElement)window.FindName("ConstantsFields")).ToArray();
@@ -46,7 +46,7 @@ internal static class LayoutSettingsChecks
             var sig=signature.TransformToAncestor(window).TransformBounds(new Rect(0,0,signature.ActualWidth,signature.ActualHeight));
             if(last.Bottom>sig.Top || sig.Bottom>size.Height)throw new Exception("Küçük ekranda Ayarlar/imza çakışıyor.");
             foreach(var panel in new[]{"Entry","Details","Calculation","Teachers","Personal","Constants","Outputs"})
-            {model.Navigate(panel);Idle(window);capture(PreviewSurface(window,size),Path.Combine(output,$"EDHS-{panel}-{size.Width}.png"));}
+            {model.Navigate(panel);Idle(window);capture(PreviewSurface(window,size),Path.Combine(output,$"Ek Ders Hakediş Sistemi-{panel}-{size.Width}.png"));}
             model.Navigate("Calculation");Idle(window);
             var metrics=(System.Windows.Controls.Primitives.UniformGrid)window.FindName("PaymentMetrics");
             var cards=metrics.Children.OfType<Border>().ToArray();PersonalPayrollChecks.VerifyMetricRegions(cards);
@@ -59,7 +59,7 @@ internal static class LayoutSettingsChecks
             capture(metricPreview,Path.Combine(output,$"Metrics-{size.Width}.png"));
         }
         model.ClearCurrentWork();window.Close();
-        Console.WriteLine("EDHS: 1280×720 / 1366×768 / 1920×1080, kalıcı Ayarlar, gri/beyaz sabit kilidi, geniş simgeler ve büyük tutar geometrisi doğrulandı.");
+        Console.WriteLine("Ek Ders Hakediş Sistemi: 1280×720 / 1366×768 / 1920×1080, kalıcı Ayarlar, gri/beyaz sabit kilidi, geniş simgeler ve büyük tutar geometrisi doğrulandı.");
     }
     private static FrameworkElement PreviewSurface(Window window,WindowSizeOption size)
     {
@@ -70,10 +70,10 @@ internal static class LayoutSettingsChecks
         var root=document.Root!;root.Name=wpf+"UserControl";root.Attribute(x+"Class")!.Remove();
         foreach(var key in new[]{"Title","MinWidth","MinHeight","WindowStartupLocation","WindowStyle","ResizeMode"})root.Attribute(key)?.Remove();
         root.Element(wpf+"WindowChrome.WindowChrome")!.Remove();root.Element(wpf+"Window.Resources")!.Name=wpf+"UserControl.Resources";
-        root.SetAttributeValue(XNamespace.Xmlns+"local","clr-namespace:Hakedis.App;assembly=EDHS");
+        root.SetAttributeValue(XNamespace.Xmlns+"local","clr-namespace:Hakedis.App;assembly=Ek Ders Hakediş Sistemi");
         foreach(var element in root.DescendantsAndSelf())
         {
-        if(element.Name.NamespaceName=="clr-namespace:Hakedis.App")element.Name=XName.Get(element.Name.LocalName,"clr-namespace:Hakedis.App;assembly=EDHS");
+        if(element.Name.NamespaceName=="clr-namespace:Hakedis.App")element.Name=XName.Get(element.Name.LocalName,"clr-namespace:Hakedis.App;assembly=Ek Ders Hakediş Sistemi");
         foreach(var attribute in element.Attributes().ToArray())
         {
             if(attribute.Name.LocalName is "Click" or "MouseLeftButtonDown")attribute.Remove();

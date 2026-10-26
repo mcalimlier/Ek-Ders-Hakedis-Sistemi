@@ -70,7 +70,7 @@ public sealed partial class PaymentReportService
             var path=Path.Combine(stage,document.FileName);var tmp=path+".tmp";
             using(var pdf=new PdfDocument())
             {
-                pdf.Info.Title=Path.GetFileNameWithoutExtension(document.FileName);pdf.Info.Creator=AppIdentity.Name+" ("+AppIdentity.ShortName+")";
+                pdf.Info.Title=Path.GetFileNameWithoutExtension(document.FileName);pdf.Info.Creator=AppIdentity.Name;
                 foreach(var sheet in document.Pages)
                 {
                     var page=pdf.AddPage();page.Width=XUnit.FromPoint(sheet.Width);page.Height=XUnit.FromPoint(sheet.Height);

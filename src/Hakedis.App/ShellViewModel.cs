@@ -83,7 +83,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public string Title => panel switch { "Settings"=>"Ayarlar", "Personal"=>"Kişisel Bordro", "Details" => "Kurum ve İmza Bilgileri", "Outputs" => "Çıktı", "Constants" => "Dönem sabitleri", "Calculation" => "Hakediş Hesapla", "Teachers" => "Öğretmen Listesi", _ => "Veri Girişi" };
     public string Subtitle => panel switch
     {
-        "Settings"=>"EDHS pencere boyutunu ekranınıza göre ayarlayın.",
+        "Settings"=>"Ek Ders Hakediş Sistemi pencere boyutunu ekranınıza göre ayarlayın.",
         "Personal"=>"Modül ve dönemi seçin; kayıtlı hakedişten bir öğretmenin kişisel bordrosunu hazırlayın.",
         "Details" => "Çıktılarda kullanılacak kurum, banka ve imza bilgilerini düzenleyin.",
         "Outputs" => "Kayıtlı hakedişleri görüntüleyin, üç belgeyi PDF oluşturun veya yazdırın.",

@@ -1,6 +1,6 @@
-EK DERS HAKEDİŞ SİSTEMİ (EDHS) — GELİŞTİRME SÜRÜMÜ
+Ek Ders Hakediş Sistemi — GELİŞTİRME SÜRÜMÜ
 
-ZIP dosyasını tamamen bir klasöre çıkarın ve EDHS.exe dosyasını açın.
+ZIP dosyasını tamamen bir klasöre çıkarın ve Ek Ders Hakediş Sistemi.exe dosyasını açın.
 Windows x64 paketi ayrıca Excel veya .NET kurulumu gerektirmez.
 Pencere 1366×768 laptop ekranını hedefler; açılışta görev çubuğu ve
 Windows ekran ölçeğine göre kullanılabilir alana sığdırılır.
@@ -163,7 +163,7 @@ Hakediş Hesapla'da Hakediş oluştur ile kaydettiğiniz hakedişler burada
 listelenir. Aylık ders girdisi kaydetmek tek başına çıktı kaydı oluşturmaz.
 PDF oluştur üç belgeyi Excel gerektirmeden üretir:
 Bordro (Çıktı-1), Banka Listesi (Çıktı-2), Personel Bildirimi (Çıktı-3).
-Masaüstü/EDHS/Çıktılar altında modül,
+Masaüstü/Ek Ders Hakediş Sistemi/Çıktılar altında modül,
 dönem ve kayıt sürümüne göre yeni klasör açılır; eski PDF'ler ezilmez.
 Bordro uzun başlıkları korumak için iki tablo halindedir; satır sayısına
 göre bir belge birden fazla sayfa olabilir. A4 yatay bordro, A4 dikey banka

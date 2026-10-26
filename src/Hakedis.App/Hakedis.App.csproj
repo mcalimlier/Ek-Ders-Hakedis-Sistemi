@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Hakedis.Contracts\Hakedis.Contracts.csproj" />
@@ -12,10 +12,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <AssemblyName>EDHS</AssemblyName>
+    <AssemblyName>Ek Ders Hakediş Sistemi</AssemblyName>
     <RootNamespace>Hakedis.App</RootNamespace>
+    <Version>1.0.1</Version>
     <Title>Ek Ders Hakediş Sistemi</Title>
-    <Product>Ek Ders Hakediş Sistemi (EDHS)</Product>
+    <Product>Ek Ders Hakediş Sistemi</Product>
     <Description>Modüllerle ek ders hakedişi, bordro ve SGK çıktıları.</Description>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>

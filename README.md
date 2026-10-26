@@ -1,4 +1,4 @@
-# Ek Ders Hakediş Sistemi (EDHS)
+# Ek Ders Hakediş Sistemi
 
 C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde yapılır. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu JSON'a kaydedilir. Aylık kayıtlar ve hakedişler modül/yıl/ay kapsamında ayrılır; sabitler ortaktır. SQL, son kullanıcıda Excel veya ayrıca .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Eksik Gün Sayısı SGK yan bilgisidir; parasal hakedişi etkilemez. Kayıtlı hakedişten üç PDF, doğrudan yazdırma ve özgün XSD ile doğrulanan SGK XML çıktısı alınır.
 
@@ -41,4 +41,4 @@ Gerçek personel Excel'leri, kullanıcı verileri, yedekler ve ödeme dosyaları
 
 Kişisel Bordro ekranında modül ve ay/yıl seçilerek kayıtlı hakedişten tek öğretmen için A4 PDF alınır; Klasör düğmesi kaydedilen konumu açar. Sol menüde temel işlemler ve Kişisel Bordro/Dönem Sabitleri grupları ayrıdır. Öğretmen Listesi adı, sabitlerin hizaları ve simgelerden ayrı tutar alanları günceldir; sol altta kullanıcı imzası bulunur.
 
-Program adı EDHS'dir; güncel derleme `EDHS.exe` üretir. Diğer İşlemler grubunun sonundaki Ayarlar paneli 1280×720, 1366×768 ve 1920×1080 pencere tercihlerini JSON'da saklar. Pencere kullanılabilir ekran alanına sığdırılır; tercih sonraki açılışta uygulanır. Kilitli dönem sabitleri gri, Güncelle ile açılan alanlar beyazdır. Hibrit başlıklar değiştirilmeden satırlara bölünür; toplam sütun genişliği azaltılmıştır. Yeni PDF/XML çıktılarının kökü Masaüstü/EDHS/Çıktılar'dır; daha önceki çıktı dosyaları taşınmaz.
+Program adı Ek Ders Hakediş Sistemi'dir; güncel derleme `Ek Ders Hakediş Sistemi.exe` üretir. Diğer İşlemler grubunun sonundaki Ayarlar paneli 1280×720, 1366×768 ve 1920×1080 pencere tercihlerini JSON'da saklar. Pencere kullanılabilir ekran alanına sığdırılır; tercih sonraki açılışta uygulanır. Kilitli dönem sabitleri gri, Güncelle ile açılan alanlar beyazdır. Hibrit başlıklar değiştirilmeden satırlara bölünür; toplam sütun genişliği azaltılmıştır. Yeni PDF/XML çıktılarının kökü Masaüstü/Ek Ders Hakediş Sistemi/Çıktılar'dır; daha önceki çıktı dosyaları taşınmaz.

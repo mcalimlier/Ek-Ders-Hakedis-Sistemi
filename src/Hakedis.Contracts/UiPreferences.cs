@@ -3,8 +3,8 @@ namespace Hakedis.Contracts;
 public static class AppIdentity
 {
     public const string Name="Ek Ders Hakediş Sistemi";
-    public const string ShortName="EDHS";
-    public const string FolderName="EDHS";
+    public const string ShortName="Ek Ders Hakediş Sistemi";
+    public const string FolderName="Ek Ders Hakediş Sistemi";
 }
 public sealed record UiPreferences(int Width=1366,int Height=768);
 public sealed record WindowSizeOption(int Width,int Height)
