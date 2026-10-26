@@ -1,8 +1,8 @@
 # Ek Ders Hakediş Sistemi
 
-Taşınabilir EXE masaüstündeki özgün simgeli kısayoldan açılır; kurulum gerektirmez.
+Türkçe kurulum EXE dosyası programı kullanıcı uygulama klasörüne kurar; masaüstü ve Başlat menüsünde özgün simgeli kısayollar oluşturur.
 Tüm EXE kopyaları aynı `Masaüstü/Ek Ders Hakediş Sistemi` klasörünü kullanır:
-`Veriler`, `Çıktılar`, `Yedekler`, `Günlükler`, `Taslaklar`, `Paketler`.
+`Veriler`, `Çıktılar`, `Yedekler`. Programın kaldırılması bu klasörleri silmez.
 Kayıtlı hakedişler açılışta gösterilir; okuma sorunları sessizce boş listeye dönüştürülmez.
 Açılış/kapanış yedekleri aynı gün değişmeyen içerik için tekrarlanmaz.
 TCMB biçimine göre son 16 karakterinde harf içeren TR banka hesapları saklanabilir;
@@ -14,7 +14,7 @@ Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. 
 
 ## Kullanıcının belirlediği kapsam
 
-- Windows için kendi .NET çalışma ortamını içeren EXE/ZIP yayınlanır. Mevcut yayın betiği taşınabilir paket üretir; kurulum sihirbazı henüz üretilmez.
+- Windows için kendi .NET çalışma ortamını içeren EXE/ZIP yayınlanır. Yayın betiği taşınabilir paket, `scripts/Build-Installer.ps1` ise Türkçe kurulum sihirbazı üretir.
 - SQL/SQLite ve veri tabanı sunucusu kullanılmaz.
 - Temel Eğitim Ücretli Öğretmen, Din Öğretimi Ücretli Öğretmen, Mesleki Eğitim Merkezi Ücretli Öğretmen, Halk Eğitim Merkezi Usta Öğretici ve Halk Eğitim Merkezi Emekli Usta Öğretici ayrı hesaplama çekirdekleriyle kullanılabilir. Diğer eğitim modülleri daha sonra kendi kurallarıyla eklenir.
 - OEHS projesinin `feature/official-payment-document-templates` dalındaki renk ve kart düzeni referans alınır.

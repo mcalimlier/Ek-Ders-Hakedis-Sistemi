@@ -14,8 +14,7 @@ public sealed class ApplicationPaths
     public string TeacherFilePath=>Path.Combine(DataDirectory,"ogretmenler.json");
     public string OutputDirectory=>Path.Combine(RootDirectory,"Çıktılar");
     public string BackupDirectory=>Path.Combine(RootDirectory,"Yedekler");
-    public string LogDirectory=>Path.Combine(RootDirectory,"Günlükler");
-    public string DraftDirectory=>Path.Combine(RootDirectory,"Taslaklar");
+    public string DraftDirectory=>OutputDirectory;
 
     public ApplicationPaths(string desktopDirectory)
     {
@@ -25,7 +24,7 @@ public sealed class ApplicationPaths
 
     public IReadOnlyList<string> Initialize(string? legacyApplicationDirectory=null)
     {
-        foreach(var path in new[]{RootDirectory,DataDirectory,OutputDirectory,BackupDirectory,LogDirectory,DraftDirectory})Directory.CreateDirectory(path);
+        foreach(var path in new[]{RootDirectory,DataDirectory,OutputDirectory,BackupDirectory})Directory.CreateDirectory(path);
         var warnings=new List<string>();
         if(string.IsNullOrWhiteSpace(legacyApplicationDirectory))return warnings;
         var source=Path.GetFullPath(Path.Combine(legacyApplicationDirectory,"Veriler"));
@@ -97,11 +96,6 @@ public sealed class ApplicationPaths
         finally{if(File.Exists(temporary))File.Delete(temporary);}
     }
 
-    public void Log(string message)
-    {
-        Directory.CreateDirectory(LogDirectory);
-        File.AppendAllText(Path.Combine(LogDirectory,$"uygulama-{DateTime.Now:yyyy-MM-dd}.log"),$"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
-    }
 
     private static string Fingerprint(IEnumerable<(string Relative,byte[] Bytes)> files)
     {

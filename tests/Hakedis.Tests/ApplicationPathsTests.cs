@@ -7,6 +7,13 @@ public sealed class ApplicationPathsTests : IDisposable
 {
     private readonly string root=Path.Combine(Path.GetTempPath(),"HakedisTests",Guid.NewGuid().ToString("N"));
     [Fact]
+    public void Workspace_contains_only_data_outputs_and_backups_without_unused_folders()
+    {
+        var paths=new ApplicationPaths(Path.Combine(root,"Desktop"));paths.Initialize();
+        Assert.Equal(new[]{"Veriler","Yedekler","Çıktılar"}.OrderBy(x=>x,StringComparer.Ordinal),
+            Directory.GetDirectories(paths.RootDirectory).Select(Path.GetFileName).OrderBy(x=>x,StringComparer.Ordinal));
+    }
+    [Fact]
     public void Launching_a_different_exe_copy_keeps_the_same_data_and_output_paths()
     {
         var paths=new ApplicationPaths(Path.Combine(root,"Desktop"));

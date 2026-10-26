@@ -1,28 +1,25 @@
-Ek Ders Hakediş Sistemi — GELİŞTİRME SÜRÜMÜ
+Ek Ders Hakediş Sistemi
 
-ZIP dosyasını tamamen bir klasöre çıkarın ve Ek Ders Hakediş Sistemi.exe dosyasını açın.
-Windows x64 paketi ayrıca Excel veya .NET kurulumu gerektirmez.
-Pencere 1366×768 laptop ekranını hedefler; açılışta görev çubuğu ve
-Windows ekran ölçeğine göre kullanılabilir alana sığdırılır.
-Güncelleme sırasında mevcut Veriler klasörünüzü koruyun.
+KURULUM VE ÇALIŞTIRMA
+Kurulum EXE dosyasını açıp Türkçe kurulum adımlarını izleyin.
+Yönetici yetkisi veya ayrıca Excel/.NET kurulumu gerekmez.
+Program kullanıcıya ait uygulama klasörüne kurulur; masaüstüne ve
+Başlat menüsüne özgün simgesiyle kısayol eklenir.
+Sonraki açılışlarda masaüstündeki Ek Ders Hakediş Sistemi simgesini kullanın.
+Program Windows'un Yüklü Uygulamalar bölümünden kaldırılabilir.
+Güncelleme ve kaldırma kişisel çalışma klasörünü silmez.
 
-MASAÜSTÜ SİMGESİ VE TEK ÇALIŞMA KLASÖRÜ
-Kurulum yapılmaz. Masaüstündeki Ek Ders Hakediş Sistemi simgesini kullanın.
-Dağıtım paketindeki Masaüstü Kısayolu.ps1, EXE'yi masaüstündeki aynı adlı
-klasöre kopyalayıp ayırt edici simgesiyle kısayol oluşturabilir.
-Program başka konumdaki EXE'den açılsa bile kayıtlar daima
-Masaüstü/Ek Ders Hakediş Sistemi/Veriler klasöründen okunur.
-Çıktılar: PDF ve SGK XML belgeleri (modül ve dönem alt klasörlerinde).
-Yedekler: açılış/kapanış otomatik yedekleri ve içe alınan arşivler.
-Günlükler: açılış veri yolu ve kayıt okuma sorunları.
-Taslaklar: isteğe bağlı hakediş taslakları. Paketler: dağıtım ZIP'leri.
-Aynı gün değişmeyen kayıtlar için tekrar yedek oluşturulmaz.
+ÇALIŞMA KLASÖRÜ
+Masaüstü/Ek Ders Hakediş Sistemi altında yalnızca şunlar bulunur:
+Veriler: öğretmen, aylık ders, kayıtlı hakediş ve ayar dosyaları.
+Çıktılar: PDF, kişisel bordro ve SGK XML belgeleri; modül/döneme göre ayrılır.
+Yedekler: otomatik yedekler ve korunmuş veri arşivleri.
+Günlükler, Paketler ve boş Taslaklar klasörleri oluşturulmaz.
+Uygulama başka bir konumdan açılsa da aynı veri klasörünü kullanır.
 Kayıtlı hakediş varsa açılışta Çıktı paneli ve son kayıt seçilir.
-Eski EXE yanındaki Veriler klasörü farklıysa önce yedeklenir; çakışan
-dosyalar otomatik ezilmez. Okuma sorunu varsa ekranda uyarı gösterilir.
 Kaydet düğmeleri tamamlanan işlem veya hata için bilgi penceresi gösterir.
-TR hesap numarasının son 16 karakterinde harf kabul edilir. BİÇİM UYGUN
-etiketi yalnız biçimi belirtir; banka sahibi veya kontrol toplamı teyidi değildir.
+TR hesap alanının son 16 karakterinde harf kabul edilir; biçim uygunluğu
+banka sahibi veya kontrol toplamı teyidi anlamına gelmez.
 
 AYARLAR
 Diğer İşlemler grubunun sonundaki Ayarlar düğmesini açın.

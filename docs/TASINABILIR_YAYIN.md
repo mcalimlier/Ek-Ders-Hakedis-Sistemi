@@ -30,3 +30,10 @@ GitHub'a yüklemek zorunlu değildir; dosyayı doğrudan paylaşabilirsiniz. Mer
 Dosyaları ana kaynak kod klasörüne eklemek yerine derlenmiş paket için Releases kullanılır. Öğretmen/IBAN/TC bilgileri, Veriler klasörü ve özel yedekler yayın dosyaları arasına konmaz.
 
 Resmî kaynaklar: [GitHub Releases hakkında](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases), [web arayüzünden yayın oluşturma](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
+
+## Türkçe kurulum sürümü
+1. dotnet publish src/Hakedis.App -c Release -r win-x64 --self-contained true -o dist/v1.0.3 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false
+2. docs/KULLANIM.txt dosyasını aynı yayın klasörüne kopyalayın.
+3. scripts/Build-Installer.ps1 -Version 1.0.3 çalıştırın. Inno Setup 6 gerekir.
+Kurulum kullanıcı uygulama klasörüne yapılır; kaldırma masaüstündeki kişisel kayıtları silmez.
+

@@ -27,7 +27,6 @@ public partial class App : Application
             var warnings=paths.Initialize(AppContext.BaseDirectory).ToList();
             if(e.Args.Contains("--prepare-workspace",StringComparer.Ordinal))
             {
-                TryLog(warnings.Count==0?"Kısayol öncesi veri yolu kontrolü tamamlandı.":string.Join(Environment.NewLine,warnings));
                 Shutdown(warnings.Count==0?0:2);return;
             }
             var shell=new ShellViewModel(paths.TeacherFilePath);
@@ -36,16 +35,13 @@ public partial class App : Application
             {warnings.Add("Açılış yedeği oluşturulamadı: "+ex.Message);}
             warnings.AddRange(shell.Outputs.LoadErrors);
             MainWindow=new MainWindow(shell);MainWindow.Show();
-            TryLog($"Açılış: veri yolu={paths.DataDirectory}; kayıtlı hakediş={shell.Outputs.Records.Count}; okuma sorunu={shell.Outputs.LoadErrors.Count}.");
             if(warnings.Count>0)
             {
-                TryLog(string.Join(Environment.NewLine,warnings));
                 MessageBox.Show(MainWindow,"Kayıtlar korunuyor; aşağıdaki durumları kontrol edin:\n\n"+string.Join("\n",warnings)+"\n\nVeri klasörü: "+paths.DataDirectory,"Kayıt kontrolü",MessageBoxButton.OK,MessageBoxImage.Warning);
             }
         }
         catch(Exception ex) when(ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or TypeInitializationException)
         {
-            TryLog("Açılış başarısız: "+ex);
             MessageBox.Show("Kayıtlar açılamadığı için uygulama boş veriyle başlatılmadı. Mevcut dosyalar korunuyor.\n\n"+ex.Message+"\n\nVeri klasörü: "+paths?.DataDirectory,"Kayıtlar açılamadı",MessageBoxButton.OK,MessageBoxImage.Error);
             Shutdown(1);
         }
@@ -63,6 +59,4 @@ public partial class App : Application
         }
         instance?.Dispose();base.OnExit(e);
     }
-    private void TryLog(string message)
-    {try{paths?.Log(message);}catch(System.IO.IOException){}catch(UnauthorizedAccessException){}}
 }
