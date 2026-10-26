@@ -50,6 +50,17 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         Calculation.PaymentCreated+=Outputs.Reload;
         CommonConstants.Saved+=ApplyConstantEditors;RetiredConstants.Saved+=ApplyConstantEditors;
         Workspace.PropertyChanged += WorkspaceChanged;
+        // A saved payroll is the user's last completed work, not an empty default module.
+        if(Outputs.Records.FirstOrDefault() is { } latest)
+        {
+            var descriptor=Workspace.Modules.Single(m=>m.Id==latest.Document.ModuleId);
+            Workspace.SelectedModule=descriptor;
+            Monthly.SelectedModule=descriptor;Calculation.SelectedModule=descriptor;
+            Monthly.Year=Calculation.Year=latest.Document.Data.Year;
+            Monthly.Month=Calculation.Month=latest.Document.Data.Month;
+            RegistrationModule=ListModule=descriptor;
+            Outputs.Selected=latest;panel="Outputs";
+        }
     }
     private static bool SamePeriod(PeriodWorkspace a,PeriodWorkspace b)=>a.SelectedModule.Id==b.SelectedModule.Id && a.Year==b.Year && a.Month==b.Month;
     private PeriodWorkspace Other(PeriodWorkspace source)=>ReferenceEquals(source,Monthly)?Calculation:Monthly;

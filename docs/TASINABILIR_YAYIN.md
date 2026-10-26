@@ -14,7 +14,7 @@ Betik önce testleri çalıştırır. Başarılıysa kendi çalışma ortamını
 
 Dağıtımda ZIP'i paylaşın. Alıcı ZIP'i tamamen çıkarsın ve Ek Ders Hakediş Sistemi.exe'yi açsın. Paket gerçek/test öğretmen kayıtlarını, aylık girişleri, SGK işyeri profilini veya eski hakedişleri içermez. İlk kullanımda kurum ve personel bilgileri girilir.
 
-Güncelleme yapılırken program kapatılır, mevcut `Veriler` klasörü yedeklenip korunur ve yeni Ek Ders Hakediş Sistemi.exe aynı program klasörüne konur. Başka bilgisayara kişisel kayıt taşımak gerektiğinde Veriler klasörü ayrıca, yalnız yetkili kullanıcıya aktarılır; herkese açık yayın paketine eklenmez.
+Güncelleme yapılırken program kapatılır, Masaüstü/Ek Ders Hakediş Sistemi/Veriler klasörü yedeklenip korunur ve yeni Ek Ders Hakediş Sistemi.exe masaüstündeki aynı adlı program klasörüne konur. EXE farklı konumdan başlatılsa da bu sabit çalışma klasörü kullanılır. Başka bilgisayara kişisel kayıt taşımak gerektiğinde Veriler klasörü ayrıca, yalnız yetkili kullanıcıya aktarılır; herkese açık yayın paketine eklenmez.
 
 ## GitHub üzerinden dağıtım
 

@@ -32,6 +32,7 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     public ReportDetailsEditor Details {get;}
     public bool HasDetailsChanges=>Details.Read()!=savedDetails;
     public string Status {get;private set;}="";
+    public IReadOnlyList<string> LoadErrors {get;private set;}=[];
     public string DetailsStatus {get;private set;}="";
     public event PropertyChangedEventHandler? PropertyChanged;
     public OutputsViewModel(string root)
@@ -40,8 +41,11 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     public void Reload()
     {
         var path=Selected?.Path;Records.Clear();selected=null;
-        try{foreach(var record in store.ReadAll())Records.Add(record);selected=Records.FirstOrDefault(r=>r.Path==path);Status=$"{Records.Count} kayıtlı hakediş. PDF veya Yazdır için kayıt seçin.";}
-        catch(Exception ex) when(ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or ArgumentException){Status="Kayıtlar okunamadı: "+ex.Message;}
+        var available=store.ReadAvailable(out var errors);
+        foreach(var record in available)Records.Add(record);
+        LoadErrors=errors;
+        selected=path is null?Records.FirstOrDefault():Records.FirstOrDefault(r=>string.Equals(r.Path,path,StringComparison.OrdinalIgnoreCase));
+        Status=$"{Records.Count} kayıtlı hakediş. "+(LoadErrors.Count>0?$"{LoadErrors.Count} dosya okunamadı; kaynak dosyalar korundu. ":"")+"PDF veya Yazdır için kayıt seçin.";
         Notify();
     }
     public ArchivedPayment ReadSelected()
@@ -56,5 +60,5 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
         Reload();ShowStatus($"{record.Module} · {record.Period} hakedişi silindi.");return true;
     }
     public void ShowStatus(string message){Status=message;Notify();}
-    private void Notify(){foreach(var name in new[]{nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status)})PropertyChanged?.Invoke(this,new(name));}
+    private void Notify(){foreach(var name in new[]{nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status),nameof(LoadErrors)})PropertyChanged?.Invoke(this,new(name));}
 }

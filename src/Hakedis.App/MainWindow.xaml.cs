@@ -12,7 +12,7 @@ public partial class MainWindow : Window
     private readonly string? personalOutputRoot;
     private readonly Func<BillingChoiceViewModel,bool>? billingChoicePrompt;
     private WorkspaceViewModel model => shell.Workspace;
-    public MainWindow() : this(new ShellViewModel(System.IO.Path.Combine(AppContext.BaseDirectory,"Veriler","ogretmenler.json"))) { }
+    public MainWindow() : this(new ShellViewModel(Hakedis.Storage.ApplicationPaths.Default.TeacherFilePath)) { }
     public MainWindow(ShellViewModel viewModel,Action<string>? notification=null,Func<string,string,bool>? confirmation=null,
         Action<string>? folderOpener=null,string? personalOutputRoot=null,Func<BillingChoiceViewModel,bool>? billingChoicePrompt=null)
     {
@@ -35,7 +35,7 @@ public partial class MainWindow : Window
         Left=workArea.Left+(workArea.Width-Width)/2;Top=workArea.Top+(workArea.Height-Height)/2;
     }
     private void ApplySettings_Click(object sender,RoutedEventArgs e)
-    {try{shell.Settings.Save();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or UnauthorizedAccessException){shell.Settings.ShowError(ex.Message);}}
+    {try{shell.Settings.Save();Inform(shell.Settings.Status);}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or UnauthorizedAccessException){shell.Settings.ShowError(ex.Message);Inform(ex.Message);}}
     protected override void OnClosed(EventArgs e)
     {shell.Settings.Applied-=ApplyWindowPreference;base.OnClosed(e);}
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -56,10 +56,10 @@ public partial class MainWindow : Window
         {
             if(!Hakedis.Contracts.OccupationCatalog.Contains(shell.Registration.Editor.OccupationCode))
                 throw new ArgumentException("SGK MESLEK KODU için listeden kod ve karşılığını seçin.");
-            if(shell.Registration.IsEditingRecord){shell.SaveTeacherEdit();ShowSaved();}else shell.SaveNewTeacher();
+            if(shell.Registration.IsEditingRecord)shell.SaveTeacherEdit();else shell.SaveNewTeacher();Inform("Öğretmen bilgileri kaydedildi.");
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException)
-        { shell.Registration.ShowStatus(ex.Message); }
+        { shell.Registration.ShowStatus(ex.Message);Inform(ex.Message); }
     }
     private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
@@ -70,7 +70,7 @@ public partial class MainWindow : Window
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
-    private void SaveTeacher_Click(object sender, RoutedEventArgs e) => RunTeacher(()=>{shell.Teachers.Save();shell.Monthly.RefreshTeachers();shell.Calculation.RefreshTeachers();});
+    private void SaveTeacher_Click(object sender, RoutedEventArgs e) => RunTeacher(()=>{shell.Teachers.Save();shell.Monthly.RefreshTeachers();shell.Calculation.RefreshTeachers();Inform(shell.Teachers.Status);});
     private void UseTeacher_Click(object sender, RoutedEventArgs e) => RunTeacher(shell.UseSelectedTeacher);
     private void DeleteTeacher_Click(object sender, RoutedEventArgs e)
     {
@@ -81,18 +81,19 @@ public partial class MainWindow : Window
             "Öğretmen kaydını sil", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
             RunTeacher(()=>{shell.Teachers.DeleteSelected();shell.Monthly.RefreshTeachers();shell.Calculation.RefreshTeachers();});
     }
-    private void ShowSaved()
-    {if(notify is not null)notify("Kayıtlar güncellendi.");else MessageBox.Show(this,"Kayıtlar güncellendi.","Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}
+    private void Inform(string message)
+    {if(notify is not null)notify(message);else MessageBox.Show(this,message,"Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}
+    private void ShowSaved()=>Inform("Kayıtlar güncellendi.");
     private bool CommitHybrid()
     {
         if(HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell,true) &&
            HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row,true) && !HasValidationError(HybridGrid))return true;
-        shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");return false;
+        shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");Inform("Kayıt yapılmadı. Tablodaki hücre girişini tamamlayın.");return false;
     }
     private void EditHybrid_Click(object sender,RoutedEventArgs e)
     {if(CommitHybrid())RunPeriod(shell.Calculation,()=>{shell.BeginHybridTeacherEdit();TeacherEntryScroll.ScrollToTop();});}
     private void SaveHybrid_Click(object sender,RoutedEventArgs e)
-    {if(CommitHybrid())RunPeriod(shell.Calculation,()=>{shell.Calculation.SaveHybridChanges();ShowSaved();});}
+    {if(CommitHybrid())RunPeriod(shell.Calculation,()=>{if(!shell.Calculation.HasHybridChanges){Inform("Kaydedilecek değişiklik yok.");return;}shell.Calculation.SaveHybridChanges();ShowSaved();});}
     private void DeleteHybrid_Click(object sender,RoutedEventArgs e)
     {
         if(!CommitHybrid())return;var row=shell.Calculation.SelectedHybridRow;if(row is null)return;
@@ -100,12 +101,12 @@ public partial class MainWindow : Window
         if(MessageBox.Show(this,$"{row.FullName} adlı öğretmeni listeden silmek istiyor musunuz?\n{note}","Öğretmen kaydını sil",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes)
             RunPeriod(shell.Calculation,shell.Calculation.DeleteHybridTeacher);
     }
-    private void SaveMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,()=>shell.Monthly.Save(true));
+    private void SaveMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,()=>{shell.Monthly.Save(true);Inform(shell.Monthly.Status);});
     private void EditMonthly_Click(object sender,RoutedEventArgs e) => RunPeriod(shell.Monthly,shell.Monthly.BeginEdit);
     private void SaveConstants_Click(object sender,RoutedEventArgs e)
-    {try{shell.CommonConstants.ToggleSave();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.CommonConstants.ShowError(ex.Message);}}
+    {try{var saving=shell.CommonConstants.IsEditing;shell.CommonConstants.ToggleSave();if(saving)Inform(shell.CommonConstants.Status);}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.CommonConstants.ShowError(ex.Message);Inform(ex.Message);}}
     private void SaveRetiredConstants_Click(object sender,RoutedEventArgs e)
-    {try{shell.RetiredConstants.ToggleSave();}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.RetiredConstants.ShowError(ex.Message);}}
+    {try{var saving=shell.RetiredConstants.IsEditing;shell.RetiredConstants.ToggleSave();if(saving)Inform(shell.RetiredConstants.Status);}catch(Exception ex) when(ex is ArgumentException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException){shell.RetiredConstants.ShowError(ex.Message);Inform(ex.Message);}}
     private void ClearWork_Click(object sender,RoutedEventArgs e)
     {
         if(MessageBox.Show(this,"Ekrandaki çalışma temizlensin mi? Kaydedilmemiş girişler bırakılır; kayıtlı hakedişler ve aylık dosyalar silinmez.","Çalışmayı temizle",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)
@@ -117,7 +118,7 @@ public partial class MainWindow : Window
     {
         var source=shell.Personal.ReadSelection();var teacher=shell.Personal.SelectedTeacher!;
         var path=new PaymentReportService().ExportPersonal(source,teacher.Id,shell.Outputs.Details.Read(),personalOutputRoot);
-        shell.Personal.AcceptOutput(path);
+        shell.Personal.AcceptOutput(path);Inform("Kişisel bordro kaydedildi:\n"+path);
     });
     private void OpenPersonalFolder_Click(object sender,RoutedEventArgs e)=>RunPersonal(()=>
     {
@@ -129,9 +130,9 @@ public partial class MainWindow : Window
     {
         try{action();}
         catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or UnauthorizedAccessException or NotSupportedException or System.ComponentModel.Win32Exception)
-        {shell.Personal.ShowError(ex.Message);}
+        {shell.Personal.ShowError(ex.Message);Inform(ex.Message);}
     }
-    private void SaveReportDetails_Click(object sender,RoutedEventArgs e)=>RunOutput(shell.Outputs.SaveDetails);
+    private void SaveReportDetails_Click(object sender,RoutedEventArgs e)=>RunOutput(()=>{shell.Outputs.SaveDetails();Inform(shell.Outputs.DetailsStatus);});
     private void SelectOutput(object sender)
     {if(((FrameworkElement)sender).DataContext is Hakedis.Storage.ArchivedPayment record)shell.Outputs.Selected=record;}
     private void EditArchive_Click(object sender,RoutedEventArgs e)
@@ -166,7 +167,7 @@ public partial class MainWindow : Window
         });
     }
     private void RunOutput(Action action)
-    {try{action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or NotSupportedException or System.Printing.PrintSystemException or System.Windows.Xps.XpsException){shell.Outputs.ShowStatus(ex.Message);MessageBox.Show(this,ex.Message,"Çıktı",MessageBoxButton.OK,MessageBoxImage.Information);}}
+    {try{action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or NotSupportedException or System.Printing.PrintSystemException or System.Windows.Xps.XpsException){shell.Outputs.ShowStatus(ex.Message);Inform(ex.Message);}}
     private void ReloadPayment_Click(object sender,RoutedEventArgs e)
     {
         if(MessageBox.Show(this,"Kaydedilmemiş tablo değişiklikleri yerine son kayıtlar yüklensin mi?","Kayıtları yenile",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)
@@ -192,7 +193,7 @@ public partial class MainWindow : Window
     {
         if(!HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell,true) ||
            !HybridGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row,true) || HasValidationError(HybridGrid))
-        {shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");return;}
+        {shell.Calculation.ShowError("Tablodaki hücre girişini tamamlayın.");Inform("Hakediş kaydedilmedi. Tablodaki hücre girişini tamamlayın.");return;}
         RunPeriod(shell.Calculation,()=>{
             if(shell.Calculation.Rows.Any(r=>r.Teacher!=r.SourceTeacher))throw new InvalidOperationException("Önce öğretmen bilgileri için Değişiklikleri kaydet düğmesini kullanın.");
             while(shell.Calculation.BillingChoicesNeeded.FirstOrDefault() is { } row)
@@ -213,27 +214,28 @@ public partial class MainWindow : Window
             if(HasValidationError(System.Windows.Media.VisualTreeHelper.GetChild(element,i)))return true;
         return false;
     }
-    private static void RunPeriod(PeriodWorkspace period,Action action)
+    private void RunPeriod(PeriodWorkspace period,Action action)
     {
         try{action();}
         catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or NotSupportedException or
             System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or OverflowException)
-        {period.ShowError(ex.Message);}
+        {period.ShowError(ex.Message);Inform(ex.Message);}
     }
     private void RunTeacher(Action action)
     {
         try { action(); }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException)
-        { shell.Teachers.ShowError(ex.Message); }
+        { shell.Teachers.ShowError(ex.Message);Inform(ex.Message); }
     }
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new SaveFileDialog { Filter = "Hakediş taslağı (*.json)|*.json", FileName = "temel-egitim-taslak.json" };
-        if (dialog.ShowDialog() == true) Run(() => model.Save(dialog.FileName));
+        System.IO.Directory.CreateDirectory(Hakedis.Storage.ApplicationPaths.Default.DraftDirectory);
+        var dialog = new SaveFileDialog { Filter = "Hakediş taslağı (*.json)|*.json", FileName = "hakediş-taslağı.json", InitialDirectory=Hakedis.Storage.ApplicationPaths.Default.DraftDirectory };
+        if (dialog.ShowDialog() == true) Run(() => {model.Save(dialog.FileName);Inform("Hakediş taslağı kaydedildi:\n"+dialog.FileName);});
     }
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "Hakediş taslağı (*.json)|*.json" };
+        var dialog = new OpenFileDialog { Filter = "Hakediş taslağı (*.json)|*.json", InitialDirectory=Hakedis.Storage.ApplicationPaths.Default.DraftDirectory };
         if (dialog.ShowDialog() == true) { Run(() => model.Open(dialog.FileName)); shell.Navigate("Entry"); }
     }
     private void Run(Action action)
@@ -241,6 +243,6 @@ public partial class MainWindow : Window
         try { action(); }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException
             or System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or OverflowException)
-        { model.ShowError(ex.Message); }
+        { model.ShowError(ex.Message);Inform(ex.Message); }
     }
 }

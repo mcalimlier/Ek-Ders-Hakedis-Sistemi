@@ -10,6 +10,7 @@ try {
     dotnet publish src/Hakedis.App -c Release -r $Runtime --self-contained true -o $packagePath /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false
     if ($LASTEXITCODE -ne 0) { throw 'EXE yayını başarısız.' }
     Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/KULLANIM.txt') -Destination (Join-Path $packagePath 'KULLANIM.txt')
+    Copy-Item -LiteralPath (Join-Path $projectRoot 'scripts/Create-DesktopShortcut.ps1') -Destination (Join-Path $packagePath 'Masaüstü Kısayolu.ps1')
     Compress-Archive -Path (Join-Path $packagePath '*') -DestinationPath ($packagePath + '.zip')
     Write-Host ('Hazır: ' + $packagePath + '.zip')
 } finally { Pop-Location }

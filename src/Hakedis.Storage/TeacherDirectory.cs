@@ -118,6 +118,10 @@ public sealed class TeacherDirectory
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
+    // Structure only: preserving bank-provided account text does not verify MOD 97 check digits.
+    public static bool IsBankAccountFormatValid(string account)
+        => Regex.IsMatch(account, "\\ATR[0-9]{7}0[A-Z0-9]{16}\\z");
+
     public static TeacherRecord Normalize(TeacherRecord teacher)
     {
         ArgumentNullException.ThrowIfNull(teacher);
@@ -133,8 +137,8 @@ public sealed class TeacherDirectory
             StartDate = teacher.StartDate?.Date, EndDate = teacher.EndDate?.Date };
         if (normalized.IdentityNumber != "" && !Regex.IsMatch(normalized.IdentityNumber, "^[0-9]{11}$"))
             throw new ArgumentException("T.C. kimlik numarası 11 rakam olmalıdır veya boş bırakılmalıdır.");
-        if (normalized.Iban != "" && !Regex.IsMatch(normalized.Iban, "^TR[0-9]{24}$"))
-            throw new ArgumentException("IBAN, TR ile başlayan 26 karakter olmalıdır veya boş bırakılmalıdır.");
+        if (normalized.Iban != "" && !IsBankAccountFormatValid(normalized.Iban))
+            throw new ArgumentException("Banka hesabı TR, 2 kontrol rakamı, 5 banka rakamı, 0 rezerv hanesi ve 16 harf/rakamdan oluşmalıdır veya boş bırakılmalıdır.");
         if (normalized.EndDate < normalized.StartDate) throw new ArgumentException("Ayrılış tarihi başlangıç tarihinden önce olamaz.");
         if(normalized.Assignments is { } history)
         {

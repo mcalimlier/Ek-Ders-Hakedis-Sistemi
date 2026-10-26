@@ -136,7 +136,8 @@ public sealed class ReadinessAuditTests : IDisposable
         Assert.Equal(10,october.Rows.Length);Assert.All(october.Rows,r=>Assert.Equal(90,r.Input.DayHours));
         Assert.Equal(8,october.Movement!.Previous);Assert.Equal(6,october.Movement.Entered);Assert.Equal(4,october.Movement.Exited);
         Assert.Equal(bytes,File.ReadAllBytes(september.Path));
-        shell=new ShellViewModel(Catalog);Assert.Equal(8,shell.Calculation.Rows.Count(r=>r.HasInput));
+        shell=new ShellViewModel(Catalog);Assert.Equal(10,shell.Calculation.Month);Assert.Equal(10,shell.Calculation.Rows.Count(r=>r.HasInput));
+        shell.Calculation.Month=9;Assert.Equal(8,shell.Calculation.Rows.Count(r=>r.HasInput));
         shell.Calculation.Year=2027;shell.Calculation.Month=10;
         Assert.All(shell.Calculation.Rows,r=>Assert.False(r.HasInput));
         Assert.Equal(2,new PaymentArchiveStore(root).ReadAll().Count);

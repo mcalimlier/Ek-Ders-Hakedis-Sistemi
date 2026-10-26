@@ -78,6 +78,36 @@ public sealed class PaymentArchiveStore(string root)
         var folder=System.IO.Path.Combine(root,"AylikKayitlar");if(!Directory.Exists(folder))return [];
         return Directory.EnumerateFiles(folder,"hakediş-*.json",SearchOption.AllDirectories).Select(Read).OrderByDescending(x=>x.SavedAt).ToArray();
     }
+    // For display only. Identity and period checks must keep using the strict ReadAll.
+    public IReadOnlyList<ArchivedPayment> ReadAvailable(out IReadOnlyList<string> errors)
+    {
+        var folder=System.IO.Path.Combine(root,"AylikKayitlar");
+        var records=new List<ArchivedPayment>();var failures=new List<string>();
+        void Report(string path,Exception error)
+            => failures.Add(System.IO.Path.GetRelativePath(root,path)+": "+error.Message);
+        void Scan(string directory)
+        {
+            string[] files;
+            try{files=Directory.GetFiles(directory,"hakediş-*.json",SearchOption.TopDirectoryOnly);}
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){Report(directory,ex);return;}
+            foreach(var file in files)
+            {
+                try{records.Add(Read(file));}
+                catch(Exception ex) when(ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException){Report(file,ex);}
+            }
+            string[] children;
+            try{children=Directory.GetDirectories(directory);}
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){Report(directory,ex);return;}
+            foreach(var child in children)
+            {
+                try{if((File.GetAttributes(child)&FileAttributes.ReparsePoint)==0)Scan(child);}
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){Report(child,ex);}
+            }
+        }
+        if(Directory.Exists(folder))Scan(folder);
+        errors=failures.ToArray();
+        return records.OrderByDescending(x=>x.SavedAt).ToArray();
+    }
     public ArchivedPayment Read(string path)
     {
         var full=System.IO.Path.GetFullPath(path);var allowed=System.IO.Path.GetFullPath(System.IO.Path.Combine(root,"AylikKayitlar"))+System.IO.Path.DirectorySeparatorChar;

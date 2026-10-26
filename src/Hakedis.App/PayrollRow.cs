@@ -49,7 +49,7 @@ Recalculate();
     public string MaximumDaysText => SgkInformation?.CalendarDays.ToString(CultureInfo.GetCultureInfo("tr-TR")) ?? "—";
     public string WorkingDaysText => (SgkInformation?.PremiumDays ?? Result?.PremiumDays)?.ToString(CultureInfo.GetCultureInfo("tr-TR")) ?? "—";
     public int Sequence { get; set; }
-    public string IbanCheck=>string.IsNullOrEmpty(Teacher.Iban)?"-":Teacher.Iban.Length==26?"DOĞRU":"HATALI";
+    public string IbanCheck=>string.IsNullOrEmpty(Teacher.Iban)?"-":TeacherDirectory.IsBankAccountFormatValid(Teacher.Iban.Replace(" ", "").ToUpperInvariant())?"BİÇİM UYGUN":"HATALI";
     public string TotalHours
     {
         get {try {var i=Read();return Text(i.DayHours+i.DykHours);}catch(Exception ex) when(ex is ArgumentException or OverflowException){return "—";}}

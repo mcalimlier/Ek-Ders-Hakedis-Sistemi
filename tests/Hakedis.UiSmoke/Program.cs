@@ -16,6 +16,10 @@ internal static class Program
         var output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/ui-review"); Directory.CreateDirectory(output);
         var listener = new BindingErrors(); PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
         var app = new Hakedis.App.App(); app.InitializeComponent();
+        if(args.Length==2 && args[1]=="--verify-save-notifications")
+        {
+            SaveNotificationChecks.Run(output);return 0;
+        }
         if(args.Length==3 && args[1]=="--verify-local-sgk")
         {
             var store=new Hakedis.Storage.PaymentArchiveStore(args[2]);var record=store.ReadAll().First();
@@ -124,8 +128,9 @@ internal static class Program
         if(row.Result?.Gross!=23821.74m || model.Monthly.DayHours!="108")throw new InvalidOperationException("Hücre yazılırken hesap ve aylık panel güncellenmedi.");
         if(row.MissingDays!="15")throw new InvalidOperationException("Hücre yazılırken SGK bilgisi güncellenmedi.");
         grid.CommitEdit(DataGridEditingUnit.Cell,true);grid.CommitEdit(DataGridEditingUnit.Row,true);
+        var beforeCreateNotifications=notifications.Count;
         Descendants<Button>(window).Single(b=>b.IsVisible && b.Content as string=="Hakediş oluştur").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        if(!model.OutputsVisible || notifications.Count!=1)throw new InvalidOperationException("Hakediş sonrası bildirim ve Çıktı yönlendirmesi yok.");
+        if(!model.OutputsVisible || notifications.Count!=beforeCreateNotifications+1)throw new InvalidOperationException("Hakediş sonrası bildirim ve Çıktı yönlendirmesi yok.");
         Capture(window,Path.Combine(output,"Outputs-saved.png"));
         var outputsGrid=(DataGrid)window.FindName("OutputsGrid");
         if(outputsGrid.Columns.OfType<DataGridTextColumn>().Any(c=>c.ElementStyle?.Setters.OfType<Setter>().Any(v=>v.Property==TextBlock.TextAlignmentProperty && Equals(v.Value,TextAlignment.Center))!=true))throw new InvalidOperationException("Çıktı hücreleri ortalı değil.");
@@ -156,15 +161,17 @@ internal static class Program
         if(!model.CalculationVisible || row.FullName!="Deneme Öğretmeni" || model.Registration.IsEditingRecord)
             throw new InvalidOperationException("Vazgeç kayıtları değiştirdi.");
         edit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));model.Registration.Editor.FullName="Güncellenen Öğretmen";
+        var beforeRegistrationNotifications=notifications.Count;
         saveRegistration.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        if(!model.CalculationVisible || row.FullName!="Güncellenen Öğretmen" || notifications.Count!=2)
+        if(!model.CalculationVisible || row.FullName!="Güncellenen Öğretmen" || notifications.Count!=beforeRegistrationNotifications+1)
             throw new InvalidOperationException("Öğretmen kaydı / dönüş / bildirim başarısız.");
         if(saveRegistration.Content as string!="Öğretmeni Kaydet" || cancelRegistration.Content as string!="Formu Temizle")
             throw new InvalidOperationException("Öğretmen düğmeleri normal moda dönmedi.");
         row.School="Yeni okul";row.DayHours="90";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(!saveHybrid.IsEnabled)throw new InvalidOperationException("Değişiklikleri kaydet etkinleşmedi.");
+        var beforeHybridNotifications=notifications.Count;
         saveHybrid.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        if(saveHybrid.IsEnabled || notifications.Count!=3)throw new InvalidOperationException("Toplu kayıt değişiklikleri kabul etmedi.");
+        if(saveHybrid.IsEnabled || notifications.Count!=beforeHybridNotifications+1)throw new InvalidOperationException("Toplu kayıt değişiklikleri kabul etmedi.");
         grid.ScrollIntoView(row,grid.Columns[1]);window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         foreach(var text in Descendants<TextBlock>(grid).Where(t=>System.Windows.Data.BindingOperations.GetBinding(t,TextBlock.TextProperty)?.Path?.Path=="FullName"))
             if(text.TextAlignment!=TextAlignment.Center || text.VerticalAlignment!=VerticalAlignment.Center)
@@ -190,7 +197,7 @@ internal static class Program
         Capture(window,Path.Combine(output,"Outputs-five-actions.png"));
         var sgkStore=new Hakedis.Storage.SgkXmlStore(model.Outputs.DataRoot);
         sgkStore.Save(Hakedis.Contracts.ModuleId.TemelEgitim,new(new("12345678901234567890120000","ÖRNEK KURUM","ÖRNEK ADRES","13","00000",DefaultMissingReason:"07"),[]));
-        var xmlDialog=new SgkXmlWindow(archived,sgkStore,Path.Combine(output,"xml-test")){Owner=window};
+        var xmlDialog=new SgkXmlWindow(archived,sgkStore,Path.Combine(output,"xml-test"),notifications.Add){Owner=window};
         Exception? xmlFailure=null;
         xmlDialog.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>{
             try{
@@ -284,6 +291,7 @@ internal static class Program
         RetiredHalkChecks.Run(output,Capture);
         MeslekiEgitimChecks.Run(output,Capture);
         LayoutSettingsChecks.Run(output,Capture);
+        SaveNotificationChecks.Run(output);
         SchoolHistoryChecks.Run(output,Capture);
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
         Console.WriteLine($"12 WPF panel görüntüsü, eşit beş çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;

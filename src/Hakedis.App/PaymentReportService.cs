@@ -24,7 +24,7 @@ public sealed record LaidOutReport(string FileName,ReportPage[] Pages);
 public sealed partial class PaymentReportService
 {
     private static readonly CultureInfo Tr=CultureInfo.GetCultureInfo("tr-TR");
-    public static string DefaultOutputRoot=>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),AppIdentity.FolderName,"Çıktılar");
+    public static string DefaultOutputRoot=>ApplicationPaths.Default.OutputDirectory;
     public LaidOutReport[] Prepare(ArchivedPayment record,ReportDetails fallback)
     {
         PaymentArchiveStore.Validate(record.Document.Data,record.Document.ModuleId);

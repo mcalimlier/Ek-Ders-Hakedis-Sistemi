@@ -46,7 +46,23 @@ internal static class LayoutSettingsChecks
             var sig=signature.TransformToAncestor(window).TransformBounds(new Rect(0,0,signature.ActualWidth,signature.ActualHeight));
             if(last.Bottom>sig.Top || sig.Bottom>size.Height)throw new Exception("Küçük ekranda Ayarlar/imza çakışıyor.");
             foreach(var panel in new[]{"Entry","Details","Calculation","Teachers","Personal","Constants","Outputs"})
-            {model.Navigate(panel);Idle(window);capture(PreviewSurface(window,size),Path.Combine(output,$"Ek Ders Hakediş Sistemi-{panel}-{size.Width}.png"));}
+                        {
+                model.Navigate(panel);Idle(window);
+                var preview=PreviewSurface(window,size);
+                if(panel=="Constants")
+                {
+                    foreach(var name in new[]{"ConstantsFields","RetiredConstantsFields"})
+                    {
+                        var constants=(FrameworkElement)((UserControl)preview).FindName(name);
+                        var editors=Descendants<TextBox>(constants).ToArray();
+                        if(editors.Length!=9 || constants.ActualHeight>150)
+                            throw new Exception($"{size.Width}: {name} dokuz alanlı kompakt düzende değil ({constants.ActualHeight}).");
+                        if(editors.Any(editor=>editor.ActualHeight<30 || editor.ActualWidth<90))
+                            throw new Exception($"{size.Width}: {name} düzenleme alanları okunamayacak kadar küçük.");
+                    }
+                }
+                capture(preview,Path.Combine(output,$"Ek Ders Hakediş Sistemi-{panel}-{size.Width}.png"));
+            }
             model.Navigate("Calculation");Idle(window);
             var metrics=(System.Windows.Controls.Primitives.UniformGrid)window.FindName("PaymentMetrics");
             var cards=metrics.Children.OfType<Border>().ToArray();PersonalPayrollChecks.VerifyMetricRegions(cards);
@@ -68,7 +84,7 @@ internal static class LayoutSettingsChecks
         XNamespace wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation";
         XNamespace x="http://schemas.microsoft.com/winfx/2006/xaml";
         var root=document.Root!;root.Name=wpf+"UserControl";root.Attribute(x+"Class")!.Remove();
-        foreach(var key in new[]{"Title","MinWidth","MinHeight","WindowStartupLocation","WindowStyle","ResizeMode"})root.Attribute(key)?.Remove();
+        foreach(var key in new[]{"Title","Icon","MinWidth","MinHeight","WindowStartupLocation","WindowStyle","ResizeMode"})root.Attribute(key)?.Remove();
         root.Element(wpf+"WindowChrome.WindowChrome")!.Remove();root.Element(wpf+"Window.Resources")!.Name=wpf+"UserControl.Resources";
         root.SetAttributeValue(XNamespace.Xmlns+"local","clr-namespace:Hakedis.App;assembly=Ek Ders Hakediş Sistemi");
         foreach(var element in root.DescendantsAndSelf())

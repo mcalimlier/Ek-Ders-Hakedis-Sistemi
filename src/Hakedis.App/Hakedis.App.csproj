@@ -14,7 +14,7 @@
     <OutputType>WinExe</OutputType>
     <AssemblyName>Ek Ders Hakediş Sistemi</AssemblyName>
     <RootNamespace>Hakedis.App</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Title>Ek Ders Hakediş Sistemi</Title>
     <Product>Ek Ders Hakediş Sistemi</Product>
     <Description>Modüllerle ek ders hakedişi, bordro ve SGK çıktıları.</Description>
@@ -22,6 +22,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\Hakedis.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\Hakedis.ico" />
+  </ItemGroup>
 </Project>
