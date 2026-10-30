@@ -14,4 +14,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-<ItemGroup><ProjectReference Include="../Hakedis.TemelEgitim.Core/Hakedis.TemelEgitim.Core.csproj"/></ItemGroup></Project>
+<ItemGroup><ProjectReference Include="../Hakedis.TemelEgitim.Core/Hakedis.TemelEgitim.Core.csproj" /></ItemGroup>
+
+<ItemGroup>
+  <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
+</ItemGroup></Project>

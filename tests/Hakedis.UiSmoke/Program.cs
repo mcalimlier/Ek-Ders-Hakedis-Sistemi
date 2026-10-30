@@ -17,7 +17,7 @@ internal static class Program
         var listener = new BindingErrors(); PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
         // Load only UI resources: production App.OnStartup opens the real desktop data.
         var app = new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
-        foreach(var theme in new[]{"Oehs","Workspace","PaymentCards"})
+        foreach(var theme in new[]{"Oehs","Workspace","PaymentCards","Vault"})
             app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri($"/Ek Ders Hakediş Sistemi;component/Themes/{theme}.xaml",UriKind.Relative)});
         if(args.Length==3 && args[1]=="--verify-data-compat")
         {
@@ -32,6 +32,10 @@ internal static class Program
             }
             var archives=new Hakedis.Storage.PaymentArchiveStore(root).ReadAll();
             Console.WriteLine($"Eski veri uyumluluğu: {teachers.Count} kişi, {monthlyCount} aylık öğretmen girdisi, {archives.Count} hakediş arşivi başarıyla okundu.");return 0;
+        }
+        if(args.Length==2 && args[1]=="--verify-vault")
+        {
+            VaultChecks.Run(output);return 0;
         }
         if(args.Length==2 && args[1]=="--verify-save-notifications")
         {
@@ -312,6 +316,7 @@ internal static class Program
         SchoolHistoryChecks.Run(output,Capture);
         TransferHoursChecks.Run(output,Capture);
         OutputEntryChecks.Run(output,Capture);
+        VaultChecks.Run(output);
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
         Console.WriteLine($"12 WPF panel görüntüsü, eşit altı çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }

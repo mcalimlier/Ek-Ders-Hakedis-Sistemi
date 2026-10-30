@@ -202,6 +202,23 @@ kaydı aynen korur. Onaylı değişiklik yalnız seçili arşivi günceller;
 önceki sürümü .bak olur, ana öğretmen ve aylık giriş dosyası değişmez.
 Başka bir işlemde değişen dosyanın üzerine eski ekranla yazılmaz.
 
+ŞİFRE KASASI
+Sol menüden Şifre Kasası açılır. İlk kullanımda ana parola ve tekrarı
+belirlenir (en az 10 karakter; harf, rakam ve sembol zorunludur). Kurtarma
+anahtarı yalnız bir kez gösterilir; kasa dosyasından ayrı saklayın.
+Ücretli Öğretmenler ve Usta Öğreticiler için beşer alan bulunur.
+Bilgileri kaydet ile şifreli kayıt yapılır. Pencereden ayrılınca veya
+iki dakika işlem yapılmayınca kasa kilitlenir; kaydedilmemiş girişler silinir.
+Şifreli kasayı dışa aktar ile yedek alın. Diğer bilgisayarda programı kurun,
+kasa ekranındaki ana parola alanına taşınan kasanın parolasını yazın ve
+Şifreli kasayı içe aktar seçeneğini kullanın. Bu işlem mevcut kasanın
+yerini alır; önce mevcut kasayı yedekleyin. Otomatik eşitleme yoktur.
+Kasa masaüstündeki Ek Ders Hakediş Sistemi/Kasa klasöründe bulunur;
+normal otomatik veri yedeğine dahil değildir. Ana parola ve kurtarma
+anahtarı birlikte unutulursa kasa kurtarılamaz. Eski dışa aktarımlar,
+ana parola değiştirilse bile eski parolayla açılır. Zararlı yazılım
+bulunan bir bilgisayarda açık bilgilerin korunması garanti edilemez.
+
 SONRAKİ ALANLAR
 İsteğe bağlı Excel dışa aktarma, banka aktarım dosyası ve diğer modüllerin
 hesaplama çekirdekleri bu sürümde henüz eklenmemiştir.

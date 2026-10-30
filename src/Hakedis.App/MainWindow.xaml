@@ -45,6 +45,8 @@
 <Button x:Name="NavConstants" Tag="Constants" IsEnabled="{Binding CanUseEntry}" Click="Navigate_Click">
 <Button.Style><Style TargetType="Button" BasedOn="{StaticResource NavButton}"><Setter Property="Height" Value="44"/><Style.Triggers><DataTrigger Binding="{Binding ConstantsVisible}" Value="True"><Setter Property="Uid" Value="Active"/></DataTrigger></Style.Triggers></Style></Button.Style>
 <StackPanel Orientation="Horizontal"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" Foreground="White" Width="34" FontSize="16"/><TextBlock Text="DÖNEM SABİTLERİ" Foreground="White"/></StackPanel></Button>
+<Button x:Name="NavVault" Click="Vault_Click" Style="{StaticResource NavButton}" Height="44" ToolTip="İki işyerinizin bilgilerini ana parolanızla koruyun">
+<StackPanel Orientation="Horizontal"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72E;" Foreground="White" Width="34" FontSize="16"/><TextBlock Text="ŞİFRE KASASI" Foreground="White"/></StackPanel></Button>
 <Button x:Name="NavSettings" Tag="Settings" IsEnabled="{Binding CanUseEntry}" Click="Navigate_Click">
 <Button.Style><Style TargetType="Button" BasedOn="{StaticResource NavButton}"><Setter Property="Height" Value="44"/><Style.Triggers><DataTrigger Binding="{Binding SettingsVisible}" Value="True"><Setter Property="Uid" Value="Active"/></DataTrigger></Style.Triggers></Style></Button.Style>
 <StackPanel Orientation="Horizontal"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" Foreground="White" Width="34" FontSize="16"/><TextBlock Text="AYARLAR" Foreground="White"/></StackPanel></Button>

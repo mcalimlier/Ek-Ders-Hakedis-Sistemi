@@ -8,6 +8,14 @@ Açılış/kapanış yedekleri aynı gün değişmeyen içerik için tekrarlanma
 TCMB biçimine göre son 16 karakterinde harf içeren TR banka hesapları saklanabilir;
 biçim kontrolü banka doğrulaması anlamına gelmez.
 
+## 1.0.6 birleşik sürüm
+
+- İki bilgisayarda geliştirilen özellikler bir aradadır: şifre kasası, bordro ayrıntıları, modül filtreleme, güvenli aylık giriş ve okul geçişi saatleri.
+- Şifre Kasası iki sabit işyeri grubunu içerir; ana parola en az 10 karakter, bir harf, bir rakam ve bir sembol içermelidir. Şifreli taşıma, kurtarma ve otomatik kilitleme desteklenir.
+- `Kasa` klasörü yalnız kullanıcı kendi kasasını oluşturduğunda açılır. Kişisel kasa ve kurtarma anahtarı kaynak koduna veya dağıtım paketine dahil edilmez. Kasa, normal veri yedeğinden ayrı dışa aktarılmalıdır.
+- [Kasa kullanımı ve güvenlik sınırları](docs/SIFRE_KASASI.md)
+- Doğrulama: 281 Release birim testi ve birleşik WPF akışları (kasa, kurum saatleri, modül filtresi, Detay, PDF/XML) geçti.
+
 ## 1.0.5 güncellemesi
 
 - Çıktılar modüle göre filtrelenir; Detay düğmesi kayıtlı hakedişin özet kartlarını ve salt okunur bordro listesini açar.

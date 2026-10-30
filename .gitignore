@@ -31,3 +31,9 @@ inceleme/
 dist/
 artifacts/
 TestResults/
+
+# Kişisel şifre kasaları ve kullanıcı tarafından saklanan kurtarma anahtarları
+Kasa/
+*.edhskasa
+*.edhskasa.*
+*.kurtarma-anahtari.txt

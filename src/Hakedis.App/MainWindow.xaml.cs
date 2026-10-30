@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     }
     private void Navigate_Click(object sender, RoutedEventArgs e)
         {try{shell.Navigate((string)((System.Windows.Controls.Button)sender).Tag);}catch(InvalidOperationException ex){MessageBox.Show(this,ex.Message,"Bilgi",MessageBoxButton.OK,MessageBoxImage.Information);}}
+    private void Vault_Click(object sender, RoutedEventArgs e) => new VaultWindow { Owner = this }.ShowDialog();
     private void Calculate_Click(object sender, RoutedEventArgs e) => Run(model.Calculate);
     private void NewTeacher_Click(object sender, RoutedEventArgs e) {if(shell.Registration.IsEditingRecord)shell.CancelTeacherEdit();else shell.Registration.Reset();}
     private void RegisterTeacher_Click(object sender, RoutedEventArgs e)
