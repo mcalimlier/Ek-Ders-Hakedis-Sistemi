@@ -28,7 +28,8 @@ internal static class LayoutSettingsChecks
         if(fields.Any(t=>t.IsReadOnly || ((SolidColorBrush)t.Background).Color!=Colors.White))throw new Exception("Güncelle beyaz düzenlemeyi açmadı.");
         ((Button)window.FindName("ConstantsUpdateButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Idle(window);
         var grid=(DataGrid)window.FindName("HybridGrid");
-        if(grid.Columns.Sum(c=>c.Width.Value)>1800)throw new Exception("Hibrit sütunlar daraltılmadı.");
+        var transferHeaders=new[]{"ÖNCEKİ KURUM GÜNDÜZ","YENİ KURUM GÜNDÜZ","KURUM SAAT UYARISI"};
+        if(grid.Columns.Where(c=>!transferHeaders.Contains(c.Header as string)).Sum(c=>c.Width.Value)>1800)throw new Exception("Hibrit sütunlar daraltılmadı.");
         foreach(var size in model.Settings.Sizes)
         {
             ((Button)window.FindName("NavSettings")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

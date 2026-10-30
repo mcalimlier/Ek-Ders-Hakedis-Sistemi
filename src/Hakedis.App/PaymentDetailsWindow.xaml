@@ -1,0 +1,41 @@
+<Window x:Class="Hakedis.App.PaymentDetailsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Hakediş Detayı" Width="1180" Height="740" MinWidth="760" MinHeight="520" WindowStartupLocation="CenterOwner" Background="#F4F7FB">
+<Grid Margin="20"><Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+<Border Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="Hakediş Detayı" Style="{StaticResource CardTitle}"/><TextBlock Text="{Binding Heading}" Foreground="#E8C778" FontSize="15" FontWeight="Bold" Margin="0,10,0,6" TextWrapping="Wrap"/><TextBlock Text="{Binding Metadata}" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/></StackPanel></Border>
+<UniformGrid Columns="5" Margin="0,0,-10,0">
+<Border Style="{StaticResource WorkspaceCard}" Margin="0,0,10,16" Padding="14"><StackPanel><TextBlock Text="KİŞİ / SAAT" Style="{StaticResource CardSubtitle}"/><TextBlock Text="{Binding People}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel></Border><Border Style="{StaticResource WorkspaceCard}" Margin="0,0,10,16" Padding="14"><StackPanel><TextBlock Text="BRÜT" Style="{StaticResource CardSubtitle}"/><TextBlock Text="{Binding Gross}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel></Border><Border Style="{StaticResource WorkspaceCard}" Margin="0,0,10,16" Padding="14"><StackPanel><TextBlock Text="TAHAKKUK" Style="{StaticResource CardSubtitle}"/><TextBlock Text="{Binding Accrual}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel></Border><Border Style="{StaticResource WorkspaceCard}" Margin="0,0,10,16" Padding="14"><StackPanel><TextBlock Text="KESİNTİ" Style="{StaticResource CardSubtitle}"/><TextBlock Text="{Binding Deductions}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel></Border><Border Style="{StaticResource WorkspaceCard}" Margin="0,0,10,16" Padding="14"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource CardSubtitle}"/><TextBlock Text="{Binding NetText}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel></Border>
+</UniformGrid><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Border Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="Kurum ve İmza Bilgileri" Style="{StaticResource CardTitle}"/><TextBlock Text="{Binding Institution}" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,12,0,0"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="Hesaplama Sabitleri" Style="{StaticResource CardTitle}"/><TextBlock Text="{Binding Constants}" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,12,0,10"/><TextBlock Text="{Binding Movement}" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/></StackPanel></Border></Grid>
+<Border Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="Kayıtlı Bordro Listesi" Style="{StaticResource CardTitle}"/><TextBlock Text="Bu pencere bilgi amaçlıdır. Kayıtlı hakediş değiştirilemez. Kişi ayrıntıları için satır seçin." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,8,0,14"/>
+<DataGrid x:Name="DetailGrid" ItemsSource="{Binding Rows}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" Height="285" RowHeight="32" FrozenColumnCount="1" HorizontalScrollBarVisibility="Auto" Style="{StaticResource ModernDataGrid}" SelectionChanged="Person_Selected"><DataGrid.Columns>
+<DataGridTextColumn Header="AD SOYAD" Binding="{Binding Teacher.FullName}" Width="170"/>
+<DataGridTextColumn Header="TC KİMLİK" Binding="{Binding Teacher.IdentityNumber}" Width="120"/>
+<DataGridTextColumn Header="IBAN" Binding="{Binding Teacher.Iban}" Width="245"/>
+<DataGridTextColumn Header="OKUL" Binding="{Binding Teacher.School}" Width="170"/>
+<DataGridTextColumn Header="MESLEK KODU" Binding="{Binding Teacher.OccupationCode}" Width="100"/>
+<DataGridTextColumn Header="İŞE BAŞLAMA" Binding="{Binding Teacher.StartDate,StringFormat={}{0:dd.MM.yyyy}}" Width="120"/>
+<DataGridTextColumn Header="AYRILIŞ" Binding="{Binding Teacher.EndDate,StringFormat={}{0:dd.MM.yyyy}}" Width="120"/>
+<DataGridTextColumn Header="GÜNDÜZ SAAT" Binding="{Binding Input.DayHours}" Width="100"/>
+<DataGridTextColumn Header="DYK SAAT" Binding="{Binding Input.DykHours}" Width="90"/>
+<DataGridTextColumn Header="GÜNDÜZ BİRİM ÜCRET" Binding="{Binding Result.DayRate,StringFormat={}{0:N5}}" Width="150"/>
+<DataGridTextColumn Header="DYK BİRİM ÜCRET" Binding="{Binding Result.DykRate,StringFormat={}{0:N5}}" Width="150"/>
+<DataGridTextColumn Header="GÜNDÜZ BRÜT" Binding="{Binding Result.DayGross,StringFormat={}{0:N2}}" Width="120"/>
+<DataGridTextColumn Header="DYK BRÜT" Binding="{Binding Result.DykGross,StringFormat={}{0:N2}}" Width="110"/>
+<DataGridTextColumn Header="BRÜT" Binding="{Binding Result.Gross,StringFormat={}{0:N2}}" Width="110"/>
+<DataGridTextColumn Header="PRİM GÜNÜ" Binding="{Binding Result.PremiumDays}" Width="100"/>
+<DataGridTextColumn Header="SGK TAKVİM GÜNÜ" Binding="{Binding SgkInformation.CalendarDays}" Width="120"/>
+<DataGridTextColumn Header="EKSİK GÜN" Binding="{Binding SgkInformation.MissingDays}" Width="100"/>
+<DataGridTextColumn Header="SGK İŞTİRAKÇİ" Binding="{Binding Result.EmployeePremium,StringFormat={}{0:N2}}" Width="130"/>
+<DataGridTextColumn Header="SGK İŞVEREN" Binding="{Binding Result.EmployerPremium,StringFormat={}{0:N2}}" Width="130"/>
+<DataGridTextColumn Header="TAHAKKUK" Binding="{Binding Result.Accrual,StringFormat={}{0:N2}}" Width="120"/>
+<DataGridTextColumn Header="GV MATRAHI" Binding="{Binding Result.IncomeBase,StringFormat={}{0:N2}}" Width="120"/>
+<DataGridTextColumn Header="GELİR VERGİSİ" Binding="{Binding Result.IncomeTax,StringFormat={}{0:N2}}" Width="120"/>
+<DataGridTextColumn Header="DAMGA VERGİSİ" Binding="{Binding Result.StampTax,StringFormat={}{0:N2}}" Width="120"/>
+<DataGridTextColumn Header="İCRA" Binding="{Binding Input.Garnishment,StringFormat={}{0:N2}}" Width="100"/>
+<DataGridTextColumn Header="TOPLAM KESİNTİ" Binding="{Binding Result.Deductions,StringFormat={}{0:N2}}" Width="130"/>
+<DataGridTextColumn Header="NET" Binding="{Binding Result.Net,StringFormat={}{0:N2}}" Width="120"/>
+
+</DataGrid.Columns></DataGrid><TextBlock x:Name="PersonInfo" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,14,0,0"/>
+</StackPanel></Border><TextBlock Text="{Binding Rules}" Foreground="#516781" TextWrapping="Wrap" FontSize="11" Margin="0,0,0,12"/>
+</StackPanel></ScrollViewer><Button Grid.Row="1" x:Name="CloseDetailsButton" Content="Kapat" Style="{StaticResource GoldAction}" HorizontalAlignment="Right" Margin="0,12,0,0" Click="Close_Click" IsCancel="True"/></Grid></Window>

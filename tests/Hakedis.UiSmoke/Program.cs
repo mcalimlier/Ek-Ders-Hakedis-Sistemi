@@ -15,7 +15,24 @@ internal static class Program
     {
         var output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/ui-review"); Directory.CreateDirectory(output);
         var listener = new BindingErrors(); PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
-        var app = new Hakedis.App.App(); app.InitializeComponent();
+        // Load only UI resources: production App.OnStartup opens the real desktop data.
+        var app = new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        foreach(var theme in new[]{"Oehs","Workspace","PaymentCards"})
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri($"/Ek Ders Hakediş Sistemi;component/Themes/{theme}.xaml",UriKind.Relative)});
+        if(args.Length==3 && args[1]=="--verify-data-compat")
+        {
+            var root=args[2];var teachers=new Hakedis.Storage.TeacherDirectory(Path.Combine(root,"ogretmenler.json")).ReadCanonical();
+            var months=new Hakedis.Storage.MonthlyPayrollStore(root);var monthlyCount=0;
+            var monthlyRoot=Path.Combine(root,"AylikKayitlar");
+            foreach(var file in Directory.EnumerateFiles(monthlyRoot,"????-??.json",SearchOption.AllDirectories))
+            {
+                var module=Enum.Parse<Hakedis.Contracts.ModuleId>(new DirectoryInfo(Path.GetDirectoryName(file)!).Name);
+                var parts=Path.GetFileNameWithoutExtension(file).Split('-');
+                monthlyCount+=months.Read(module,int.Parse(parts[0]),int.Parse(parts[1])).Entries.Length;
+            }
+            var archives=new Hakedis.Storage.PaymentArchiveStore(root).ReadAll();
+            Console.WriteLine($"Eski veri uyumluluğu: {teachers.Count} kişi, {monthlyCount} aylık öğretmen girdisi, {archives.Count} hakediş arşivi başarıyla okundu.");return 0;
+        }
         if(args.Length==2 && args[1]=="--verify-save-notifications")
         {
             SaveNotificationChecks.Run(output);return 0;
@@ -116,13 +133,13 @@ internal static class Program
         model.Navigate("Calculation");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         var grid=(DataGrid)window.FindName("HybridGrid");
         var row=model.Calculation.Rows.Single();
-        var hoursColumn=grid.Columns.OfType<DataGridTextColumn>().Single(c=>(c.Binding as System.Windows.Data.Binding)?.Path.Path=="DayHours");
+        var hoursColumn=grid.Columns.Single(c=>c.Header as string=="GÜNDÜZ SAAT TOPLAMI");
         grid.SelectedItem=row;grid.ScrollIntoView(row,hoursColumn);
         window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);grid.UpdateLayout();
         grid.CurrentCell=new DataGridCellInfo(row,hoursColumn);grid.Focus();
-        if(!grid.BeginEdit())throw new InvalidOperationException("Görünür saat hücresinde BeginEdit başarısız.");
+        // Template column exposes a directly editable TextBox.
         window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        var editor=Descendants<TextBox>(grid).FirstOrDefault(t=>t.IsVisible);
+        var editor=Descendants<TextBox>(hoursColumn.GetCellContent(row)).SingleOrDefault(t=>t.IsVisible);
         if(editor is null)throw new InvalidOperationException("Hibrit hücre düzenleme açılamadı.");
         editor.Text="108";window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(row.Result?.Gross!=23821.74m || model.Monthly.DayHours!="108")throw new InvalidOperationException("Hücre yazılırken hesap ve aylık panel güncellenmedi.");
@@ -140,7 +157,7 @@ internal static class Program
             Hakedis.Contracts.ExcelHeadings.IdentityNumber,Hakedis.Contracts.ExcelHeadings.Iban,Hakedis.Contracts.ExcelHeadings.StartDate,
             Hakedis.Contracts.ExcelHeadings.EndDate,
             Hakedis.Contracts.ExcelHeadings.Occupation,Hakedis.Contracts.ExcelHeadings.School,Hakedis.Contracts.ExcelHeadings.IbanCheck,
-            Hakedis.Contracts.ExcelHeadings.DayHours,Hakedis.Contracts.ExcelHeadings.DykHours,Hakedis.Contracts.ExcelHeadings.Hours,
+            "GÜNDÜZ SAAT TOPLAMI","ÖNCEKİ KURUM GÜNDÜZ","YENİ KURUM GÜNDÜZ","KURUM SAAT UYARISI",Hakedis.Contracts.ExcelHeadings.DykHours,Hakedis.Contracts.ExcelHeadings.Hours,
             Hakedis.Contracts.ExcelHeadings.Garnishment};
         if(!grid.Columns.Select(c=>c.Header as string).SequenceEqual(expectedHeaders))throw new InvalidOperationException("VERİ GİRİŞİ sütunları ve sırası uyuşmuyor.");
         if(grid.RowHeight!=30)throw new InvalidOperationException("Hibrit satır yüksekliği 30 değil.");
@@ -180,8 +197,8 @@ internal static class Program
         // Yeni panel yerleşimi ve salt okunur ortak sabitler.
         model.Navigate("Teachers");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);window.UpdateLayout();
         var listCard=(FrameworkElement)window.FindName("TeacherListCard");var detailsCard=(FrameworkElement)window.FindName("TeacherDetailsCard");
-        if(detailsCard.TranslatePoint(new Point(0,0),window).X<=listCard.TranslatePoint(new Point(0,0),window).X || ((DataGrid)window.FindName("TeacherListGrid")).Columns.Count!=2)
-            throw new InvalidOperationException("Öğretmen kartları yan yana / iki sütun değil.");
+        if(detailsCard.TranslatePoint(new Point(0,0),window).X<=listCard.TranslatePoint(new Point(0,0),window).X || ((DataGrid)window.FindName("TeacherListGrid")).Columns.Count!=3)
+            throw new InvalidOperationException("Öğretmen kartları yan yana / ad, TC, IBAN sütunları eksik.");
         model.Navigate("Constants");window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
         if(Descendants<ComboBox>(window).Any(c=>c.IsVisible))throw new InvalidOperationException("Ortak sabit panelinde modül/dönem seçimi kalmış.");
         if(Descendants<TextBox>(window).Where(t=>t.IsVisible).Any(t=>!t.IsReadOnly))throw new InvalidOperationException("Sabitler başlangıçta salt okunur değil.");
@@ -192,8 +209,8 @@ internal static class Program
         model.Registration.Reset();model.ClearCurrentWork();model.Navigate("Outputs");model.Outputs.Selected=model.Outputs.Records.Single();
         var archived=model.Outputs.ReadSelected();var archiveBytes=File.ReadAllBytes(archived.Path);
         window.Width=1366;window.Height=768;window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-        var rowButtons=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Where(b=>b.Content is string text && new[]{"PDF oluştur","Yazdır","Düzenle","Sil","XML oluştur"}.Contains(text)).ToArray();
-        if(rowButtons.Length!=5 || rowButtons.Any(b=>Math.Abs(b.ActualWidth-100)>1 || Math.Abs(b.ActualHeight-32)>1))throw new InvalidOperationException("Çıktı düğmeleri eşit ölçüde değil.");
+        var rowButtons=Descendants<Button>((DataGrid)window.FindName("OutputsGrid")).Where(b=>b.Content is string text && new[]{"PDF oluştur","Yazdır","Düzenle","Sil","Detay","XML oluştur"}.Contains(text)).ToArray();
+        if(rowButtons.Length!=6 || rowButtons.Any(b=>Math.Abs(b.ActualWidth-100)>1 || Math.Abs(b.ActualHeight-32)>1))throw new InvalidOperationException("Çıktı düğmeleri eşit ölçüde değil.");
         Capture(window,Path.Combine(output,"Outputs-five-actions.png"));
         var sgkStore=new Hakedis.Storage.SgkXmlStore(model.Outputs.DataRoot);
         sgkStore.Save(Hakedis.Contracts.ModuleId.TemelEgitim,new(new("12345678901234567890120000","ÖRNEK KURUM","ÖRNEK ADRES","13","00000",DefaultMissingReason:"07"),[]));
@@ -293,8 +310,10 @@ internal static class Program
         LayoutSettingsChecks.Run(output,Capture);
         SaveNotificationChecks.Run(output);
         SchoolHistoryChecks.Run(output,Capture);
+        TransferHoursChecks.Run(output,Capture);
+        OutputEntryChecks.Run(output,Capture);
         if (listener.Errors.Count > 0) { foreach (var message in listener.Errors) Console.Error.WriteLine(message); return 1; }
-        Console.WriteLine($"12 WPF panel görüntüsü, eşit beş çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
+        Console.WriteLine($"12 WPF panel görüntüsü, eşit altı çıktı düğmesi, onaylı silme ve tek kayıtla düzenleme, SGK XML ekranı/onayı/şema testi, ortak sabit kilidi, yan yana öğretmen kartları, arşiv iptali, üç PDF ve çok sayfalı yazıcı işi doğrulandı; binding hatası yok. {output}"); return 0;
     }
     private static void VerifyReportPages(PaymentReportService service,Hakedis.Storage.ArchivedPayment record,Hakedis.Contracts.ReportDetails details,string output,string prefix)
     {

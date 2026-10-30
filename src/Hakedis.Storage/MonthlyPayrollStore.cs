@@ -37,6 +37,7 @@ public sealed class MonthlyPayrollStore(string root)
             data.Entries.Any(e => e is null || e.TeacherId == Guid.Empty || e.DayHours < 0 || e.DykHours < 0 || e.Garnishment < 0) ||
             data.Entries.Select(e => e.TeacherId).Distinct().Count() != data.Entries.Length)
             throw new InvalidDataException("Aylık kayıt dönemi veya girdileri geçersiz; dosya değiştirilmedi.");
+        foreach(var entry in data.Entries)entry.ValidateSchoolHours();
         var p=data.Constants;
         if(p.Coefficient<=0 || p.Indicator<=0 || p.DykMultiplier<=0 || p.IncomeExemption<0 || p.StampExemption<0 ||
             new[]{p.EmployeeRate,p.EmployerRate,p.IncomeRate,p.StampRate}.Any(x=>x<0 || x>1))

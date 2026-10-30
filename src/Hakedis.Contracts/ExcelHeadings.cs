@@ -7,7 +7,7 @@ public static class ExcelHeadings
     public const string IbanCheck = "İBAN KONTROL";
     public const string FullName = "AD SOYAD";
     public const string IdentityNumber = "TC KİMLİK";
-    public const string Iban = "BANKA IBAN\n(IBAN GİRİLMEZSE HESAP YAPILMAZ)";
+    public const string Iban = "BANKA IBAN";
     public const string StartDate = "İŞE BAŞLAMA TARİHİ";
     public const string EndDate = "İŞTEN AYRILIŞ TARİHİ";
     public const string Occupation = "SGK MESLEK KODU\n1.DÖNEM";

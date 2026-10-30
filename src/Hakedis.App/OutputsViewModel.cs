@@ -19,9 +19,15 @@ public sealed class ReportDetailsEditor
     public static ReportDetailsEditor From(ReportDetails d)=>new(){Institution=d.Institution,Bank=d.Bank,PreparedBy=d.PreparedBy,PreparedTitle=d.PreparedTitle,AuthorizedBy=d.AuthorizedBy,AuthorizedTitle=d.AuthorizedTitle,Treasurer=d.Treasurer,SickLeaveStatement=d.SickLeaveStatement};
 }
 
+public sealed record OutputModuleOption(ModuleId? Id,string Name);
+
 public sealed class OutputsViewModel : INotifyPropertyChanged
 {
     public string DataRoot {get;}
+    public IReadOnlyList<OutputModuleOption> Modules {get;}=new[]{new OutputModuleOption(null,"Tüm modüller")}.Concat(PayrollCores.Catalog.Select(m=>new OutputModuleOption(m.Id,m.Name))).ToArray();
+    private OutputModuleOption? module;
+    public OutputModuleOption SelectedModule {get=>module??Modules[0];set{if(value is null || !Modules.Contains(value) || value==SelectedModule)return;module=value;Reload();}}
+
     private readonly PaymentArchiveStore store;
     private readonly ReportDetailsStore detailsStore;
     private ReportDetails savedDetails;
@@ -42,7 +48,7 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
     {
         var path=Selected?.Path;Records.Clear();selected=null;
         var available=store.ReadAvailable(out var errors);
-        foreach(var record in available)Records.Add(record);
+        foreach(var record in available.Where(r=>SelectedModule.Id is null || r.Document.ModuleId==SelectedModule.Id))Records.Add(record);
         LoadErrors=errors;
         selected=path is null?Records.FirstOrDefault():Records.FirstOrDefault(r=>string.Equals(r.Path,path,StringComparison.OrdinalIgnoreCase));
         Status=$"{Records.Count} kayıtlı hakediş. "+(LoadErrors.Count>0?$"{LoadErrors.Count} dosya okunamadı; kaynak dosyalar korundu. ":"")+"PDF veya Yazdır için kayıt seçin.";
@@ -60,5 +66,5 @@ public sealed class OutputsViewModel : INotifyPropertyChanged
         Reload();ShowStatus($"{record.Module} · {record.Period} hakedişi silindi.");return true;
     }
     public void ShowStatus(string message){Status=message;Notify();}
-    private void Notify(){foreach(var name in new[]{nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status),nameof(LoadErrors)})PropertyChanged?.Invoke(this,new(name));}
+    private void Notify(){foreach(var name in new[]{nameof(SelectedModule),nameof(DetailsStatus),nameof(Selected),nameof(HasSelection),nameof(Status),nameof(LoadErrors)})PropertyChanged?.Invoke(this,new(name));}
 }

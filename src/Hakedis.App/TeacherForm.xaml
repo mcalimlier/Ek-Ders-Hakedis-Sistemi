@@ -8,7 +8,7 @@
 <TextBlock Text="{Binding Editor.TransferModeText}" Foreground="#E8C778" FontWeight="SemiBold" Margin="0,0,0,14"/>
 <TextBlock Text="Geçiş yapılan okul" Style="{StaticResource FieldLabel}"/>
 <TextBox x:Name="TransferSchoolText" Style="{StaticResource FormText}" Text="{Binding Editor.TransferSchool,UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,12"/>
-<TextBlock Text="Okul/modül geçiş tarihi" Style="{StaticResource FieldLabel}"/>
+<TextBlock Text="Geçiş yapılan okulda başlama tarihi" Style="{StaticResource FieldLabel}"/>
 <DatePicker x:Name="TransferDatePicker" Style="{StaticResource FormDate}" SelectedDate="{Binding Editor.TransferDate,UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,12"/>
 <TextBlock Text="Geçilen okulun modülü" Style="{StaticResource FieldLabel}"/>
 <ComboBox x:Name="TransferModuleCombo" Style="{StaticResource FormCombo}" ItemsSource="{Binding Editor.TransferModules}" SelectedValue="{Binding Editor.TransferModule,Mode=TwoWay}" SelectedValuePath="Id" DisplayMemberPath="Name"/>

@@ -10,7 +10,7 @@
  <ComboBox x:Name="BillingModuleCombo" Style="{StaticResource FormCombo}" ItemsSource="{Binding Modules}" SelectedItem="{Binding SelectedModule}" DisplayMemberPath="Name" Margin="0,6,0,16"/>
  <TextBlock Text="{Binding ExistingInputsText}" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,16"/>
  <TextBlock Text="Ayın tamamına ait toplamlar" Foreground="White" FontWeight="Bold" Margin="0,0,0,12"/>
- <TextBlock Text="GÜNDÜZ DERS SAATİ" Style="{StaticResource FieldLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding DayHours,UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,12"/>
+ <TextBlock Text="GÜNDÜZ DERS SAATİ" Style="{StaticResource FieldLabel}"/><TextBox Style="{StaticResource FormText}" IsReadOnly="{Binding HasSplit}" Text="{Binding DayHours,UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,12"/>
  <TextBlock Text="DESTEKLEME VE YETİŞTİRME KURSU" Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/><TextBox Style="{StaticResource FormText}" Text="{Binding DykHours,UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,12"/>
  <TextBlock Text="İCRA KESİNTİSİ / MANUEL GİRİŞ" Style="{StaticResource FieldLabel}"/><TextBox Style="{StaticResource FormText}" Text="{Binding Garnishment,UpdateSourceTrigger=PropertyChanged}"/>
  <TextBlock Text="{Binding Status}" Style="{StaticResource ValidationText}" TextWrapping="Wrap" Margin="0,16,0,0"/>

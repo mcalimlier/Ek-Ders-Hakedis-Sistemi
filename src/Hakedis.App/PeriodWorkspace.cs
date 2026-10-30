@@ -101,7 +101,36 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             Notify();
         }
     }
+    private ModuleDescriptor? entryModule;
+    public ModuleDescriptor? EntryModule
+    {
+        get=>entryModule;
+        set
+        {
+            if(value==entryModule)return;
+            if(value is not null){SelectedModule=value;if(SelectedModule.Id!=value.Id)return;}
+            entryModule=value;SelectedTeacher=null;Notify();
+        }
+    }
+    public bool HasEntryModule=>entryModule is not null;
+    public IReadOnlyList<TeacherRecord> EntryTeachers=>entryModule is null?[]:Teachers;
+    public TeacherRecord? EntryTeacher {get=>entryModule is null?null:SelectedTeacher;set{if(entryModule is null)return;SelectedTeacher=value;}}
+    public bool EntryHasSchoolHourSplit=>HasEntryTeacher && HasSchoolHourSplit;
+    public bool EntryHasSingleSchoolHours=>!EntryHasSchoolHourSplit;
+    public string EntrySummary=>HasEntryTeacher?SgkSummary:"Aylık giriş için modül ve öğretmen seçin.";
+    public bool HasEntryTeacher=>EntryTeacher is not null;
+    public bool CanEditEntry=>HasEntryTeacher && IsEditing;
+    public string EntryDayHours {get=>HasEntryTeacher?DayHours:"";set{if(HasEntryTeacher)DayHours=value;}}
+    public string EntryDykHours {get=>HasEntryTeacher?DykHours:"";set{if(HasEntryTeacher)DykHours=value;}}
+    public string EntryGarnishment {get=>HasEntryTeacher?Garnishment:"";set{if(HasEntryTeacher)Garnishment=value;}}
     public string DayHours { get=>selectedRow?.DayHours??"0";set { if(selectedRow is not null)selectedRow.DayHours=value; } }
+    public bool HasSchoolHourSplit=>selectedRow?.HasSchoolHourSplit==true;
+    public bool HasSingleSchoolHours=>!HasSchoolHourSplit;
+    public string PreviousSchoolLabel=>selectedRow?.PreviousSchoolLabel??"";
+    public string NewSchoolLabel=>selectedRow?.NewSchoolLabel??"";
+    public string PreviousSchoolDayHours {get=>selectedRow?.PreviousSchoolDayHours??"";set{if(selectedRow is not null)selectedRow.PreviousSchoolDayHours=value;}}
+    public string NewSchoolDayHours {get=>selectedRow?.NewSchoolDayHours??"";set{if(selectedRow is not null)selectedRow.NewSchoolDayHours=value;}}
+    public string SchoolHoursWarning=>selectedRow?.SchoolHoursWarning??"";
     public string DykHours { get=>selectedRow?.DykHours??"0";set { if(selectedRow is not null)selectedRow.DykHours=value; } }
     public string Garnishment { get=>selectedRow?.Garnishment??"0";set { if(selectedRow is not null)selectedRow.Garnishment=value; } }
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -115,7 +144,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     public void Reload()
     {
-        RequireNormal();completed=false;loading=true;hybridRow=null;teacher=null;selectedRow=null;Teachers.Clear();Rows.Clear();
+        RequireNormal();if(entryModule is not null && entryModule.Id!=SelectedModule.Id)entryModule=null;completed=false;loading=true;hybridRow=null;teacher=null;selectedRow=null;Teachers.Clear();Rows.Clear();
         try
         {
             var document=store.Read(SelectedModule.Id,year,month);
@@ -126,7 +155,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
                 row.Sequence=Rows.Count+1;row.Changed+=RowEdited;Rows.Add(row);
             }
             Status=$"{PeriodText} · {SelectedModule.Name}. Kayıtlı aylık ders bilgileri yüklendi.";
-            if(BillingChoicesNeeded.Count>0)Status+=$" Görev geçişi olan {BillingChoicesNeeded.Count} kişi için hakediş oluştururken tek ödeme modülü seçilecektir; saatler otomatik toplanmaz.";
+            if(BillingChoicesNeeded.Count>0)Status+=$" Görev geçişi olan {BillingChoicesNeeded.Count} kişi için hakediş oluştururken tek ödeme modülü seçilecektir; kurum gündüz saatleri toplamı kullanılır.";
         }
         catch(Exception ex) when(ex is System.IO.IOException or System.IO.InvalidDataException or UnauthorizedAccessException or ArgumentException)
         { Status=ex.Message; }
@@ -247,6 +276,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     }
     private static void ValidateInput(MonthlyInput input)
     {
+        input.ValidateSchoolHours();
         if(input.DayHours<0 || input.DykHours<0 || input.Garnishment<0)throw new ArgumentException("Ders saati ve kesinti negatif olamaz.");
     }
     private static void CheckMonthlyVersion(MonthlyDocument document,IEnumerable<PayrollRow> rows)
@@ -302,7 +332,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
             row.Recalculate();if(row.Result is null)throw new ArgumentException(row.Teacher.FullName+": "+row.Error);
             if(!validTeachers.Contains(row.Teacher))throw new InvalidOperationException("Öğretmen bilgileri değişmiş. Listeyi yenileyin.");
             ValidateInput(row.Read());
-            if(string.IsNullOrWhiteSpace(row.Teacher.Iban))throw new ArgumentException(row.Teacher.FullName+": "+ExcelHeadings.Iban);
+            if(string.IsNullOrWhiteSpace(row.Teacher.Iban))throw new ArgumentException(row.Teacher.FullName+": IBAN bilgisi eksik olduğu için hakediş oluşturulamadı. Öğretmen Listesi ekranından IBAN bilgisini güncelleyin, ardından hakedişi yeniden oluşturun.");
         }
         var values=ValidatedConstants();var inputs=rows.Select(r=>r.Read()).ToArray();
         var warningCount=rows.Count(r=>r.SgkError!="");
@@ -342,7 +372,7 @@ public sealed class PeriodWorkspace : INotifyPropertyChanged
     private void Notify()
     {
         PropertyChanged?.Invoke(this,new(nameof(PayrollTitle)));
-        foreach(var name in new[]{nameof(CanChooseBillingModule),nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
+        foreach(var name in new[]{nameof(EntryHasSchoolHourSplit),nameof(EntryHasSingleSchoolHours),nameof(EntrySummary),nameof(HasEntryModule),nameof(EntryModule),nameof(EntryTeachers),nameof(EntryTeacher),nameof(HasEntryTeacher),nameof(CanEditEntry),nameof(EntryDayHours),nameof(EntryDykHours),nameof(EntryGarnishment),nameof(CanChooseBillingModule),nameof(CanChangePeriod),nameof(IsArchiveEditing),nameof(IsNormalWork),nameof(HasActiveWork),nameof(SelectedHybridRow),nameof(HasHybridSelection),nameof(HasHybridChanges),nameof(HybridChangeText),nameof(SelectedModule),nameof(Year),nameof(Month),nameof(PeriodText),nameof(Constants),nameof(SelectedTeacher),nameof(HasSchoolHourSplit),nameof(HasSingleSchoolHours),nameof(PreviousSchoolLabel),nameof(NewSchoolLabel),nameof(PreviousSchoolDayHours),nameof(NewSchoolDayHours),nameof(SchoolHoursWarning),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(IsEditing),nameof(HasTeacher),nameof(IsAvailable),nameof(Status),nameof(HoursText),nameof(GrossText),nameof(AccrualText),nameof(NetText),nameof(EmployeeText),nameof(EmployerText),nameof(DeductionsText),nameof(CountText),nameof(NetTotal),nameof(SgkSummary)})
             PropertyChanged?.Invoke(this,new(name));
     }
 }

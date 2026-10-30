@@ -129,6 +129,7 @@ public sealed class PaymentArchiveStore(string root)
         foreach(var row in data.Rows)
         {
             _=TeacherDirectory.Normalize(row.Teacher);
+            row.Input.ValidateSchoolHours();
             if(row.Input.DayHours<0 || row.Input.DykHours<0 || row.Input.Garnishment<0 || row.Result.Net!=row.Result.Accrual-row.Result.Deductions)
                 throw new InvalidDataException("Hakediş satırının tutarları tutarsız.");
             if(PayrollCores.IsAvailable(module))

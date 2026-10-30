@@ -204,8 +204,9 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void UseSelectedTeacher()
     {
         var record = Teachers.Selected ?? throw new InvalidOperationException("Önce öğretmen seçin.");
-        Monthly.SelectedModule=Monthly.Modules.Single(m=>m.Id==record.ModuleId);
-        Monthly.RefreshTeachers();Monthly.SelectedTeacher=Monthly.Teachers.Single(t=>t.Id==record.Id);
+        Monthly.EntryModule=Monthly.Modules.Single(m=>m.Id==record.ModuleId);
+        if(Monthly.EntryModule?.Id!=record.ModuleId)throw new InvalidOperationException("Önce aylık karttaki değişiklikleri kaydedin veya çalışmayı temizleyin.");
+        Monthly.RefreshTeachers();Monthly.EntryTeacher=Monthly.EntryTeachers.Single(t=>t.Id==record.Id);
         if(record.ModuleId==activeModule)CalculationTeacher=record;Navigate("Entry");
     }
 }

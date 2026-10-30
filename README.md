@@ -8,9 +8,18 @@ Açılış/kapanış yedekleri aynı gün değişmeyen içerik için tekrarlanma
 TCMB biçimine göre son 16 karakterinde harf içeren TR banka hesapları saklanabilir;
 biçim kontrolü banka doğrulaması anlamına gelmez.
 
+## 1.0.5 güncellemesi
+
+- Çıktılar modüle göre filtrelenir; Detay düğmesi kayıtlı hakedişin özet kartlarını ve salt okunur bordro listesini açar.
+- Aylık ders kartı modül ve öğretmen seçilmeden boş açılır. Öğretmen Listesi → Veri Girişine Al, açık seçimi karta taşır.
+- IBAN olmadan öğretmen kaydedilebilir. Hakediş oluşturulurken eksik IBAN açıklayıcı bildirimle engellenir; öğretmen listesinde eksikler kırmızı gösterilir.
+- Sayısal girişlerde sıfıra tıklanınca alan temizlenir; değer yazılmadan çıkılırsa sıfır geri gelir.
+- Mevcut kayıtlar ve dondurulmuş hakedişler korunur; güncelleme yalnız uygulama dosyasına yapılır. Veri ve program yedeği alınmalıdır.
+- Doğrulama: 265 birim testi ve tüm WPF arayüz akışları (PDF, SGK XML, kayıt, modül filtresi, Detay/Kapat) geçti.
+
 C# / WPF Windows masaüstü projesi; OEHS düğme, kart ve panel şablonlarını kullanır. Öğretmen kaydı yalnız Veri Girişi'nde yapılır. Aylık ders girişi, dönem sabitleri ve canlı hibrit hakediş tablosu JSON'a kaydedilir. Aylık kayıtlar ve hakedişler modül/yıl/ay kapsamında ayrılır; sabitler ortaktır. SQL, son kullanıcıda Excel veya ayrıca .NET kurulumu gerektirmez. Kaynak Excel başlıkları aynen korunur. 7.190 meslek kodu aramalı açılır listeden seçilir. Eksik Gün Sayısı SGK yan bilgisidir; parasal hakedişi etkilemez. Kayıtlı hakedişten üç PDF, doğrudan yazdırma ve özgün XSD ile doğrulanan SGK XML çıktısı alınır.
 
-Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. İsteğe bağlı okul/modül değişikliği alanında okul, tarih ve hedef modül kaydedilir. Geçiş ayında hakediş oluşturulurken tek ödeme modülü ve ay toplamı teyit edilir; kişi iki modül bordrosuna bölünmez. Görev geçmişi normal SGK işe giriş/çıkış tarihlerini veya kayıtlı bordroları değiştirmez. Eski modülsüz veriler ilk sürümün Temel Eğitim Ücretli Öğretmen kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
+Her öğretmenin tek kişi kartı vardır; aynı TC ile ikinci kişi açılmaz. İsteğe bağlı okul/modül değişikliği alanında okul, tarih ve hedef modül kaydedilir. Geçiş tarihi yeni okulda başlama tarihidir. Geçiş ayında iki kurumun gündüz saatleri ayrı girilir, toplam seçilen tek ödeme modülünde hesaplanır; boş taraf sıfır kabul edilip hibrit tabloda uyarılır. Sonraki aylarda tek alan kullanılır; yeni geçiş tanımlanan ayda iki alan yeniden açılır. Kişi iki modül bordrosuna bölünmez. Görev geçmişi normal SGK işe giriş/çıkış tarihlerini veya kayıtlı bordroları değiştirmez. Eski modülsüz veriler ilk sürümün Temel Eğitim Ücretli Öğretmen kapsamına göre, orijinali yedeklenerek yeni biçime geçirilir.
 
 ## Kullanıcının belirlediği kapsam
 

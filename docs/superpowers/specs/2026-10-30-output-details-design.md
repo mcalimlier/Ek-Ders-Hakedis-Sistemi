@@ -1,0 +1,3 @@
+# Çıktı ve veri girişi iyileştirmeleri
+Kullanıcının altı isteği: çıktı modül filtresi; Sil/XML arasında salt okunur Detay penceresi; aylık kartın modül/kişi/saat seçimsiz açılması; IBAN olmadan kişi kaydı, açıklayıcı popup ile hakediş engeli; sayısal alana odaklanınca sıfırı temizleme; öğretmen listesinde IBAN ve kırmızı eksik göstergesi.
+Mevcut kayıtlara/saklama köküne değişiklik yok. Çıktı filtresi tüm modüller seçeneğiyle açılır, yeni hakedişte ilgili modüle geçilir. Detay yalnız arşivdeki dondurulmuş veriyi gösterir. Aylık kart açık seçim için ayrı görünüm özellikleri kullanır; mevcut hesap çekirdeğinin modül varsayımları korunur. Yeni uygulama yedeklenerek yerinde güncellenir; canlı veri özetleri önce/sonra karşılaştırılır.

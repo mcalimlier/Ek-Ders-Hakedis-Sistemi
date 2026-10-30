@@ -20,7 +20,7 @@ public sealed class TeacherEditor : INotifyPropertyChanged
     public IReadOnlyList<ModuleDescriptor> TransferModules=>PayrollCores.Catalog.Where(m=>m.IsAvailable).ToArray();
     public bool HasAssignmentHistory=>savedHistory is not null;
     public string HistoryText=>savedHistory is null?"":string.Join(Environment.NewLine,savedHistory.Transfers.Select(t=>
-        $"{t.Date:dd.MM.yyyy} · {Name(t.FromModule)} / {t.FromSchool} → {Name(t.ToModule)} / {t.ToSchool}"));
+        $"Yeni okulda başlama: {t.Date:dd.MM.yyyy} · {Name(t.FromModule)} / {t.FromSchool} → {Name(t.ToModule)} / {t.ToSchool}"));
     public string TransferModeText=>editTransfer<0?"Yeni okul/modül değişikliği":"Son okul/modül değişikliğini düzenle";
     public System.Windows.Input.ICommand EditLastTransferCommand=>new EditorAction(EditLastTransfer);
     public System.Windows.Input.ICommand NewTransferCommand=>new EditorAction(NewTransfer);

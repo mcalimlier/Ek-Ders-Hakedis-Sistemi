@@ -1,6 +1,15 @@
 namespace Hakedis.Contracts;
 
-public sealed record MonthlyInput(Guid TeacherId, decimal DayHours, decimal DykHours, decimal Garnishment);
+public sealed record MonthlyInput(Guid TeacherId, decimal DayHours, decimal DykHours, decimal Garnishment,
+    decimal? PreviousSchoolDayHours=null, decimal? NewSchoolDayHours=null, bool SchoolHoursSeparated=false)
+{
+    public void ValidateSchoolHours()
+    {
+        if(PreviousSchoolDayHours<0 || NewSchoolDayHours<0 ||
+           ((SchoolHoursSeparated || PreviousSchoolDayHours is not null || NewSchoolDayHours is not null) && DayHours!=(PreviousSchoolDayHours??0)+(NewSchoolDayHours??0)))
+            throw new ArgumentException("Kurum saatleri negatif olamaz ve toplam gündüz saatiyle uyuşmalıdır.");
+    }
+}
 public sealed record PeriodValues(decimal Coefficient, decimal Indicator, decimal IncomeExemption, decimal StampExemption,
     decimal EmployeeRate = .14m, decimal EmployerRate = .2175m, decimal IncomeRate = .15m,
     decimal StampRate = .00759m, decimal DykMultiplier = 2m)

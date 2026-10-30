@@ -14,7 +14,7 @@
     <OutputType>WinExe</OutputType>
     <AssemblyName>Ek Ders Hakediş Sistemi</AssemblyName>
     <RootNamespace>Hakedis.App</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.5</Version>
     <Title>Ek Ders Hakediş Sistemi</Title>
     <Product>Ek Ders Hakediş Sistemi</Product>
     <Description>Modüllerle ek ders hakedişi, bordro ve SGK çıktıları.</Description>

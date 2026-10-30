@@ -17,7 +17,7 @@ public sealed class PayrollRow : INotifyPropertyChanged
     public MonthlyInput? SavedInput { get; private set; }
     private string acceptedDay="0", acceptedDyk="0", acceptedGarnishment="0";
     public bool HasChanges => Teacher!=SourceTeacher || day!=acceptedDay || dyk!=acceptedDyk ||
-        garnishment!=acceptedGarnishment;
+        garnishment!=acceptedGarnishment || previousSchoolHours!=acceptedPrevious || newSchoolHours!=acceptedNew;
     public string FullName {get=>Teacher.FullName;set=>EditTeacher(Teacher with {FullName=value});}
     public string IdentityNumber {get=>Teacher.IdentityNumber;set=>EditTeacher(Teacher with {IdentityNumber=value});}
     public string Iban {get=>Teacher.Iban;set=>EditTeacher(Teacher with {Iban=value});}
@@ -29,7 +29,14 @@ public sealed class PayrollRow : INotifyPropertyChanged
     {if(next==Teacher)return;Teacher=next;Recalculate();Changed?.Invoke(this);}
     public void RefreshTeacher(TeacherRecord saved,bool replacePreview=false)
     {if(saved.Id!=Teacher.Id || saved.ModuleId!=Teacher.ModuleId)throw new InvalidOperationException("Öğretmen uyuşmuyor.");
-        if(SourceTeacher!=saved || replacePreview){Teacher=SourceTeacher=saved;Recalculate();}}
+        if(SourceTeacher!=saved || replacePreview)
+        {
+            var wasSplit=HasSchoolHourSplit;var total=DayHours;
+            Teacher=SourceTeacher=saved;
+            if(!wasSplit && HasSchoolHourSplit && HasInput){previousSchoolHours=total;newSchoolHours="";}
+            if(wasSplit && !HasSchoolHourSplit)day=total;
+            Recalculate();
+        }}
     public void AcceptInput(MonthlyInput persisted)
     {
         var draft=Teacher;Teacher=SourceTeacher;AcceptChanges(persisted);Teacher=draft;Recalculate();
@@ -37,7 +44,7 @@ public sealed class PayrollRow : INotifyPropertyChanged
     public void AcceptChanges(MonthlyInput? persisted=null)
     {
         SourceTeacher=Teacher;SavedInput=persisted;
-        acceptedDay=day;acceptedDyk=dyk;acceptedGarnishment=garnishment;
+        acceptedDay=day;acceptedDyk=dyk;acceptedGarnishment=garnishment;acceptedPrevious=previousSchoolHours;acceptedNew=newSchoolHours;
 Recalculate();
     }
     public bool HasInput { get; private set; }
@@ -56,7 +63,20 @@ Recalculate();
     }
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action<PayrollRow>? Changed;
-    public string DayHours { get => day; set { if(day == value) return; day=value; Update(); } }
+    private string previousSchoolHours="", newSchoolHours="", acceptedPrevious="", acceptedNew="";
+    private SchoolTransfer[] PeriodTransfers=>period is null?[]:Teacher.Assignments?.Transfers.Where(t=>t.Date?.Year==period().Year && t.Date?.Month==period().Month).ToArray()??[];
+    public bool HasSchoolHourSplit=>PeriodTransfers.Length>0;
+    public bool HasSingleSchoolHours=>!HasSchoolHourSplit;
+    public string PreviousSchoolLabel=>PeriodTransfers.FirstOrDefault()?.FromSchool+" · Gündüz ders saati";
+    public string NewSchoolLabel=>PeriodTransfers.LastOrDefault()?.ToSchool+" · Gündüz ders saati";
+    public string PreviousSchoolDayHours {get=>previousSchoolHours;set{if(previousSchoolHours==value)return;previousSchoolHours=value;Update();}}
+    public string NewSchoolDayHours {get=>newSchoolHours;set{if(newSchoolHours==value)return;newSchoolHours=value;Update();}}
+    public string SchoolHoursWarning=>!HasSchoolHourSplit?"":string.Join(" ",new[]{
+        string.IsNullOrWhiteSpace(previousSchoolHours)?PreviousSchoolLabel+" girilmedi; 0 kabul edildi.":"",
+        string.IsNullOrWhiteSpace(newSchoolHours)?NewSchoolLabel+" girilmedi; 0 kabul edildi.":""}.Where(x=>x!=""));
+    public string DayHours { get {if(!HasSchoolHourSplit)return day;try{return Text((OptionalHours(previousSchoolHours)??0)+(OptionalHours(newSchoolHours)??0));}catch(ArgumentException){return "—";}} set {if(HasSchoolHourSplit){PreviousSchoolDayHours=value;return;} if(day == value) return; day=value; Update(); } }
+    private static decimal? OptionalHours(string text)=>string.IsNullOrWhiteSpace(text)?null:PeriodConstantsEditor.Number(text);
+
     public string DykHours { get => dyk; set { if(dyk == value) return; dyk=value; Update(); } }
     public string Garnishment { get => garnishment; set { if(garnishment == value) return; garnishment=value; Update(); } }
     public PayrollRow(TeacherRecord teacher, MonthlyInput? input, Func<TeacherParameters> parameters, Action<MonthlyInput>? validate=null,
@@ -66,12 +86,16 @@ Recalculate();
     public void Apply(MonthlyInput input)
     {
         if(input.TeacherId != Teacher.Id) throw new InvalidOperationException("Aylık kayıt öğretmeni uyuşmuyor.");
+        previousSchoolHours=input.PreviousSchoolDayHours is decimal previous?Text(previous):"";
+        newSchoolHours=input.NewSchoolDayHours is decimal next?Text(next):"";
+        if(HasSchoolHourSplit && !input.SchoolHoursSeparated && input.PreviousSchoolDayHours is null && input.NewSchoolDayHours is null)previousSchoolHours=Text(input.DayHours);
         day=Text(input.DayHours); dyk=Text(input.DykHours); garnishment=Text(input.Garnishment);
         HasInput=true; Recalculate();
     }
     public void CopyPreview(PayrollRow source)
     {
         if(source.Teacher.Id!=Teacher.Id)throw new InvalidOperationException("Öğretmen uyuşmuyor.");
+        previousSchoolHours=source.previousSchoolHours;newSchoolHours=source.newSchoolHours;acceptedPrevious=source.acceptedPrevious;acceptedNew=source.acceptedNew;
         day=source.day;dyk=source.dyk;garnishment=source.garnishment;
         Teacher=source.Teacher;SourceTeacher=source.SourceTeacher;SavedInput=source.SavedInput;
         acceptedDay=source.acceptedDay;acceptedDyk=source.acceptedDyk;acceptedGarnishment=source.acceptedGarnishment;
@@ -79,8 +103,9 @@ Recalculate();
     }
     public MonthlyInput Read()
     {
-        var input = new MonthlyInput(Teacher.Id,PeriodConstantsEditor.Number(day),PeriodConstantsEditor.Number(dyk),
-            PeriodConstantsEditor.Number(garnishment));
+        var input = new MonthlyInput(Teacher.Id,PeriodConstantsEditor.Number(DayHours),PeriodConstantsEditor.Number(dyk),
+            PeriodConstantsEditor.Number(garnishment),HasSchoolHourSplit?OptionalHours(previousSchoolHours):null,HasSchoolHourSplit?OptionalHours(newSchoolHours):null,HasSchoolHourSplit);
+        input.ValidateSchoolHours();
         if(input.DayHours<0 || input.DykHours<0 || input.Garnishment<0) throw new ArgumentException("Ders saati ve kesinti negatif olamaz.");
         return input;
     }
@@ -106,7 +131,7 @@ Recalculate();
             }
             catch(Exception ex) when(ex is ArgumentException or OverflowException) { SgkError=ex.Message; }
         }
-        foreach(var name in new[]{nameof(Teacher),nameof(FullName),nameof(IdentityNumber),nameof(Iban),nameof(School),nameof(OccupationCode),nameof(StartDate),nameof(EndDate),nameof(IbanCheck),nameof(HasChanges),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(HasInput),nameof(Result),nameof(Error),nameof(MissingDays),nameof(TotalHours),nameof(SgkInformation),nameof(SgkError),nameof(MaximumDaysText),nameof(WorkingDaysText)})
+        foreach(var name in new[]{nameof(HasSchoolHourSplit),nameof(HasSingleSchoolHours),nameof(PreviousSchoolLabel),nameof(NewSchoolLabel),nameof(PreviousSchoolDayHours),nameof(NewSchoolDayHours),nameof(SchoolHoursWarning),nameof(Teacher),nameof(FullName),nameof(IdentityNumber),nameof(Iban),nameof(School),nameof(OccupationCode),nameof(StartDate),nameof(EndDate),nameof(IbanCheck),nameof(HasChanges),nameof(DayHours),nameof(DykHours),nameof(Garnishment),nameof(HasInput),nameof(Result),nameof(Error),nameof(MissingDays),nameof(TotalHours),nameof(SgkInformation),nameof(SgkError),nameof(MaximumDaysText),nameof(WorkingDaysText)})
             PropertyChanged?.Invoke(this,new(name));
     }
     private static string Text(decimal number)=>number.ToString(CultureInfo.GetCultureInfo("tr-TR"));

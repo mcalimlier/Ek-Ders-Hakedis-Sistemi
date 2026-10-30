@@ -1,6 +1,12 @@
+using System.Text.Json.Serialization;
 namespace Hakedis.Contracts;
 
-public sealed record SchoolTransfer(DateTime? Date,ModuleId FromModule,string FromSchool,ModuleId ToModule,string ToSchool);
+public sealed record SchoolTransfer([property:JsonPropertyName("NewSchoolStartDate")] DateTime? Date,ModuleId FromModule,string FromSchool,ModuleId ToModule,string ToSchool)
+{
+    // Eski katalog ve arşivlerdeki Date alanını oku; yeni kayıtlara yalnız açık adını yaz.
+    [JsonPropertyName("Date"),JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)]
+    public DateTime? LegacyDate {get=>null;init {if(Date is null)Date=value;}}
+}
 public sealed record MonthlyBillingChoice(int Year,int Month,ModuleId Module);
 
 // Yapısal eşitlik: JSON'dan tekrar okunan geçmiş, beklenen-sürüm denetimini yanlışlıkla bozmaz.
@@ -19,14 +25,14 @@ public sealed class TeacherAssignmentHistory : IEquatable<TeacherAssignmentHisto
         if(!Enum.IsDefined(HomeModuleId) || string.IsNullOrWhiteSpace(HomeSchool) || Transfers is null || Choices is null || Transfers.Length==0 ||
            Transfers.Any(t=>t is null || t.Date is null || t.Date.Value.Year<1900 || !Enum.IsDefined(t.FromModule) || !Enum.IsDefined(t.ToModule) ||
                string.IsNullOrWhiteSpace(t.FromSchool) || string.IsNullOrWhiteSpace(t.ToSchool)) || Choices.Any(c=>c is null))
-            throw new ArgumentException("Okul/modül değişikliği için okul, geçiş tarihi ve hedef modülü eksiksiz girin.");
+            throw new ArgumentException("Okul/modül değişikliği için okul, yeni okulda başlama tarihi ve hedef modülü eksiksiz girin.");
         var changes=Transfers.Select(t=>t with {Date=t.Date!.Value.Date,FromSchool=t.FromSchool.Trim(),ToSchool=t.ToSchool.Trim()}).ToArray();
         var currentModule=HomeModuleId;var currentSchool=HomeSchool.Trim();DateTime? previous=null;
         foreach(var t in changes)
         {
             if(t.Date<=previous || t.FromModule!=currentModule || t.FromSchool!=currentSchool ||
                (t.ToModule==t.FromModule && t.ToSchool==t.FromSchool) || t.Date<employmentStart?.Date || t.Date>employmentEnd?.Date)
-                throw new ArgumentException("Görev geçmişinin tarihleri veya okul/modül sırası tutarsız. Geçiş tarihini kontrol edin.");
+                throw new ArgumentException("Görev geçmişinin tarihleri veya okul/modül sırası tutarsız. Yeni okulda başlama tarihini kontrol edin.");
             previous=t.Date;currentModule=t.ToModule;currentSchool=t.ToSchool;
         }
         var result=new TeacherAssignmentHistory(HomeModuleId,HomeSchool.Trim(),changes,Choices.ToArray());

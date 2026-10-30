@@ -18,14 +18,16 @@ public sealed class BillingChoiceViewModel : INotifyPropertyChanged
     private ModuleDescriptor? selected;
     public ModuleDescriptor? SelectedModule {get=>selected;set{selected=value is not null && Modules.Contains(value)?value:null;Notify();}}
     public bool CanAccept=>SelectedModule is not null;
+    private readonly MonthlyInput originalInput;
+    public bool HasSplit=>originalInput.SchoolHoursSeparated || originalInput.PreviousSchoolDayHours is not null || originalInput.NewSchoolDayHours is not null;
     public string DayHours {get;set;}
     public string DykHours {get;set;}
     public string Garnishment {get;set;}
-    public string Status {get;private set;}="Ödeme modülünü seçin ve ayın tamamına ait toplam saatleri kontrol edin. Mevcut saatler otomatik toplanmaz.";
+    public string Status {get;private set;}="Ödeme modülünü seçin ve ayın tamamına ait toplam saatleri kontrol edin. Kurum gündüz saatleri toplamı kullanılır.";
     public event PropertyChangedEventHandler? PropertyChanged;
     public BillingChoiceViewModel(TeacherRecord teacher,int year,int month,MonthlyInput current,string root)
     {
-        Teacher=teacher;Year=year;Month=month;
+        originalInput=current;Teacher=teacher;Year=year;Month=month;
         var candidates=TeacherRouting.Candidates(teacher,year,month);
         var paid=new PaymentArchiveStore(root).ReadAll().Where(a=>a.Document.Data.Year==year && a.Document.Data.Month==month &&
             a.Document.Data.Rows.Any(r=>r.Teacher.Id==teacher.Id || (!string.IsNullOrEmpty(teacher.IdentityNumber) && r.Teacher.IdentityNumber==teacher.IdentityNumber))).ToArray();
@@ -42,7 +44,8 @@ public sealed class BillingChoiceViewModel : INotifyPropertyChanged
     public MonthlyInput ReadInput()
     {
         if(SelectedModule is null)throw new ArgumentException("Bu ay için tek ödeme modülünü seçin.");
-        var i=new MonthlyInput(Teacher.Id,PeriodConstantsEditor.Number(DayHours),PeriodConstantsEditor.Number(DykHours),PeriodConstantsEditor.Number(Garnishment));
+        var i=originalInput with {DayHours=HasSplit?originalInput.DayHours:PeriodConstantsEditor.Number(DayHours),DykHours=PeriodConstantsEditor.Number(DykHours),Garnishment=PeriodConstantsEditor.Number(Garnishment)};
+        i.ValidateSchoolHours();
         if(i.DayHours<0 || i.DykHours<0 || i.Garnishment<0)throw new ArgumentException("Aylık saatler ve kesinti negatif olamaz.");
         return i;
     }

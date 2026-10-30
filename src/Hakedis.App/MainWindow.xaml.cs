@@ -135,6 +135,8 @@ public partial class MainWindow : Window
     private void SaveReportDetails_Click(object sender,RoutedEventArgs e)=>RunOutput(()=>{shell.Outputs.SaveDetails();Inform(shell.Outputs.DetailsStatus);});
     private void SelectOutput(object sender)
     {if(((FrameworkElement)sender).DataContext is Hakedis.Storage.ArchivedPayment record)shell.Outputs.Selected=record;}
+    private void ShowDetails_Click(object sender,RoutedEventArgs e)
+    {SelectOutput(sender);RunOutput(()=>new PaymentDetailsWindow(shell.Outputs.ReadSelected()){Owner=this}.ShowDialog());}
     private void EditArchive_Click(object sender,RoutedEventArgs e)
     {SelectOutput(sender);RunOutput(shell.BeginArchiveEdit);}
     private bool ConfirmArchive(string message,string title)=>confirmation?.Invoke(message,title)??
@@ -203,6 +205,7 @@ public partial class MainWindow : Window
             shell.Calculation.CreatePayment();
             const string message="İşlem başarılı. Hakediş oluşturuldu ve kaydedildi.";
             if(notify is not null)notify(message);else MessageBox.Show(this,message,"Hakediş",MessageBoxButton.OK,MessageBoxImage.Information);
+            shell.Outputs.SelectedModule=shell.Outputs.Modules.Single(m=>m.Id==shell.Calculation.SelectedModule.Id);
             shell.Navigate("Outputs");
             shell.Outputs.Selected=shell.Outputs.Records.FirstOrDefault();
         });
